@@ -4,7 +4,7 @@ source("https://rubygems.org/")
 
 gem("dotenv", require: "dotenv/load")
 
-gem("rails", "~> 7.1.0")
+gem("rails", "~> 7.2")
 gem("pg")
 gem("dalli", platforms: :ruby)
 gem("simple_form")
