@@ -4,7 +4,7 @@ module TagCategory
   module_function
 
   Category = Struct.new(:id, :name, :aliases) do
-    KWARGS = %i[header suffixes limit exclusion regex formatstr].freeze # rubocop:disable Lint/ConstantDefinitionInBlock
+    KWARGS = %i[header suffixes limit exclusion regex formatstr display].freeze # rubocop:disable Lint/ConstantDefinitionInBlock
     attr_accessor(*KWARGS)
 
     def initialize(*, **kwargs)
@@ -14,6 +14,7 @@ module TagCategory
       end
       self.aliases ||= []
       self.header ||= name.titlecase
+      self.display ||= name.titlecase
     end
 
     def values
@@ -76,7 +77,7 @@ module TagCategory
   end
 
   def for_select
-    categories.map { |c| [c.title, c.id] }
+    categories.map { |c| [c.display, c.id] }
   end
 
   def regexp
