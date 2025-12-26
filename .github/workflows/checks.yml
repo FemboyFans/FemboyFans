@@ -11,6 +11,7 @@ on:
       - master
       - dev
       - build-*
+  workflow_call:
 
 permissions:
   contents: read
