@@ -65,11 +65,6 @@ module FemboyFans
       app_name.gsub(/[^a-zA-Z0-9_-]/, "_")
     end
 
-    # If enabled, users must verify their email addresses.
-    def enable_email_verification?
-      Rails.env.production?
-    end
-
     def anonymous_user_name
       "Anonymous"
     end
@@ -93,14 +88,9 @@ module FemboyFans
       end
     end
 
-    # The default name to use for anyone who isn't logged in.
-    def default_guest_name
-      "Anonymous"
-    end
-
     # Set the default level, permissions, and other settings for new users here.
     def customize_new_user(user)
-      user.blacklisted_tags           = Config.default_blacklist
+      user.blacklisted_tags           = Config.instance.default_blacklist
       user.comment_threshold          = -10
       user.enable_autocomplete        = true
       user.enable_keyboard_navigation = true
@@ -113,7 +103,7 @@ module FemboyFans
       user.go_to_recent_forum_post    = true
       user.forum_unread_bubble        = true
       user.upload_notifications       = User.upload_notifications_options
-      user.email_verified             = !enable_email_verification?
+      user.email_verified             = !Config.instance.enable_email_verification?
       user.level                      = User::Levels::RESTRICTED if user_approvals_enabled? && user.level == User::Levels::MEMBER
     end
 
@@ -166,11 +156,6 @@ module FemboyFans
 
     def disable_cache_store?
       false
-    end
-
-    # Members cannot change the category of pools with more than this many posts.
-    def pool_category_change_limit
-      30
     end
 
     def remember_key
@@ -236,22 +221,6 @@ module FemboyFans
 
       # Backup files to /mnt/backup on the local filesystem.
       # StorageManager::Local.new(base_dir: "/mnt/backup", hierarchical: false)
-    end
-
-    def enable_signups?
-      true
-    end
-
-    def enable_stale_forum_topics?
-      true
-    end
-
-    def forum_topic_stale_window
-      6.months
-    end
-
-    def forum_topic_aibur_stale_window
-      1.year
     end
 
     def flag_reasons
@@ -323,6 +292,7 @@ module FemboyFans
       posts.select { |x| can_user_see_post?(user, x) }
     end
 
+    # TODO: move to dynamic config
     def enable_autotagging?
       true
     end
@@ -601,10 +571,6 @@ module FemboyFans
 
     def rakismet_url
       "https://#{hostname}"
-    end
-
-    def upload_whitelists_topic
-      0
     end
 
     def show_tag_scripting?(user)
