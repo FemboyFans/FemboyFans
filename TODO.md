@@ -64,7 +64,8 @@
 | [test/unit/post_test.rb](test/unit/post_test.rb#L2066) | 2066 | These don't quite make sense, what should hide deleted posts and what shouldn't? |
 | [test/unit/post_test.rb](test/unit/post_test.rb#L2459) | 2459 | These are pretty messed up, both structurally, and expectation wise. |
 | [test/controllers/posts/replacements_controller_test.rb](test/controllers/posts/replacements_controller_test.rb#L124) | 124 | reimplement ability to disable notifications |
-| [config/default_config.rb](config/default_config.rb#L313) | 313 | appealed posts should be visible, but this makes it far too easy to get the contents of deleted posts at a moments notice |
+| [config/default_config.rb](config/default_config.rb#L282) | 282 | appealed posts should be visible, but this makes it far too easy to get the contents of deleted posts at a moments notice |
+| [config/default_config.rb](config/default_config.rb#L295) | 295 | move to dynamic config |
 
 ### HACKs
 | Filename | line # | HACK |
