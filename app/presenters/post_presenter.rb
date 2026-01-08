@@ -45,7 +45,7 @@ class PostPresenter < Presenter
 
     locals[:tooltip] = "Rating: #{post.rating}\nID: #{post.id}\nDate: #{post.created_at}\nStatus: #{post.status}\nScore: #{post.score}\n\n#{post.tag_string}"
 
-    locals[:cropped_url] = if FemboyFans.config.enable_image_cropping? && options[:show_cropped] && post.has_crop? && !CurrentUser.user.disable_cropped_thumbnails?
+    locals[:cropped_url] = if Config.instance.enable_image_cropping? && options[:show_cropped] && post.has_crop? && !CurrentUser.user.disable_cropped_thumbnails?
                              post.crop_file_url(CurrentUser.user)
                            elsif post.has_preview?
                              post.preview_file_url(CurrentUser.user)

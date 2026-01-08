@@ -13,7 +13,7 @@ class DiscordNotification
   end
 
   def webhook_url
-    FemboyFans.config.discord_webhook_url
+    FemboyFans.config.discord.webhook_url
   end
 
   def create_embed

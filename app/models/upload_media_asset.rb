@@ -63,16 +63,16 @@ class UploadMediaAsset < MediaAssetWithVariants
       format = is_image? ? :image : :video
       @variants = super(Variant)
       if is_image?
-        FemboyFans.config.image_variants.each do |name, options|
+        FemboyFans.config.image.variants.each do |name, options|
           next if name == "large" && !supports_large?
           @variants << Variant.new(self, name, format, "webp", options) if variant_valid?(options)
         end
       elsif is_video?
-        FemboyFans.config.video_image_variants.each do |name, options|
+        FemboyFans.config.video.image_variants.each do |name, options|
           @variants << Variant.new(self, name, format, "webp", options) if variant_valid?(options)
         end
         @variants << Variant.new(self, :original, format, alt_file_ext, rescale)
-        FemboyFans.config.video_variants.each do |name, options|
+        FemboyFans.config.video.variants.each do |name, options|
           @variants += [Variant.new(self, name, format, file_ext, options), Variant.new(self, name, format, alt_file_ext, options)] if variant_valid?(options)
         end
       end
@@ -179,9 +179,9 @@ class UploadMediaAsset < MediaAssetWithVariants
 
     def convert_video(original_file, &)
       width, height = scaled_dimensions
-      method = ext == "webm" ? :video_scale_options_webm : :video_scale_options_mp4
+      method = ext == "webm" ? :scale_options_webm : :scale_options_mp4
       file = Tempfile.new(%W[video-sample .#{ext}], binmode: true)
-      args = [*FemboyFans.config.public_send(method, width, height, file.path), "-y", "-i", original_file.path]
+      args = [*FemboyFans.config.video.public_send(method, width, height, file.path), "-y", "-i", original_file.path]
       stdout, stderr, status = Open3.capture3(FemboyFans.config.ffmpeg_path, *args)
 
       unless status == 0
@@ -223,7 +223,7 @@ class UploadMediaAsset < MediaAssetWithVariants
   def supports_large?
     return true if is_video?
     return false if is_gif? || is_animated_png?
-    is_image? && image_width.present? && image_width > FemboyFans.config.large_image_width
+    is_image? && image_width.present? && image_width > FemboyFans.config.image.large_width
   end
 
   def self.available_includes

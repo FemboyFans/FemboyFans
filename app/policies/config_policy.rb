@@ -8,4 +8,8 @@ class ConfigPolicy < ApplicationPolicy
   def update?
     user.is_owner?
   end
+
+  def permitted_attributes_for_update
+    Config.settable_columns(user).map(&:name).map(&:to_sym)
+  end
 end

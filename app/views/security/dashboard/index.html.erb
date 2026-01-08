@@ -10,14 +10,16 @@
     <%= f.input(:uploads, as: :boolean, label: "Uploads", input_html: { checked: Security::Lockdown.uploads_disabled? ? "checked" : "" }) %>
     <%= f.input(:pools, as: :boolean, label: "Pools", input_html: { checked: Security::Lockdown.pools_disabled? ? "checked" : "" }) %>
     <%= f.input(:post_sets, as: :boolean, label: "Post Sets", input_html: { checked: Security::Lockdown.post_sets_disabled? ? "checked" : "" }) %>
-    <br />
+    <br>
     <%= f.input(:comments, as: :boolean, label: "Comments", input_html: { checked: Security::Lockdown.comments_disabled? ? "checked" : "" }) %>
     <%= f.input(:forums, as: :boolean, label: "Forums", input_html: { checked: Security::Lockdown.forums_disabled? ? "checked" : "" }) %>
-    <br />
+    <br>
     <%= f.input(:aiburs, as: :boolean, label: "AIBURs", input_html: { checked: Security::Lockdown.aiburs_disabled? ? "checked" : "" }) %>
     <%= f.input(:favorites, as: :boolean, label: "Favorites", input_html: { checked: Security::Lockdown.favorites_disabled? ? "checked" : "" }) %>
     <%= f.input(:votes, as: :boolean, label: "Votes", input_html: { checked: Security::Lockdown.votes_disabled? ? "checked" : "" }) %>
-    <br />
+    <br>
+    <%= f.input(:discord, as: :boolean, label: "Discord", input_html: { checked: Security::Lockdown.discord_disabled? ? "checked" : "" }) %>
+    <br>
     <%= f.button(:submit, value: "Submit") %>
   <% end %>
 </section>

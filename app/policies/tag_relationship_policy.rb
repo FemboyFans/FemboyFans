@@ -21,6 +21,10 @@ class TagRelationshipPolicy < ApplicationPolicy
     member? && record.approvable_by?(user)
   end
 
+  def api_attributes
+    super - %i[undo_data]
+  end
+
   def permitted_attributes
     %i[antecedent_name consequent_name]
   end

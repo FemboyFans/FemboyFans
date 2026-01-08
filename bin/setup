@@ -25,6 +25,9 @@ FileUtils.chdir(APP_ROOT) do
   puts("== Creating elasticsearch indices ==\n")
   system!("RAILS_ENV=#{env} bin/rails runner '[Post, PostVersion].each { |model| model.document_store.create_index! }'")
 
+  puts("== Creating system user ==\n")
+  system!("RAILS_ENV=#{env} bin/rails runner 'User.system.save'")
+
   puts("\n== Preparing database ==")
   # Create the test database, since only development exists at this point
   system!("RAILS_ENV=test bin/rails db:create") unless env == "production"

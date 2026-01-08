@@ -6,14 +6,14 @@ module Reports
   LIMIT = 100
 
   def enabled?
-    !Rails.env.test? && FemboyFans.config.reports_enabled?
+    !Rails.env.test? && FemboyFans.config.reports.enabled?
   end
 
   def request(method, path, body = nil)
     conn = Faraday.new(FemboyFans.config.faraday_options.deep_merge(headers: { authorization: "Bearer #{jwt_signature(path)}", content_type: "application/json" })) do |c|
       c.use(Faraday::Response::RaiseError)
     end
-    response = conn.public_send(method, "#{FemboyFans.config.reports_server_internal}#{path}", body&.to_json)
+    response = conn.public_send(method, "#{FemboyFans.config.reports.server_internal}#{path}", body&.to_json)
     JSON.parse(response.body)
   end
 

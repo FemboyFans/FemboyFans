@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_27_050630) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_27_053741) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_trgm"
   enable_extension "plpgsql"
@@ -321,6 +321,18 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_27_050630) do
     t.integer "pool_name_max_size", default: 250, null: false
     t.string "default_blacklist", default: "", null: false
     t.string "safeblocked_tags", default: "", null: false
+    t.boolean "enable_autotagging", default: true, null: false
+    t.boolean "enable_image_cropping", default: true, null: false
+    t.boolean "enable_bad_sources", default: true, null: false
+    t.boolean "safe_mode", default: false, null: false
+    t.integer "show_tag_scripting", default: 15, null: false
+    t.integer "show_backtrace", default: 20, null: false
+    t.integer "bur_nuke", default: 40, null: false
+    t.string "app_name", default: "Femboy Fans", null: false
+    t.string "canonical_app_name", default: "Femboy Fans", null: false
+    t.string "app_description", default: "Your one-stop shop for femboy furries.", null: false
+    t.string "anonymous_user_name", default: "Anonymous", null: false
+    t.string "system_user_name", default: "System", null: false
   end
 
   create_table "destroyed_posts", force: :cascade do |t|

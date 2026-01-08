@@ -54,7 +54,7 @@ class UserAdminEdit
       creator:                 promoter,
     )
     if change_request.valid?
-      change_request.approve!
+      change_request.approve!(promoter)
     else
       errors.add(:name, change_request.errors.full_messages.join("; "))
     end

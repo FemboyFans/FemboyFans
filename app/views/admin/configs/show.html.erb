@@ -1,175 +1,78 @@
-<% edit = policy(:config).update? %>
 <%= form_for(@config, url: admin_config_path, method: :patch) do %>
   <table class="autofit striped">
-    <thead>
+    <% DynamicConfig.categories.each do |name| %>
+      <% fields = DynamicConfig.fields.select { |f| f.category == name } %>
+      <% bypass = fields.any?(&:bypass?) %>
+      <thead>
       <tr>
         <th colspan="3" class="section-header">Action Limits</th>
       </tr>
       <tr>
         <th>Name</th>
         <th>Value</th>
-        <th>Bypass</th>
+        <th>
+          <% if bypass %>Bypass<% end %>
+        </th>
       </tr>
-    </thead>
-    <tbody>
-      <%= number_config_field(@config, :comment_limit, name: "Hourly Comment Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :comment_vote_limit, name: "Hourly Comment Vote Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :post_vote_limit, name: "Hourly Post Vote Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :forum_vote_limit, name: "Hourly Forum Vote Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :dmail_minute_limit, name: "Per-Minute DMail Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :dmail_hour_limit, name: "Hourly DMail Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :dmail_day_limit, name: "Daily DMail Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :dmail_restricted_day_limit, name: "Restricted Daily DMail Limit", disabled: !edit) %>
-      <%= number_config_field(@config, :tag_suggestion_limit, name: "Hourly Alias/Implication Suggestion Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :artist_edit_limit, name: "Hourly Artist Edit Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :wiki_edit_limit, name: "Hourly Wiki Edit Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :note_edit_limit, name: "Hourly Note Edit Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :post_edit_limit, name: "Hourly Post Edit Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :pool_limit, name: "Hourly Pool Creation Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :pool_edit_limit, name: "Hourly Pool Edit Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :pool_post_edit_limit, name: "Hourly Pool Post Edit Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :post_appeal_limit, name: "Hourly Post Appeal Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :post_flag_limit, name: "Hourly Post Flag Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :hourly_upload_limit, name: "Hourly Upload Limit", disabled: !edit) %>
-      <%= number_config_field(@config, :ticket_limit, name: "Hourly Ticket Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :post_replacement_per_day_limit, name: "Post Replacement Per Day Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :post_replacement_per_post_limit, name: "Post Replacement Per Post Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :tag_query_limit, name: "Tag Query Limit", disabled: !edit) %>
-      <%= number_config_field(@config, :pending_uploads_limit, name: "Pending Uploads Limit", disabled: !edit) %>
-      <%= number_config_field(@config, :pool_post_limit, name: "Pool Post Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :set_post_limit, name: "Set Post Limit", bypass: true, disabled: !edit) %>
-      <%= number_config_field(@config, :pool_category_change_cutoff, name: "Pool Category Change Cutoff", bypass: true, disabled: !edit) %>
-      <%= user_config_field(@config, :bur_entry_limit, name: "BUR Entry Limit", disabled: !edit, hint: "-1 for unlimited") %>
-      <%= user_config_field(@config, :tag_change_request_update_limit, name: "Tag Change Request Update Limit", disabled: !edit, hint: "-1 for unlimited") %>
-      <%= user_config_field(@config, :followed_tag_limit, name: "Followed Tag Limit", disabled: !edit, hint: "-1 for unlimited") %>
-      <%= user_config_field(@config, :tag_type_edit_limit, name: "Tag Type Edit Limit", disabled: !edit, hint: "-1 for unlimited") %>
-      <%= user_config_field(@config, :tag_type_edit_implicit_limit, name: "Tag Type Edit Implicit Limit", disabled: !edit) %>
+      </thead>
+      <tbody>
+      <% fields.each do |field| %>
+        <% begin %>
+          <% case field[:type] %>
+          <% when :number %>
+            <%= number_config_field(@config, field.attribute, name: field.name, bypass: field.bypass?, disabled: field.disabled?, hint: field.hint, input_options: field.input_options) %>
+          <% when :boolean %>
+            <%= boolean_config_field(@config, field.attribute, name: field.name, bypass: field.bypass?, disabled: field.disabled?, hint: field.hint, input_options: field.input_options) %>
+          <% when :text %>
+            <% if field.large? %>
+              <%= large_text_config_field(@config, field.attribute, name: field.name, bypass: field.bypass?, disabled: field.disabled?, hint: field.hint, input_options: field.input_options) %>
+            <% else %>
+              <%= text_config_field(@config, field.attribute, name: field.name, bypass: field.bypass?, disabled: field.disabled?, hint: field.hint, input_options: field.input_options) %>
+            <% end %>
+          <% when :user %>
+            <%= user_config_field(@config, field.attribute, name: field.name, disabled: field.disabled?, hint: field.hint, input_options: field.input_options, minimum: field.minimum, maximum: field.maximum) %>
+          <% when :per_level %>
+            <%= per_level_config_field(@config, field.attribute, name: field.name, disabled: field.disabled?, hint: field.hint, minimum: field.minimum, maximum: field.maximum) %>
+          <% when :object %>
+            <%= object_config_field(@config, field.attribute, name: field.name, disabled: field.disabled?, hint: field.hint, keys: field.keys) %>
+          <% when :select %>
+            <% options = field.options %>
+            <% options = instance_exec(&options) if options.is_a?(Proc) %>
+            <%= select_config_field(@config, field.attribute, options, name: field.name, disabled: field.disabled?, hint: field.hint, input_options: field.input_options) %>
+          <% else %>
+            Unsure how to render <%= field.attribute rescue "unknown" %>: <%= field.inspect %>
+        <% end %>
+        <% rescue => e %>
+          Failed to render <%== field.attribute rescue "unknown" %>: <%= e.inspect %>
+        <% end %>
+      <% end %>
       <tr>
         <td colspan="3" class="submit-button">
           <%= submit_tag %>
         </td>
       </tr>
-    </tbody>
+      </tbody>
+    <% end %>
     <thead>
-      <tr>
-        <th colspan="3" class="section-header">Size Limits</th>
-      </tr>
-      <tr>
-        <th>Name</th>
-        <th>Value</th>
-        <th>Bypass</th>
-      </tr>
+    <tr>
+      <th colspan="3" class="section-header">Action Limits</th>
+    </tr>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+      <th>Bypass</th>
+    </tr>
     </thead>
     <tbody>
-      <%= number_config_field(@config, :max_numbered_pages, name: "Max Numbered Pages", disabled: !edit) %>
-      <%= number_config_field(@config, :max_per_page, name: "Max Per Page", disabled: !edit) %>
-      <%= number_config_field(@config, :comment_max_size, name: "Comment Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :dmail_max_size, name: "DMail Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :forum_post_max_size, name: "Forum Post Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :forum_category_description_max_size, name: "Forum Category Description Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :note_max_size, name: "Note Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :pool_name_max_size, name: "Pool Name Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :pool_description_max_size, name: "Pool Description Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :post_description_max_size, name: "Post Description Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :ticket_max_size, name: "Ticket Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :user_about_max_size, name: "User About Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :blacklisted_tags_max_size, name: "Blacklist Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :custom_style_max_size, name: "Custom Style Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :wiki_page_max_size, name: "WikiPage Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :user_feedback_max_size, name: "User Feedback Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :news_update_max_size, name: "News Update Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :disapproval_message_max_size, name: "Disapproval Message Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :post_flag_note_max_size, name: "Post Flag Max Size", disabled: !edit) %>
-      <%= number_config_field(@config, :max_image_width, name: "Max Image Width", disabled: !edit) %>
-      <%= number_config_field(@config, :max_image_height, name: "Max Image Height", disabled: !edit) %>
-      <%= number_config_field(@config, :max_upload_per_request, name: "Max Upload Per Request", disabled: !edit, hint: "The size in megabytes after which uploads will be split") %>
-      <%= number_config_field(@config, :max_file_size, name: "Max File Size", disabled: !edit, hint: "in megabytes") %>
-      <%= object_config_field(@config, :max_file_sizes, name: "Max File Sizes", disabled: !edit, hint: "in megabytes") %>
-      <%= number_config_field(@config, :max_video_duration, name: "Max Video Duration", disabled: !edit, hint: "in seconds") %>
-      <%= number_config_field(@config, :max_image_resolution, name: "Max Image Resolution", disabled: !edit, hint: "in megapixels") %>
-      <%= number_config_field(@config, :max_mascot_width, name: "Max Mascot Width", disabled: !edit) %>
-      <%= number_config_field(@config, :max_mascot_height, name: "Max Mascot Height", disabled: !edit) %>
-      <%= object_config_field(@config, :max_mascot_file_sizes, name: "Max Mascot File Sizes", disabled: !edit, hint: "in kilobytes") %>
-      <%= number_config_field(@config, :max_tags_per_post, name: "Max Tags Per Post", disabled: !edit) %>
-      <%= number_config_field(@config, :max_multi_count, name: "Max Multi Count", disabled: !edit) %>
-      <tr>
-        <td colspan="3" class="submit-button">
-          <%= submit_tag %>
-        </td>
-      </tr>
-    </tbody>
-    <thead>
-      <tr>
-        <th colspan="3" class="section-header">Other</th>
-      </tr>
-      <tr>
-        <th>Name</th>
-        <th>Value</th>
-        <th>Bypass</th>
-      </tr>
-    </thead>
-    <tbody>
-      <%= number_config_field(@config, :alias_category_change_cutoff, name: "Alias Category Change Cutoff", disabled: !edit) %>
-      <%= number_config_field(@config, :records_per_page, name: "Records Per Page", disabled: !edit) %>
-      <%= boolean_config_field(@config, :enable_signups, name: "Enable Signups", disabled: !edit) %>
-      <%= boolean_config_field(@config, :user_approvals_enabled, name: "Enable User Approvals", disabled: !edit) %>
-      <%= boolean_config_field(@config, :enable_email_verification, name: "Enable Email Verification", disabled: !edit) %>
-      <%= boolean_config_field(@config, :enable_sock_puppet_validation, name: "Enable Sock Puppet Validation", disabled: !edit) %>
-      <%= boolean_config_field(@config, :enable_stale_forum_topics, name: "Enable Stale Forum Topics", disabled: !edit) %>
-      <%= text_config_field(@config, :takedown_email, name: "Takedown Email", disabled: !edit) %>
-      <%= text_config_field(@config, :contact_email, name: "Contact Email", disabled: !edit) %>
-      <%= text_config_field(@config, :default_user_timezone, name: "Default User Timezone", disabled: !edit) %>
-      <%= number_config_field(@config, :forum_topic_stale_window, name: "Forum Topic Stale Window", disabled: !edit, hint: "in days") %>
-      <%= number_config_field(@config, :forum_topic_aibur_stale_window, name: "Forum Topic AIBUR Stale Window", disabled: !edit, hint: "in days") %>
-      <%= number_config_field(@config, :comment_bump_threshold, name: "Comment Bump Threshold", disabled: !edit, hint: "posts with more comments will not be bumped") %>
-      <%= number_config_field(@config, :compact_uploader_minimum_posts, name: "Compact Uploader Minimum Uploads", disabled: !edit) %>
-      <%= text_config_field(@config, :contributor_suffixes, name: "Contributor Suffixes", disabled: !edit, hint: "separate by a comma and space") %>
-      <%= text_config_field(@config, :lore_suffixes, name: "Lore Suffixes", disabled: !edit, hint: "separate by a comma and space") %>
-      <%= text_config_field(@config, :artist_exclusion_tags, name: "Artist Exclusion Tags", disabled: !edit, hint: "separate by a comma and space") %>
-      <%= number_config_field(@config, :post_sample_size, name: "Post Sample Size", disabled: !edit, hint: "When calculating statistics based on the posts table, gather this many posts to sample from") %>
-      <%= number_config_field(@config, :pool_category_change_limit, name: "Pool Category Change Limit", disabled: !edit) %>
-      <%= number_config_field(@config, :alias_and_implication_forum_category, name: "Alias And Implication Forum Category", disabled: !edit) %>
-      <%= number_config_field(@config, :default_forum_category, name: "Default Forum Category", disabled: !edit) %>
-      <%= number_config_field(@config, :upload_whitelists_forum_topic, name: "Upload Whitelists Forum Topic", disabled: !edit) %>
-      <%= boolean_config_field(@config, :flag_ai_posts, name: "Flag AI Posts", disabled: !edit, hint: "If posts detected as ai generated should be automatically flagged") %>
-      <%= boolean_config_field(@config, :tag_ai_posts, name: "Tag AI Posts", disabled: !edit, hint: "If posts detected as ai generated should be automatically tagged") %>
-      <%= number_config_field(@config, :ai_confidence_threshold, name: "AI Confidence Threshold", disabled: !edit, hint: "The minimum required threshold to flag/tag ai generated content") %>
-      <%= text_config_field(@config, :db_exports_path, name: "DB Exports Path", disabled: !edit, hint: "The path db exports are located at.") %>
-      <%= text_config_field(@config, :safeblocked_tags, name: "Safeblocked Tags", disabled: !edit, hint: "separate by a comma and space") %>
-      <%= large_text_config_field(@config, :default_blacklist, name: "Default Blacklist", disabled: !edit, input_options: { size: "40x10" }) %>
-      <tr>
-        <td colspan="3" class="submit-button">
-          <%= submit_tag %>
-        </td>
-      </tr>
-    </tbody>
-    <thead>
-      <tr>
-        <th colspan="3" class="section-header">Wiki Pages</th>
-      </tr>
-      <tr>
-        <th>Name</th>
-        <th>Value</th>
-        <th>Bypass</th>
-      </tr>
-    </thead>
-    <tbody>
-      <%= text_config_field(@config, :flag_notice_wiki_page, name: "Flag Notice WikiPage", disabled: !edit) %>
-      <%= text_config_field(@config, :replacement_notice_wiki_page, name: "Replacement Notice WikiPage", disabled: !edit) %>
-      <%= text_config_field(@config, :avoid_posting_notice_wiki_page, name: "Avoid Posting Notice WikiPage", disabled: !edit) %>
-      <%= text_config_field(@config, :discord_notice_wiki_page, name: "DiscordNotice WikiPage", disabled: !edit) %>
-      <%= text_config_field(@config, :restricted_notice_wiki_page, name: "Restricted Notice WikiPage", disabled: !edit) %>
-      <%= text_config_field(@config, :rejected_notice_wiki_page, name: "Rejected Notice WikiPage", disabled: !edit) %>
-      <%= text_config_field(@config, :appeal_notice_wiki_page, name: "Appeal Notice WikiPage", disabled: !edit) %>
-      <%= text_config_field(@config, :ban_notice_wiki_page, name: "Ban Notice WikiPage", disabled: !edit) %>
-      <%= text_config_field(@config, :rules_body_wiki_page, name: "Rules Body WikiPage", disabled: !edit) %>
-      <%= text_config_field(@config, :user_approved_wiki_page, name: "User Approved WikiPage", disabled: !edit) %>
-      <%= text_config_field(@config, :user_rejected_wiki_page, name: "User Rejected WikiPage", disabled: !edit) %>
-      <tr>
-        <td colspan="3" class="submit-button">
-          <%= submit_tag %>
-        </td>
-      </tr>
+    <tr>
+      <td colspan="3" class="submit-button">
+        <%= submit_tag %>
+      </td>
+    </tr>
     </tbody>
   </table>
+<% end %>
+
+<% content_for(:page_title) do %>
+  Config
 <% end %>

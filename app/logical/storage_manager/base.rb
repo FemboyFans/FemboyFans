@@ -16,7 +16,7 @@ module StorageManager
     end
 
     def default_base_url
-      Rails.application.routes.url_helpers.root_url
+      FemboyFans.config.cdn_hostname
     end
 
     # Store the given file at the given path. If a file already exists at that

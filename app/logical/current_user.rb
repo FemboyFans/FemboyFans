@@ -14,13 +14,13 @@ class CurrentUser < ActiveSupport::CurrentAttributes
   end
 
   after_reset do
-    attributes[:safe_mode] = FemboyFans.config.safe_mode?
+    attributes[:safe_mode] = Config.instance.safe_mode?
     attributes[:user] = User.anonymous
     attributes[:ip_addr] = "127.0.0.1"
   end
 
   def safe_mode=(value)
-    value = true if FemboyFans.config.safe_mode?
+    value = true if Config.instance.safe_mode?
     super
   end
 

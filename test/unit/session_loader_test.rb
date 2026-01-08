@@ -10,14 +10,14 @@ class SessionLoaderTest < ActiveSupport::TestCase
 
     context(".safe_mode?") do
       should("return true if the config has safe mode enabled") do
-        FemboyFans.config.stubs(:safe_mode?).returns(true)
+        Config.any_instance.stubs(:safe_mode).returns(true)
         SessionLoader.new(@request).load
 
         assert_equal(true, CurrentUser.safe_mode?) # rubocop:disable Local/CurrentUserOutsideOfRequests
       end
 
       should("return false if the config has safe mode disabled") do
-        FemboyFans.config.stubs(:safe_mode?).returns(false)
+        Config.any_instance.stubs(:safe_mode).returns(false)
         SessionLoader.new(@request).load
 
         assert_equal(false, CurrentUser.safe_mode?) # rubocop:disable Local/CurrentUserOutsideOfRequests

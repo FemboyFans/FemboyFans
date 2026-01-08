@@ -19,7 +19,7 @@
 
     <%= f.input(:time_zone, include_blank: false) %>
 
-    <% if FemboyFans.config.enable_recaptcha? %>
+    <% if FemboyFans.config.recaptcha.enabled? %>
       <%= recaptcha_tags(theme: "dark", nonce: content_security_policy_nonce) %>
     <% end %>
     <%= f.submit("Sign up", data: { disable_with: "Signing up..." }) %>

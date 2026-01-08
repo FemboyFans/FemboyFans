@@ -7,11 +7,15 @@ class UploadWhitelistTest < ActiveSupport::TestCase
     setup do
       @user = create(:trusted_user)
 
-      @whitelist = create(:upload_whitelist, pattern: "*.#{FemboyFans.config.domain}/*", note: "local")
+      @whitelist = create(:upload_whitelist, pattern: "#{FemboyFans.config.hostname}/*", note: "local")
+      if FemboyFans.config.hostname != FemboyFans.config.cdn_hostname
+        @whitelist = create(:upload_whitelist, pattern: "#{FemboyFans.config.cdn_hostname}/*", note: "cdn")
+      end
     end
 
     should("match") do
-      assert_equal([true, nil], UploadWhitelist.is_whitelisted?(Addressable::URI.parse("https://#{FemboyFans.config.cdn_domain}/123.png"), @user))
+      assert_equal([true, nil], UploadWhitelist.is_whitelisted?(Addressable::URI.parse("#{FemboyFans.config.hostname}/123.png"), @user))
+      assert_equal([true, nil], UploadWhitelist.is_whitelisted?(Addressable::URI.parse("#{FemboyFans.config.cdn_hostname}/123.png"), @user))
       assert_equal([false, "123.com not in whitelist"], UploadWhitelist.is_whitelisted?(Addressable::URI.parse("https://123.com/what.png"), @user))
     end
 

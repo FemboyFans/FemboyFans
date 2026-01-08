@@ -3,6 +3,7 @@
 class StaticController < ApplicationController
   respond_to(:text, only: %i[robots])
   respond_to(:xml, only: %i[site_map])
+  before_action(:ensure_lockdown_disabled, only: %i[discord])
   respond_to(:html)
 
   def privacy
@@ -77,8 +78,8 @@ class StaticController < ApplicationController
     if request.post?
       time = (Time.now + 5.minutes).to_i
       secret = FemboyFans.config.discord_secret
-      hashed_values = Digest::SHA256.hexdigest("#{CurrentUser.user.id};#{CurrentUser.name};#{time};#{secret};index")
-      user_hash = "?user_id=#{CurrentUser.user.id}&user_name=#{CurrentUser.name}&time=#{time}&hash=#{hashed_values}"
+      hashed_values = Digest::SHA256.hexdigest("#{CurrentUser.user.id};#{CurrentUser.user.name};#{time};#{secret};index")
+      user_hash = "?user_id=#{CurrentUser.user.id}&user_name=#{CurrentUser.user.name}&time=#{time}&hash=#{hashed_values}"
 
       redirect_to(FemboyFans.config.discord_site + user_hash, allow_other_host: true)
     else
@@ -105,5 +106,9 @@ class StaticController < ApplicationController
     wiki = WikiPage.titled(name)
     return WikiPage.new(body: "Wiki page \"#{name}\" not found.") if wiki.blank?
     wiki
+  end
+
+  def ensure_lockdown_disabled
+    access_denied("Discord is disabled") if Security::Lockdown.discord_disabled? && !CurrentUser.user.is_staff?
   end
 end

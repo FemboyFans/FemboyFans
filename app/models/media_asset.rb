@@ -1,10 +1,22 @@
 # frozen_string_literal: true
 
+require("English")
 class MediaAsset < ApplicationRecord
   class DeletionNotSupportedError < StandardError; end
   class ExpungedError < StandardError; end
+  RESCALE_REGEX = /(?<name>[a-z\d]+)\s*\(\s*(?<width>\d+|null|nil)\s*,\s*(?<height>\d+|null|nil)\s*,\s*(?<method>none|exact|scaled)\s*\)/
   # method: :scaled, :exact, :none
-  Rescale = Struct.new(:width, :height, :method, keyword_init: true)
+  Rescale = Struct.new(:width, :height, :method, keyword_init: true) do
+    def self.from_string(value)
+      p = ->(v) { %w[null nil].include?(v) ? nil : v.to_i }
+      value.split(/\s*;\s*/).to_h do |str|
+        next unless str =~ RESCALE_REGEX
+        method = $LAST_MATCH_INFO[:method].to_sym
+        raise(ArgumentError, "Invalid method: #{method}") unless %i[none exact scaled].include?(method)
+        [$LAST_MATCH_INFO[:name], new(width: p.call($LAST_MATCH_INFO[:width]), height: p.call($LAST_MATCH_INFO[:height]), method: method)]
+      end
+    end
+  end
   include(ChunkedUpload) # must be near the top due to callbacks
   self.abstract_class = true
 
@@ -256,11 +268,11 @@ class MediaAsset < ApplicationRecord
     end
 
     def storage_manager
-      FemboyFans.config.storage_manager
+      FemboyFans.config.storage_manager.instance
     end
 
     def backup_storage_manager
-      FemboyFans.config.backup_storage_manager
+      FemboyFans.config.backup_storage_manager.instance
     end
 
     def path_prefix

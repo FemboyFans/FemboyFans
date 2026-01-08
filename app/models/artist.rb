@@ -78,6 +78,7 @@ class Artist < ApplicationRecord
       # "mobile.twitter.com" and any other subdomain of "twitter.com".
       SITE_BLACKLIST = [
         FemboyFans.config.domain,
+        FemboyFans.config.cdn_domain,
         "artstation.com/artist", # http://www.artstation.com/artist/serafleur/
         "www.artstation.com", # http://www.artstation.com/serafleur/
         %r{cdn[ab]?\.artstation\.com/p/assets/images/images}i, # https://cdna.artstation.com/p/assets/images/images/001/658/068/large/yang-waterkuma-b402.jpg?1450269769

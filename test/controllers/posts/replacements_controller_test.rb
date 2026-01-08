@@ -132,7 +132,7 @@ module Posts
         end
 
         should("restrict access") do
-          FemboyFans.config.stubs(:disable_age_checks?).returns(true)
+          FemboyFans.config.stubs(:disable_age_checks).returns(true)
           file = fixture_file_upload("alpha.png")
           assert_access(User::Levels::MEMBER, anonymous_response: :forbidden) do |user|
             PostReplacement.delete_all

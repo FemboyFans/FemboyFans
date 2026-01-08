@@ -3,13 +3,13 @@
 module DiscordReport
   class ModeratorStats < Base
     def webhook_url
-      FemboyFans.config.moderator_stats_discord_webhook_url
+      FemboyFans.config.discord.moderator_stats_webhook_url
     end
 
     def report
       current_stats = stats
-      previous_pending_tickets = Cache.redis.get("ticket_stats:previous_pending_tickets") || current_stats[:pending]
-      Cache.redis.set("ticket_stats:previous_pending_tickets", current_stats[:pending])
+      previous_pending_tickets = Cache.redis.get("moderator_stats:previous_pending_tickets") || current_stats[:pending]
+      Cache.redis.set("moderator_stats:previous_pending_tickets", current_stats[:pending])
 
       diff = current_stats[:pending] - previous_pending_tickets.to_i
       <<~REPORT.chomp

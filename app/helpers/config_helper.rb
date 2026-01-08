@@ -5,6 +5,11 @@ module ConfigHelper
     field_tag(:number_field_tag, ...)
   end
 
+  def boolean_config_field(config, attribute, *, **options)
+    input_options = options.delete(:input_options) || {}
+    field_tag(:check_box_tag, config, attribute, *, input_options: input_options.merge({ checked: config.public_send(attribute).to_s.truthy? }), **options)
+  end
+
   def text_config_field(...)
     field_tag(:text_field_tag, ...)
   end
@@ -14,38 +19,60 @@ module ConfigHelper
   end
 
   def field_tag(type, config, attribute, name: nil, bypass: false, disabled: false, hint: nil, value: config.public_send(attribute), input_options: {})
+    usable = config.usable?(CurrentUser.user, attribute)
     tag.tr do
-      safe_join([tag.td { label_tag(attribute, name) },
-                 tag.td do
-                   arr = [send(type, "config[#{attribute}]", value, disabled: disabled, **input_options)]
-                   arr += [tag.br, tag.span(hint, class: "hint")] if hint
-                   safe_join(arr)
-                 end,
-                 tag.td do
-                   if bypass
-                     val = config.public_send("#{attribute}_bypass")
-                     select_tag("config[#{attribute}_bypass]", options_for_select(user_levels_for_select(current: val), val), disabled: disabled)
-                   end
-                 end,])
+      safe_join([
+        tag.td { label_for_attribute(attribute, name: name, disabled: disabled || !usable) },
+        tag.td do
+          arr = [send(type, "config[#{attribute}]", value, disabled: disabled || !usable, **input_options)]
+          arr += [hidden_field_tag("config[#{attribute}]", "false", disabled: disabled || !usable)] if type == :check_box_tag # thanks rails
+          arr += [tag.br, self.hint(hint)] if hint
+          safe_join(arr)
+        end,
+        tag.td do
+          if bypass
+            val = config.public_send("#{attribute}_bypass")
+            select_tag("config[#{attribute}_bypass]", options_for_select(user_levels_for_select(current: val), val), disabled: disabled || !config.usable?(CurrentUser.user, "#{attribute}_bypass"))
+          end
+        end,
+      ])
     end
   end
 
-  def boolean_config_field(config, attribute, **)
-    field_tag(:check_box_tag, config, attribute, input_options: { checked: config.public_send(attribute).to_s.truthy? }, **)
+  def select_config_field(config, attribute, options, name: nil, disabled: false, hint: nil, value: config.public_send(attribute), input_options: {})
+    usable = config.usable?(CurrentUser.user, attribute)
+    tag.tr do
+      safe_join([
+        tag.td { label_for_attribute(attribute, name: name, disabled: disabled || !usable) },
+        tag.td do
+          arr = [select_tag("config[#{attribute}]", options_for_select(options, value), disabled: disabled || !config.usable?(CurrentUser.user, attribute), **input_options)]
+          arr += [tag.br, self.hint(hint)] if hint
+          safe_join(arr)
+        end,
+        tag.td,
+      ])
+    end
   end
 
-  def object_config_field(config, attribute, name: nil, disabled: false, hint: nil)
+  def user_config_field(config, attribute, name: nil, disabled: false, hint: nil, value: config.public_send(attribute), input_options: {}, minimum: User::Levels::MEMBER, maximum: User::Levels::OWNER)
+    levels = user_levels_for_select(minimum, maximum).to_a.reject { |_k, v| v == User::Levels::SYSTEM }
+    select_config_field(config, attribute, levels, name: name, disabled: disabled, hint: hint, value: value, input_options: input_options)
+  end
+
+  def object_config_field(config, attribute, name: nil, disabled: false, hint: nil, keys: [])
+    usable = config.usable?(CurrentUser.user, attribute)
     value = config.public_send(attribute)
+    keys = value.keys if keys.blank?
     raise("#{attribute} is not a Hash") unless value.is_a?(Hash)
     tag.tr do
       safe_join([
-        tag.td { label_tag("config[#{attribute}]", name) },
+        tag.td { label_for_attribute(attribute, name: name, disabled: disabled || !usable) },
         tag.td do
           tag.dl do
-            safe_join([value.keys.each_with_index.map do |key, _index|
+            safe_join([keys.each_with_index.map do |key, _index|
               val = value[key]
-              safe_join([tag.dt { label_tag("config[#{attribute}][#{key}]", key) }, tag.dd { number_field_tag("config[#{attribute}][#{key}]", val, disabled: disabled) }])
-            end, tag.br, (tag.span(hint, class: "hint") if hint),])
+              safe_join([tag.dt { label_tag("config[#{attribute}][#{key}]", key) }, tag.dd { number_field_tag("config[#{attribute}][#{key}]", val, disabled: !usable || disabled) }])
+            end, tag.br, (self.hint(hint) if hint),])
           end
         end,
         tag.td,
@@ -53,23 +80,30 @@ module ConfigHelper
     end
   end
 
-  def user_config_field(config, attribute, name: nil, disabled: false, hint: nil)
+  def per_level_config_field(config, attribute, name: nil, disabled: false, hint: nil, minimum: User::Levels::MEMBER, maximum: User::Levels::OWNER)
+    usable = config.usable?(CurrentUser.user, attribute)
     value = config.public_send(attribute)
     raise("#{attribute} is not a Hash") unless value.is_a?(Hash)
     tag.tr do
       safe_join([
-        tag.td { label_tag("config[#{attribute}]", name) },
+        tag.td { label_for_attribute(attribute, name: name, disabled: disabled || !usable) },
         tag.td do
           tag.dl do
-            levels = user_levels_for_select(User::Levels::MEMBER, User::Levels::OWNER).to_a.reject { |_k, v| v == User::Levels::SYSTEM }
+            levels = user_levels_for_select(minimum, maximum).to_a.reject { |_k, v| v == User::Levels::SYSTEM }
             safe_join([levels.each_with_index.map do |(lvl, level), _index|
               val = value[level.to_s]
-              safe_join([tag.dt { label_tag("config[#{attribute}][#{level}]", lvl) }, tag.dd { number_field_tag("config[#{attribute}][#{level}]", val, disabled: disabled) }])
-            end, tag.br, (tag.span(hint, class: "hint") if hint),])
+              safe_join([tag.dt { label_tag("config[#{attribute}][#{level}]", lvl) }, tag.dd { number_field_tag("config[#{attribute}][#{level}]", val, disabled: !usable || disabled) }])
+            end, tag.br, (self.hint(hint) if hint),])
           end
         end,
         tag.td,
       ])
     end
+  end
+
+  def label_for_attribute(attribute, name: nil, disabled: false)
+    label = label_tag("config[#{attribute}]", name)
+    return safe_join([label, raw("&nbsp;"), hint("(disabled)")]) if disabled && attribute != :id
+    label
   end
 end

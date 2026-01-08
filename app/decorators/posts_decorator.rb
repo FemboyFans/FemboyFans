@@ -28,7 +28,7 @@ class PostsDecorator < ApplicationDecorator
   end
 
   def cropped_url(options)
-    cropped_url = if FemboyFans.config.enable_image_cropping? && options[:show_cropped] && object.has_crop? && !CurrentUser.user.disable_cropped_thumbnails?
+    cropped_url = if Config.instance.enable_image_cropping? && options[:show_cropped] && object.has_crop? && !CurrentUser.user.disable_cropped_thumbnails?
                     object.crop_file_url(CurrentUser.user)
                   else
                     object.preview_file_url(CurrentUser.user)
@@ -73,15 +73,15 @@ class PostsDecorator < ApplicationDecorator
     end
 
     tooltip = "Rating: #{post.rating}\nID: #{post.id}\nDate: #{post.created_at}\nStatus: #{post.status}\nScore: #{post.score}"
-    tooltip += "\nUploader: #{post.uploader_name}" if CurrentUser.user.is_janitor? || CurrentUser.user.show_post_uploader?
-    if CurrentUser.user.is_janitor? && (post.is_flagged? || post.is_deleted?)
+    tooltip += "\nUploader: #{post.uploader_name}" if CurrentUser.user.is_staff? || CurrentUser.user.show_post_uploader?
+    if CurrentUser.user.is_staff? && (post.is_flagged? || post.is_deleted?)
       flag = post.flags.order(id: :desc).first
       tooltip += "\nFlag Reason: #{flag&.reason}" if post.is_flagged?
       tooltip += "\nDel Reason: #{flag&.reason}" if post.is_deleted?
     end
     tooltip += "\n\n#{post.tag_string}"
 
-    cropped_url = if FemboyFans.config.enable_image_cropping? && options[:show_cropped] && post.has_crop? && !CurrentUser.user.disable_cropped_thumbnails?
+    cropped_url = if Config.instance.enable_image_cropping? && options[:show_cropped] && post.has_crop? && !CurrentUser.user.disable_cropped_thumbnails?
                     post.crop_file_url(CurrentUser.user)
                   elsif post.has_preview?
                     post.preview_file_url(CurrentUser.user)

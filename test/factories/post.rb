@@ -6,7 +6,8 @@ FactoryBot.define do
     tag_string { "tag1 tag2" }
     tag_count { 2 }
     tag_count_general { 2 }
-    sequence(:source) { |n| "https://example.com/#{n}" }
+    # example.com is used for hostname and would result in bad_source added to all posts
+    sequence(:source) { |n| "https://example.net/#{n}" }
     media_asset { create(:random_upload_media_asset, creator: uploader) }
 
     factory(:webm_post) do

@@ -53,7 +53,7 @@ Rails.application.configure do
   # "info" includes generic and useful information about system operation, but avoids logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII). If you
   # want to log everything, set the level to "debug".
-  config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
+  config.log_level = FemboyFans.config.log_level
 
   # Use a real queuing backend for Active Job (and separate queues per environment).
   # config.active_job.queue_adapter = :resque
@@ -63,22 +63,17 @@ Rails.application.configure do
   # caching is enabled.
   config.action_mailer.perform_caching = false
 
-  config.action_mailer.delivery_method = :smtp
-  config.action_mailer.smtp_settings = {
-    address:              FemboyFans.config.smtp_address,
-    port:                 FemboyFans.config.smtp_port,
-    domain:               FemboyFans.config.smtp_domain,
-    user_name:            FemboyFans.config.smtp_username,
-    password:             FemboyFans.config.smtp_password,
-    authentication:       FemboyFans.config.smtp_authentication,
-    enable_starttls_auto: FemboyFans.config.smtp_tls,
-    open_timeout:         5,
-    read_timeout:         5,
-  }
+  if FemboyFans.config.email.delivery_method
+    config.action_mailer.delivery_method = FemboyFans.config.email.delivery_method
+    method, settings = FemboyFans.config.email.config
+    config.action_mailer.public_send(method, settings)
+  else
+    TraceLogger.warn("No email delivery is configured")
+  end
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.raise_delivery_errors = FemboyFans.config.email.delivery_errors
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

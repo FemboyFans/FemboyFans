@@ -1,6 +1,6 @@
 <footer id="page-footer">
   <span class="left">
-    Running <%= FemboyFans.config.app_name %> (<%= link_to(GitHelper.instance.public_ref.short_commit, GitHelper.instance.public_commit_url) %>)
+    Running <%= Config.instance.app_name %> (<%= link_to(GitHelper.instance.public_ref.short_commit, GitHelper.instance.public_commit_url) %>)
     <% if FemboyFans.config.server_name.present? %>
       on <i><%= FemboyFans.config.server_name %></i>
     <% end %>

@@ -54,6 +54,9 @@ Metrics/BlockLength:
     - should
     - should_eventually
     - scoped
+    - config
+    - subconfig
+    - category
   Exclude:
     - config/routes.rb
     - config/environments/*.rb

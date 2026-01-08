@@ -140,7 +140,7 @@ class SessionLoader
   end
 
   def set_safe_mode
-    safe_mode = FemboyFans.config.safe_mode? || params[:safe_mode].to_s.truthy? || CurrentUser.user.enable_safe_mode?
+    safe_mode = Config.instance.safe_mode? || params[:safe_mode].to_s.truthy? || CurrentUser.user.enable_safe_mode?
     CurrentUser.safe_mode = safe_mode
   end
 end

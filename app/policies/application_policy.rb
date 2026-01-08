@@ -108,9 +108,11 @@ class ApplicationPolicy
     permitted_attributes_for_update
   end
 
-  def can_use_attribute?(attr, action = nil)
+  def can_use_attribute?(attrs, action = nil)
+    attrs = [attrs] unless attrs.is_a?(Array)
     permitted = action.nil? || !respond_to?("permitted_attributes_for_#{action}") ? permitted_attributes : send("permitted_attributes_for_#{action}")
-    Array(attr).all? { |a| permitted.include?(a) }
+    hash_permitted = permitted.select { |p| p.is_a?(Hash) }.flat_map(&:keys)
+    attrs.all? { |attr| permitted.include?(attr) || hash_permitted.include?(attr) }
   end
 
   alias can_use_attributes? can_use_attribute?
@@ -140,7 +142,7 @@ class ApplicationPolicy
 
   def api_attributes
     attr = record.class.column_names.map(&:to_sym)
-    attr -= %i[uploader_ip_addr updater_ip_addr creator_ip_addr user_ip_addr ip_addr] unless can_see_ip_addr?
+    attr -= attr.select { |a| a.to_s.include?("ip_addr") } unless can_see_ip_addr?
     attr
   end
 

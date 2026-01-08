@@ -56,18 +56,26 @@ class ActiveSupport::TestCase # rubocop:disable Style/ClassAndModuleChildren
 
   storage_root = Rails.root.join("tmp/test-storage2").to_s
   setup do
-    Socket.stubs(:gethostname).returns("www.example.com")
+    host = "example.com"
+    Socket.stubs(:gethostname).returns(host)
     Config.any_instance.stubs(:enable_sock_puppet_validation).returns(false)
-    FemboyFans.config.stubs(:disable_throttles?).returns(true)
-    FemboyFans.config.stubs(:reports_enabled?).returns(false)
+    FemboyFans.config.stubs(:disable_throttles).returns(true)
+    FemboyFans.config.stubs(:reports_enabled).returns(false)
+    FemboyFans.config.stubs(:cdn_domain).returns(host)
+    FemboyFans.config.stubs(:domain).returns(host)
+    FemboyFans.config.stubs(:hostname).returns("https://#{host}")
+    FemboyFans.config.stubs(:cdn_hostname).returns("https://#{host}")
+    Rails.application.routes.default_url_options = {
+      host: host,
+    }
 
     FileUtils.mkdir_p(storage_root)
     %w[posts replacements mascots].each do |dir|
       FileUtils.mkdir_p(File.join(storage_root, dir))
     end
     storage_manager = StorageManager::Local.new(base_dir: storage_root)
-    FemboyFans.config.stubs(:storage_manager).returns(storage_manager)
-    FemboyFans.config.stubs(:backup_storage_manager).returns(StorageManager::Null.new)
+    FemboyFans.config.stubs(:storage_manager_instance).returns(storage_manager)
+    FemboyFans.config.stubs(:backup_storage_manager_instance).returns(StorageManager::Null.new)
     Config.any_instance.stubs(:flag_ai_posts).returns(false)
     Config.any_instance.stubs(:tag_ai_posts).returns(false)
     Config.any_instance.stubs(:enable_email_verification).returns(false)

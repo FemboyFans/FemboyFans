@@ -99,7 +99,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     context("new action") do
       setup do
-        FemboyFans.config.stubs(:enable_recaptcha?).returns(false)
+        FemboyFans.config.stubs(:recaptcha_enabled).returns(false)
       end
 
       should("render") do

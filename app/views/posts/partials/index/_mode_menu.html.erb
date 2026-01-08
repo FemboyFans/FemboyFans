@@ -15,10 +15,12 @@
         <option value="rating-s">Rate Safe</option>
         <option value="rating-q">Rate Questionable</option>
         <option value="rating-e">Rate Explicit</option>
-        <option value="tag-script">Tag script</option>
         <option value="lock-rating">Lock rating</option>
       <% end %>
-      <% if CurrentUser.user.is_janitor? %>
+      <% if Config.user?(:show_tag_scripting, CurrentUser.user) %>
+        <option value="tag-script">Tag script</option>
+      <% end %>
+      <% if CurrentUser.user.is_staff? %>
         <option value="remove-parent">Remove Parent</option>
         <option value="lock-note">Lock notes</option>
       <% end %>
@@ -31,7 +33,7 @@
     </select>
   </form>
   <select id="set-id" style="display: none; margin-top: 0.5em;"></select>
-  <% if FemboyFans.config.show_tag_scripting?(CurrentUser.user) %>
+  <% if Config.user?(:show_tag_scripting, CurrentUser.user) %>
     <span id="tag-script-ui" style="display: none;">
       <input id="tag-script-field" data-autocomplete="tag-edit" placeholder="Enter tag script" style="display: none;"/>
       <button id="tag-script-all">All</button>

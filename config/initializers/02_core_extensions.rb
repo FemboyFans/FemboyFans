@@ -23,6 +23,10 @@ module FemboyFans
         match?(/\A(false|f|no|n|off|0)\z/i)
       end
 
+      def to_b
+        !falsy?
+      end
+
       # @return [Boolean] True if the string contains only balanced parentheses; false if the string contains unbalanced parentheses.
       def has_balanced_parens?(open = "(", close = ")")
         parens = 0

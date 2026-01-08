@@ -16,7 +16,7 @@
       <li>imply aaa -> bbb</li>
       <li>update aaa -> bbb</li>
       <li>category tag_name -> category_name</li>
-      <% if FemboyFans.config.can_bur_nuke?(CurrentUser.user) %>
+      <% if Config.user?(:bur_nuke, CurrentUser.user) %>
         <li>nuke tag_name</li>
       <% end %>
     </ul>

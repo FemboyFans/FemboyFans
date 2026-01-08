@@ -6,7 +6,7 @@ class UserTest < ActiveSupport::TestCase
   context("A user") do
     setup do
       # stubbed to true in test_helper.rb
-      FemboyFans.config.stubs(:disable_throttles?).returns(false)
+      FemboyFans.config.stubs(:disable_throttles).returns(false)
       @user = create(:user)
       @admin = create(:admin_user)
     end
@@ -117,8 +117,8 @@ class UserTest < ActiveSupport::TestCase
     end
 
     context("name") do
-      should("be #{FemboyFans.config.anonymous_user_name} given an invalid user id") do
-        assert_equal(FemboyFans.config.anonymous_user_name, User.id_to_name(-1))
+      should("be #{Config.instance.anonymous_user_name} given an invalid user id") do
+        assert_equal(Config.instance.anonymous_user_name, User.id_to_name(-1))
       end
 
       should("not contain whitespace") do

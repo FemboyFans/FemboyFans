@@ -145,7 +145,7 @@ class ApplicationController < ActionController::Base
     @backtrace = Rails.backtrace_cleaner.clean(@exception.backtrace)
     format = :html unless format.in?(%i[html json atom])
 
-    if !FemboyFans.config.show_backtrace?(CurrentUser.user, @exception.backtrace) && message == exception.message
+    if !Config.user?(:show_backtrace, CurrentUser.user) && message == exception.message
       @message = "An unexpected error occurred."
     end
 

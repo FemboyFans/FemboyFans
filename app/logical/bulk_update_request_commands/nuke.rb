@@ -21,7 +21,7 @@ module BulkUpdateRequestCommands
     end
 
     def user_allowed
-      errors.add(:base, "you cannot use this command") unless FemboyFans.config.can_bur_nuke?(user)
+      errors.add(:base, "you cannot use this command") unless Config.user?(:bur_nuke, user)
     end
 
     def estimate_update_count

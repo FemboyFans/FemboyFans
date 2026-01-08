@@ -16,7 +16,7 @@
   <%= render("posts/partials/index/related") %>
 </aside>
 
-<% if FemboyFans.config.reports_enabled? && @post_set.is_simple_tags? && @post_set.current_page == 1 %>
+<% if Reports.enabled? && @post_set.is_simple_tags? && @post_set.current_page == 1 %>
   <% if @post_set.post_count == 0 %>
     <%= missed_post_search_count_js(@post_set.public_tag_array, @post_set.current_page) %>
   <% else %>

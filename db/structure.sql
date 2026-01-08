@@ -1,4 +1,4 @@
-\restrict hrUToNj6t9BAoPi0NrvBuKJuiKRbcunYfNmOrUwbFMPeUiIREDaXYf5b3e5j7OA
+\restrict LBfOn4nZilLK4AAX63Wl8zFgr0AiLzzauZofwDgxmKcHDZSzAkgr9YmlnkEmLlC
 
 -- Dumped from database version 17.5
 -- Dumped by pg_dump version 17.6
@@ -651,7 +651,19 @@ CREATE TABLE public.config (
     pool_category_change_cutoff_bypass integer DEFAULT 20 NOT NULL,
     pool_name_max_size integer DEFAULT 250 NOT NULL,
     default_blacklist character varying DEFAULT ''::character varying NOT NULL,
-    safeblocked_tags character varying DEFAULT ''::character varying NOT NULL
+    safeblocked_tags character varying DEFAULT ''::character varying NOT NULL,
+    enable_autotagging boolean DEFAULT true NOT NULL,
+    enable_image_cropping boolean DEFAULT true NOT NULL,
+    enable_bad_sources boolean DEFAULT true NOT NULL,
+    safe_mode boolean DEFAULT false NOT NULL,
+    show_tag_scripting integer DEFAULT 15 NOT NULL,
+    show_backtrace integer DEFAULT 20 NOT NULL,
+    bur_nuke integer DEFAULT 40 NOT NULL,
+    app_name character varying DEFAULT 'Femboy Fans'::character varying NOT NULL,
+    canonical_app_name character varying DEFAULT 'Femboy Fans'::character varying NOT NULL,
+    app_description character varying DEFAULT 'Your one-stop shop for femboy furries.'::character varying NOT NULL,
+    anonymous_user_name character varying DEFAULT 'Anonymous'::character varying NOT NULL,
+    system_user_name character varying DEFAULT 'System'::character varying NOT NULL
 );
 
 
@@ -7835,11 +7847,12 @@ ALTER TABLE ONLY public.help_pages
 -- PostgreSQL database dump complete
 --
 
-\unrestrict hrUToNj6t9BAoPi0NrvBuKJuiKRbcunYfNmOrUwbFMPeUiIREDaXYf5b3e5j7OA
+\unrestrict LBfOn4nZilLK4AAX63Wl8zFgr0AiLzzauZofwDgxmKcHDZSzAkgr9YmlnkEmLlC
 
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20251227053741'),
 ('20251027050630'),
 ('20251024060615'),
 ('20251024042421'),

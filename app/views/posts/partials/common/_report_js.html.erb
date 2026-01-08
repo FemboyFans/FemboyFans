@@ -1,10 +1,10 @@
 <%# locals: (sig:, url:) %>
 
-<% if FemboyFans.config.reports_enabled? %>
+<% if Reports.enabled? %>
   <%= javascript_tag(nonce: true) do -%>
     $(function() {
       $.ajax({
-        url: "<%= FemboyFans.config.reports_server %><%= url %>",
+        url: "<%= FemboyFans.config.reports.server %><%= url %>",
         type: "POST",
         headers: {
           "Authorization": "Bearer <%= Reports.jwt_signature(url) %>",

@@ -340,7 +340,7 @@ class User < ApplicationRecord
           return RequestStore[:id_name_cache][user_id]
         end
         name = Cache.fetch("uin:#{user_id}", expires_in: 4.hours) do
-          User.where(id: user_id).pick(:name) || FemboyFans.config.anonymous_user_name
+          User.where(id: user_id).pick(:name) || Config.instance.anonymous_user_name
         end
         RequestStore[:id_name_cache][user_id] = name
         name
@@ -462,11 +462,30 @@ class User < ApplicationRecord
 
     module ClassMethods
       def anonymous
-        @anonymous ||= wrap_user(FemboyFans.config.anonymous_user)
+        @anonymous ||= begin
+          user = User.new do |user|
+            user.name = Config.instance.anonymous_user_name
+            user.level = Levels::ANONYMOUS
+            user.created_at = Time.now
+            user.email = "anonymous@#{FemboyFans.config.domain}"
+          end
+          user.readonly!
+          wrap_user(user.freeze)
+        end
       end
 
-      def system
-        @system ||= wrap_user(FemboyFans.config.system_user)
+      def system(update: true)
+        @system ||= begin
+          user = User.find_or_initialize_by(level: Levels::SYSTEM).tap do |user|
+            user.email = "system@#{FemboyFans.config.domain}"
+            user.name = Config.instance.system_user_name
+            user.can_approve_posts    = true
+            user.unrestricted_uploads = true
+            user.email_verified       = true
+          end
+          user.save! if user.changed? && (user.new_record? || update)
+          wrap_user(user)
+        end
       end
 
       def owner
@@ -483,7 +502,7 @@ class User < ApplicationRecord
     def promote_to_owner_if_first_user
       return if Rails.env.test?
 
-      if name != FemboyFans.config.system_user_name && !User.exists?(level: Levels::OWNER)
+      if !is_system? && !User.exists?(level: Levels::OWNER)
         self.level = Levels::OWNER
         self.created_at = 2.weeks.ago
         self.can_approve_posts = true
@@ -542,7 +561,7 @@ class User < ApplicationRecord
     end
 
     def can_post_vote?
-      PostVotePolicy.new(self, nil).create?
+      policy_for(PostVote).create?
     end
 
     def can_post_downvote?
@@ -550,11 +569,11 @@ class User < ApplicationRecord
     end
 
     def can_favorite?
-      FavoritePolicy.new(self, nil).create?
+      policy_for(Favorite).create?
     end
 
     def can_comment_vote?
-      CommentPolicy.new(self, nil).create?
+      policy_for(Comment).create?
     end
 
     def staff_cant_disable_dmail
@@ -586,7 +605,7 @@ class User < ApplicationRecord
     def enable_email_verification?
       # Allow admins to edit users with blank/duplicate emails
       return false if is_admin_edit && !email_changed?
-      Config.instance.enable_email_verification && validate_email_format
+      Config.instance.enable_email_verification? && validate_email_format
     end
 
     def validate_email_address_allowed
@@ -1338,7 +1357,7 @@ class User < ApplicationRecord
   end
 
   def safe_mode?
-    FemboyFans.config.safe_mode? || enable_safe_mode?
+    Config.instance.safe_mode? || enable_safe_mode?
   end
 
   def ==(other)
@@ -1352,6 +1371,10 @@ class User < ApplicationRecord
 
   def is_a?(other)
     other == UserLike || super
+  end
+
+  def policy_for(record)
+    Pundit.policy!(self, record)
   end
 
   def self.available_includes

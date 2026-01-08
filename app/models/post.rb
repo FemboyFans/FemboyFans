@@ -221,7 +221,7 @@ class Post < ApplicationRecord
       preview_file_url(CurrentUser.user)
     end
 
-    FemboyFans.config.image_variants.keys.map(&:to_s).each do |name|
+    FemboyFans.config.image.variants.keys.map(&:to_s).each do |name|
       define_method("#{name}_file_path") do
         variant_path(name)
       end
@@ -239,7 +239,7 @@ class Post < ApplicationRecord
       alias_method("file_#{name}", "#{name}_file")
     end
 
-    FemboyFans.config.video_variants.keys.map(&:to_s).each do |name|
+    FemboyFans.config.video.variants.keys.map(&:to_s).each do |name|
       define_method("#{name}_webm_file_path") do
         variant_path(name, "webm")
       end
@@ -354,7 +354,7 @@ class Post < ApplicationRecord
       end
     end
 
-    [*FemboyFans.config.image_variants.keys, *FemboyFans.config.video_variants.keys].map(&:to_s).uniq.each do |name|
+    [*FemboyFans.config.image.variants.keys, *FemboyFans.config.video.variants.keys].map(&:to_s).uniq.each do |name|
       define_method("has_#{name}?") do
         has_variant_size?(name)
       end
@@ -383,14 +383,14 @@ class Post < ApplicationRecord
 
     def large_image_width
       if has_large?
-        [FemboyFans.config.large_image_width, image_width].min
+        [FemboyFans.config.image.large_width, image_width].min
       else
         image_width
       end
     end
 
     def large_image_height
-      ratio = FemboyFans.config.large_image_width.to_f / image_width.to_f
+      ratio = FemboyFans.config.image.large_width.to_f / image_width.to_f
       if has_large? && ratio < 1
         (image_height * ratio).to_i
       else
@@ -465,7 +465,7 @@ class Post < ApplicationRecord
     end
 
     def apply_source_diff
-      if FemboyFans.config.enable_autotagging? && !should_process_tags?
+      if Config.instance.enable_autotagging? && !should_process_tags?
         tags = add_automatic_tags(tag_array)
         set_tag_string(tags.uniq.sort.join(" "))
       end
@@ -849,7 +849,7 @@ class Post < ApplicationRecord
     end
 
     def add_automatic_tags(tags)
-      return tags unless FemboyFans.config.enable_autotagging?
+      return tags unless Config.instance.enable_autotagging?
 
       Autotagger.new(self).apply(tags)
     end
@@ -2143,8 +2143,8 @@ class Post < ApplicationRecord
   extend(SearchMethods)
 
   def safeblocked?(user)
-    return true if FemboyFans.config.safe_mode? && rating != "s"
-    (FemboyFans.config.safe_mode? || user.enable_safe_mode?) && (rating != "s" || has_tag?(*Config.ary(:safeblocked_tags)))
+    return true if Config.instance.safe_mode? && rating != "s"
+    (Config.instance.safe_mode? || user.enable_safe_mode?) && (rating != "s" || has_tag?(*Config.ary(:safeblocked_tags)))
   end
 
   def deleteblocked?(user)

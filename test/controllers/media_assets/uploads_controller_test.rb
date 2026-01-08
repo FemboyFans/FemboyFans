@@ -154,7 +154,7 @@ module MediaAssets
         end
 
         should("create a post when paired with an upload") do
-          FemboyFans.config.stubs(:enable_autotagging?).returns(false)
+          Config.any_instance.stubs(:enable_autotagging).returns(false)
           @media_asset.create_upload!(rating: "e", tag_string: "tagme", uploader: @user, uploader_ip_addr: "127.0.0.1")
           @media_asset.append_chunk!(1, @combined.open)
 

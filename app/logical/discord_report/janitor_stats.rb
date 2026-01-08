@@ -3,13 +3,13 @@
 module DiscordReport
   class JanitorStats < Base
     def webhook_url
-      FemboyFans.config.janitor_reports_discord_webhook_url
+      FemboyFans.config.discord.janitor_stats_webhook_url
     end
 
     def report
       current_stats = stats
-      previous_pending_posts = Cache.redis.get("janitor_reports:previous_pending_posts") || current_stats[:pending][:posts]
-      Cache.redis.set("janitor_reports:previous_pending_posts", current_stats[:pending][:posts])
+      previous_pending_posts = Cache.redis.get("janitor_stats:previous_pending_posts") || current_stats[:pending][:posts]
+      Cache.redis.set("janitor_stats:previous_pending_posts", current_stats[:pending][:posts])
 
       diff = current_stats[:pending][:posts] - previous_pending_posts.to_i
       <<~REPORT.chomp

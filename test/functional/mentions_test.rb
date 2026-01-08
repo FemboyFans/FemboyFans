@@ -41,7 +41,7 @@ class MentionsTest < ActiveSupport::TestCase
 
         should("not create a notification when mentioning the system user") do
           assert_no_difference("Notification.count") do
-            @comment = create(:comment, creator: @user, body: "hello @#{FemboyFans.config.system_user_name}")
+            @comment = create(:comment, creator: @user, body: "hello @#{Config.instance.system_user_name}")
           end
         end
 
@@ -159,7 +159,7 @@ class MentionsTest < ActiveSupport::TestCase
 
         should("not create a notification when mentioning the system user") do
           assert_no_difference("Notification.count") do
-            @forum_post = create(:forum_post, creator: @user, body: "hello @#{FemboyFans.config.system_user_name}", topic: @topic)
+            @forum_post = create(:forum_post, creator: @user, body: "hello @#{Config.instance.system_user_name}", topic: @topic)
           end
         end
 

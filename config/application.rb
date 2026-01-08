@@ -20,11 +20,12 @@ require("rails/test_unit/railtie")
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-require_relative("default_config")
+require_relative("config")
 require_relative("local_config")
 require_relative("../lib/middleware/silence_healthcheck_logging")
 
 module FemboyFans
+  Config.ensure_required_set!
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults(7.1)

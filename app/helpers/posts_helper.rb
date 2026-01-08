@@ -179,6 +179,7 @@ module PostsHelper
   end
 
   def rating_collection
+    # Post::Ratings.map.transform_keys(&:titleize).to_a
     [
       %w[Safe s],
       %w[Questionable q],
