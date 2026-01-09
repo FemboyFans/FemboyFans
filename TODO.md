@@ -7,14 +7,14 @@
 | [app/models/pool.rb](app/models/pool.rb#L308) | 308 | finds wrong post when the pool contains multiple copies of the same post (#2042). |
 | [app/models/post.rb](app/models/post.rb#L1621) | 1621 | This must happen *after* the `is_deleted` flag is set to true (issue #3419). |
 | [app/logical/femboy_fans/paginator/active_record_extension.rb](app/logical/femboy_fans/paginator/active_record_extension.rb#L48) | 48 | Hack: in sequential pagination we fetch one more record than we need |
-| [test/test_helper.rb](test/test_helper.rb#L252) | 252 | Testing modules should not have a say in if we can or cannot use assert_equal with nil |
+| [test/test_helper.rb](test/test_helper.rb#L260) | 260 | Testing modules should not have a say in if we can or cannot use assert_equal with nil |
 
 ### FIXMEs
 | Filename | line # | FIXME |
 |:------|:------:|:------|
 | [app/controllers/artists_controller.rb](app/controllers/artists_controller.rb#L63) | 63 | This is a hack on top of a hack to ensure all of the other attributes are set before url_string to ensure there are no race conditions |
 | [app/models/artist.rb](app/models/artist.rb#L45) | 45 | This is a hack on top of the hack below for setting url_string to ensure name is set first for validations |
-| [app/models/artist.rb](app/models/artist.rb#L229) | 229 | This is a hack. Setting an association directly immediately updates without regard for the parents validity. |
+| [app/models/artist.rb](app/models/artist.rb#L230) | 230 | This is a hack. Setting an association directly immediately updates without regard for the parents validity. |
 | [app/models/tag_relationship.rb](app/models/tag_relationship.rb#L109) | 109 | Rails assigns different join aliases for joins(:antecedent_tag) and joins(:antecedent_tag, :consquent_tag) |
 | [app/models/user_vote.rb](app/models/user_vote.rb#L62) | 62 | the logic around this is a mess, and I'm frankly amazed it works |
 | [test/unit/post_test.rb](test/unit/post_test.rb#L2176) | 2176 | This test fails randomly at different assertions |
@@ -30,9 +30,9 @@
 | [app/logical/favorite_manager.rb](app/logical/favorite_manager.rb#L53) | 53 | Much better and more intelligent logic can exist for this |
 | [app/logical/user_attribute.rb](app/logical/user_attribute.rb#L47) | 47 | implement clone validation logic |
 | [app/logical/view_count_cache.rb](app/logical/view_count_cache.rb#L6) | 6 | replace with defaults with rails 7.2 upgrade |
-| [app/models/config.rb](app/models/config.rb#L74) | 74 | safeguards to ensure we don't override existing methods? |
+| [app/models/config.rb](app/models/config.rb#L129) | 129 | safeguards to ensure we don't override existing methods? |
 | [app/models/forum_topic.rb](app/models/forum_topic.rb#L173) | 173 | revisit muting, it may need to be further optimized or removed due to performance issues |
-| [app/models/media_asset.rb](app/models/media_asset.rb#L88) | 88 | reimplement ability to disable notifications |
+| [app/models/media_asset.rb](app/models/media_asset.rb#L100) | 100 | reimplement ability to disable notifications |
 | [app/models/post_event.rb](app/models/post_event.rb#L94) | 94 | We need access control/blocks for associations |
 | [app/models/post_flag.rb](app/models/post_flag.rb#L52) | 52 | We need access control/blocks for associations |
 | [app/models/post_set.rb](app/models/post_set.rb#L122) | 122 | convert to user throttle |
@@ -54,7 +54,7 @@
 | [app/javascript/src/javascripts/utility/filter_util.js](app/javascript/src/javascripts/utility/filter_util.js#L27) | 27 | Don't re-parse this on every run |
 | [app/javascript/src/styles/common/_standard_elements.scss](app/javascript/src/styles/common/_standard_elements.scss#L29) | 29 | What if button is on a light background |
 | [app/views/posts/replacements/rejection_reasons/index.html.erb](app/views/posts/replacements/rejection_reasons/index.html.erb#L3) | 3 | convert to new table syntax |
-| [test/test_helper.rb](test/test_helper.rb#L254) | 254 | look into refactoring out minitest? |
+| [test/test_helper.rb](test/test_helper.rb#L262) | 262 | look into refactoring out minitest? |
 | [test/controllers/uploads_controller_test.rb](test/controllers/uploads_controller_test.rb#L146) | 146 | reimplement ability to disable notifications |
 | [test/unit/file_methods_test.rb](test/unit/file_methods_test.rb#L357) | 357 | neither video has audio |
 | [test/unit/post_test.rb](test/unit/post_test.rb#L515) | 515 | This was moved to be a controller concern to fix issues with internal post updates |
@@ -64,8 +64,7 @@
 | [test/unit/post_test.rb](test/unit/post_test.rb#L2066) | 2066 | These don't quite make sense, what should hide deleted posts and what shouldn't? |
 | [test/unit/post_test.rb](test/unit/post_test.rb#L2459) | 2459 | These are pretty messed up, both structurally, and expectation wise. |
 | [test/controllers/posts/replacements_controller_test.rb](test/controllers/posts/replacements_controller_test.rb#L124) | 124 | reimplement ability to disable notifications |
-| [config/default_config.rb](config/default_config.rb#L282) | 282 | appealed posts should be visible, but this makes it far too easy to get the contents of deleted posts at a moments notice |
-| [config/default_config.rb](config/default_config.rb#L295) | 295 | move to dynamic config |
+| [config/config.rb](config/config.rb#L162) | 162 | appealed posts should be visible, but this makes it far too easy to get the contents of deleted posts at a moments notice |
 
 ### HACKs
 | Filename | line # | HACK |
