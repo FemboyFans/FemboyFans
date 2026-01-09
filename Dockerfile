@@ -30,6 +30,7 @@ RUN apk --no-cache add ffmpeg vips \
   libwebp-tools exiftool
 
 WORKDIR /app
+COPY . .
 
 ENV LD_PRELOAD=/usr/lib/libjemalloc.so.2
 ENV RUBY_YJIT_ENABLE=1

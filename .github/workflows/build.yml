@@ -41,7 +41,7 @@ jobs:
             type=semver,pattern={{version}}
           flavor: |
             latest=true
-
+      - run: cat docker/prod/.dockerignore .gitignore | tee .dockerignore
       - name: Build and push
         uses: docker/build-push-action@v6
         with:

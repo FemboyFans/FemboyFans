@@ -20,6 +20,7 @@ tmp/*.png
 test/reports
 
 .idea
+.vscode
 
 /public/packs
 /public/packs-test
@@ -32,4 +33,3 @@ yarn-debug.log*
 
 /config/master.key
 /config/credentials.yml.enc
-/.devcontainer
