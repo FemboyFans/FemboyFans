@@ -3,7 +3,7 @@ x-environment: &common-env
   FEMBOYFANS_HOSTNAME: http://localhost:${EXPOSED_SERVER_PORT:-4000}
   FEMBOYFANS_CDN_DOMAIN: localhost:${EXPOSED_SERVER_PORT:-4000}
   FEMBOYFANS_CDN_HOSTNAME: http://localhost:${EXPOSED_SERVER_PORT:-4000}
-  FEMBOYFANS_REDIS_URL: redis://redis
+  FEMBOYFANS_REDIS_URL: redis://redis/0
   FEMBOYFANS_ELASTICSEARCH_HOST: elasticsearch
   FEMBOYFANS_MEMCACHED_SERVERS: memcached
   FEMBOYFANS_IQDB_SERVER: http://iqdb:5588
@@ -62,8 +62,8 @@ services:
     environment:
       <<: *common-env
       RAILS_ENV: development
-      DB_USER: femboyfans
-      DB_NAME: femboyfans_development
+      FEMBOYFANS_DB_USER: femboyfans
+      FEMBOYFANS_DB_NAME: femboyfans_development
     ports:
       - "${EXPOSED_WEBPACKER_PORT:-4003}:${EXPOSED_WEBPACKER_PORT:-4003}"
     depends_on:
@@ -112,6 +112,9 @@ services:
     environment:
       <<: *common-env
       NGINX_PORT: ${EXPOSED_NGINX_PORT:-4000}
+      NGINX_PROXY_HOST: ${NGINX_PROXY_HOST:-${FEMBOYFANS_DOMAIN:-localhost}}
+      NGINX_PROXY_PORT: ${EXPOSED_SERVER_PORT:-4000}
+      NGINX_PROXY_SCHEME: http
     depends_on:
       autocompleted:
         condition: service_healthy
