@@ -9,11 +9,11 @@ class StateChecker
   end
 
   def secret_token
-    %w[SECRET_TOKEN FEMBOYFANS_SECRET_TOKEN].map { |n| ENV[n] }.compact_blank.first || File.read(secret_token_path)
+    %w[SECRET_TOKEN FEMBOYFANS_SECRET_TOKEN].map { |n| ENV.fetch(n, nil) }.compact_blank.first || File.read(secret_token_path)
   end
 
   def session_secret_key
-    %w[SESSION_SECRET_KEY FEMBOYFANS_SESSION_SECRET_KEY].map { |n| ENV[n] }.compact_blank.first || File.read(session_secret_key_path)
+    %w[SESSION_SECRET_KEY FEMBOYFANS_SESSION_SECRET_KEY].map { |n| ENV.fetch(n, nil) }.compact_blank.first || File.read(session_secret_key_path)
   end
 
   private

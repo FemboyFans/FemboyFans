@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require_relative "../../config/initializers/02_core_extensions"
+
+require_relative("../../config/initializers/02_core_extensions")
 
 class ConfigBuilder
   include(Singleton)
