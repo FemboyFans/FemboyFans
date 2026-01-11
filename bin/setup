@@ -20,19 +20,19 @@ FileUtils.chdir(APP_ROOT) do
     FileUtils.cp("docker/local_config.rb", "config/local_config.rb")
   end
   puts("== Creating credentials ==")
-  system!("EDITOR=/dev/null rails credentials:edit")
+  system!("EDITOR=true rails credentials:edit")
 
   puts("== Creating elasticsearch indices ==\n")
   system!("RAILS_ENV=#{env} bin/rails runner '[Post, PostVersion].each { |model| model.document_store.create_index! }'")
-
-  puts("== Creating system user ==\n")
-  system!("RAILS_ENV=#{env} bin/rails runner 'User.system.save'")
 
   puts("\n== Preparing database ==")
   # Create the test database, since only development exists at this point
   system!("RAILS_ENV=test bin/rails db:create") unless env == "production"
   system!("RAILS_ENV=#{env} bin/rails db:schema:load")
   system!("RAILS_ENV=#{env} FEMBOYFANS_DISABLE_THROTTLES=true bin/rails db:seed") unless env == "production"
+
+  puts("== Creating system user ==\n")
+  system!("RAILS_ENV=#{env} bin/rails runner 'User.system.save'")
 
   puts("\n== Removing old logs and tempfiles ==")
   system!("bin/rails log:clear tmp:clear")

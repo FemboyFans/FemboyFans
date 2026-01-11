@@ -8,9 +8,9 @@ module FemboyFans
 
     config(:config_id) { "default" }
     config(:disabled_config_options, :array) { [] }
-    config(:domain, required: true)
+    config(:domain) { "localhost" }
     config(:hostname) { "http#{'s' if Rails.env.production?}://#{domain}" }
-    config(:cdn_domain, required: true)
+    config(:cdn_domain) { domain }
     config(:cdn_hostname) { "http#{'s' if Rails.env.production?}://#{cdn_domain}" }
     config(:discord_site) { nil }
     config(:app_url) { hostname }
@@ -174,8 +174,8 @@ module FemboyFans
       config(:delivery_method, :symbol) { nil }
       config(:config, env: false) do
         case email_delivery_method
-        when [:smtp_settings, smtp_config]
-          smtp_config
+        when :smtp
+          [:smtp_settings, smtp_config]
         when :sendmail
           [:sendmail_settings, sendmail_config]
           nil

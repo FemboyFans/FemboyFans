@@ -32,7 +32,7 @@ module ConfigHelper
         tag.td do
           if bypass
             val = config.public_send("#{attribute}_bypass")
-            select_tag("config[#{attribute}_bypass]", options_for_select(user_levels_for_select(current: val), val), disabled: disabled || !config.usable?(CurrentUser.user, "#{attribute}_bypass"))
+            select_tag("config[#{attribute}_bypass]", options_for_select(user_levels_for_select(current: val).merge("None" => User::Levels::LOCKED), val), disabled: disabled || !config.usable?(CurrentUser.user, "#{attribute}_bypass"))
           end
         end,
       ])
@@ -54,8 +54,9 @@ module ConfigHelper
     end
   end
 
-  def user_config_field(config, attribute, name: nil, disabled: false, hint: nil, value: config.public_send(attribute), input_options: {}, minimum: User::Levels::MEMBER, maximum: User::Levels::OWNER)
+  def user_config_field(config, attribute, name: nil, disabled: false, hint: nil, value: config.public_send(attribute), input_options: {}, minimum: User::Levels::MEMBER, maximum: User::Levels::OWNER, disabled_name: "Disabled")
     levels = user_levels_for_select(minimum, maximum).to_a.reject { |_k, v| v == User::Levels::SYSTEM }
+    levels << [disabled_name, User::Levels::LOCKED] unless levels.any? { |_k, v| v == User::Levels::LOCKED } && !disabled_name.nil?  && disabled_name != false
     select_config_field(config, attribute, levels, name: name, disabled: disabled, hint: hint, value: value, input_options: input_options)
   end
 
