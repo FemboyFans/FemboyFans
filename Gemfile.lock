@@ -169,6 +169,9 @@ GEM
       domain_name (~> 0.5)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
+    image_processing (1.14.0)
+      mini_magick (>= 4.9.5, < 6)
+      ruby-vips (>= 2.0.17, < 3)
     io-console (0.7.2)
     irb (1.15.2)
       pp (>= 0.6.0)
@@ -195,6 +198,8 @@ GEM
     mime-types (3.5.2)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2024.0206)
+    mini_magick (5.3.1)
+      logger
     mini_mime (1.1.5)
     mini_portile2 (2.8.9)
     minitest (5.25.5)
@@ -443,6 +448,7 @@ DEPENDENCIES
   faraday
   faraday-follow_redirects
   faraday-retry
+  image_processing (~> 1.14)
   irb (~> 1.15.2)
   jwt (~> 2.8)
   mailgun-ruby

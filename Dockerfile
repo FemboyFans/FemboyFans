@@ -27,7 +27,9 @@ RUN apk --no-cache add ffmpeg vips \
   postgresql17-client \
   git jemalloc tzdata \
   sudo xz gcompat \
-  libwebp-tools exiftool
+  libwebp-tools exiftool \
+  libpng libjpeg-turbo libwebp \
+  giflib librsvg imagemagick
 
 WORKDIR /app
 COPY . .
