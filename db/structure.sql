@@ -1,7 +1,7 @@
-\restrict LBfOn4nZilLK4AAX63Wl8zFgr0AiLzzauZofwDgxmKcHDZSzAkgr9YmlnkEmLlC
+\restrict 09AzrRALx8zm6go3HHsoydZkmVPiFU7bdJeVAeMgz3WD9KdQxQ2sMTjocPNeHBG
 
 -- Dumped from database version 17.5
--- Dumped by pg_dump version 17.6
+-- Dumped by pg_dump version 17.7
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -600,12 +600,8 @@ CREATE TABLE public.config (
     max_file_size integer DEFAULT 200 NOT NULL,
     max_file_sizes jsonb DEFAULT '{"gif": 30, "jpg": 100, "mp4": 200, "png": 100, "apng": 30, "webm": 200, "webp": 100}'::jsonb NOT NULL,
     max_mascot_file_sizes jsonb DEFAULT '{"jpg": 1000, "png": 1000, "webp": 1000}'::jsonb NOT NULL,
-    max_mascot_width integer DEFAULT 1000 NOT NULL,
-    max_mascot_height integer DEFAULT 1000 NOT NULL,
     max_video_duration integer DEFAULT 1800 NOT NULL,
     max_image_resolution integer DEFAULT 441 NOT NULL,
-    max_image_width integer DEFAULT 40000 NOT NULL,
-    max_image_height integer DEFAULT 40000 NOT NULL,
     max_tags_per_post integer DEFAULT 2000 NOT NULL,
     enable_signups boolean DEFAULT true NOT NULL,
     user_approvals_enabled boolean DEFAULT true NOT NULL,
@@ -663,7 +659,11 @@ CREATE TABLE public.config (
     canonical_app_name character varying DEFAULT 'Femboy Fans'::character varying NOT NULL,
     app_description character varying DEFAULT 'Your one-stop shop for femboy furries.'::character varying NOT NULL,
     anonymous_user_name character varying DEFAULT 'Anonymous'::character varying NOT NULL,
-    system_user_name character varying DEFAULT 'System'::character varying NOT NULL
+    system_user_name character varying DEFAULT 'System'::character varying NOT NULL,
+    image_width jsonb DEFAULT '{"max": 40000, "min": 300}'::jsonb NOT NULL,
+    image_height jsonb DEFAULT '{"max": 40000, "min": 300}'::jsonb NOT NULL,
+    mascot_width jsonb DEFAULT '{"max": 1000, "min": 250}'::jsonb NOT NULL,
+    mascot_height jsonb DEFAULT '{"max": 1000, "min": 250}'::jsonb NOT NULL
 );
 
 
@@ -7847,11 +7847,12 @@ ALTER TABLE ONLY public.help_pages
 -- PostgreSQL database dump complete
 --
 
-\unrestrict LBfOn4nZilLK4AAX63Wl8zFgr0AiLzzauZofwDgxmKcHDZSzAkgr9YmlnkEmLlC
+\unrestrict 09AzrRALx8zm6go3HHsoydZkmVPiFU7bdJeVAeMgz3WD9KdQxQ2sMTjocPNeHBG
 
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260217212220'),
 ('20251227053741'),
 ('20251027050630'),
 ('20251024060615'),

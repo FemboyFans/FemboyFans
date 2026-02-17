@@ -21,6 +21,7 @@ test/reports
 
 .idea
 .vscode
+*.patch
 
 /public/packs
 /public/packs-test

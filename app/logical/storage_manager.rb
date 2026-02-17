@@ -3,6 +3,5 @@
 module StorageManager
   class Error < StandardError; end
 
-  DEFAULT_BASE_DIR =
-    IMAGE_TYPES = %i[preview large crop original].freeze
+  DEFAULT_BASE_DIR = Rails.public_path.join("data").to_s
 end

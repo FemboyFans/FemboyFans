@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_27_053741) do
+ActiveRecord::Schema[7.1].define(version: 2026_02_17_212220) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_trgm"
   enable_extension "plpgsql"
@@ -269,12 +269,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_27_053741) do
     t.integer "max_file_size", default: 200, null: false
     t.jsonb "max_file_sizes", default: {"gif"=>30, "jpg"=>100, "mp4"=>200, "png"=>100, "apng"=>30, "webm"=>200, "webp"=>100}, null: false
     t.jsonb "max_mascot_file_sizes", default: {"jpg"=>1000, "png"=>1000, "webp"=>1000}, null: false
-    t.integer "max_mascot_width", default: 1000, null: false
-    t.integer "max_mascot_height", default: 1000, null: false
     t.integer "max_video_duration", default: 1800, null: false
     t.integer "max_image_resolution", default: 441, null: false
-    t.integer "max_image_width", default: 40000, null: false
-    t.integer "max_image_height", default: 40000, null: false
     t.integer "max_tags_per_post", default: 2000, null: false
     t.boolean "enable_signups", default: true, null: false
     t.boolean "user_approvals_enabled", default: true, null: false
@@ -333,6 +329,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_27_053741) do
     t.string "app_description", default: "Your one-stop shop for femboy furries.", null: false
     t.string "anonymous_user_name", default: "Anonymous", null: false
     t.string "system_user_name", default: "System", null: false
+    t.jsonb "image_width", default: {"max"=>40000, "min"=>300}, null: false
+    t.jsonb "image_height", default: {"max"=>40000, "min"=>300}, null: false
+    t.jsonb "mascot_width", default: {"max"=>1000, "min"=>250}, null: false
+    t.jsonb "mascot_height", default: {"max"=>1000, "min"=>250}, null: false
   end
 
   create_table "destroyed_posts", force: :cascade do |t|

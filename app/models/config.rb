@@ -29,6 +29,7 @@ class Config < ApplicationRecord
   def self.get(option)
     v = instance.public_send(option)
     return Float::INFINITY if v == -1
+    return OpenHash.from(v) if v.is_a?(Hash)
     v
   end
 
@@ -126,11 +127,10 @@ class Config < ApplicationRecord
     super
   end
 
-  # TODO: safeguards to ensure we don't override existing methods?
   column_names.each do |column|
     define_method("#{column}?") { !!public_send(column) } unless instance_methods.include?(:"#{column}?")
-    define_singleton_method(column) { instance.public_send(column) } unless singleton_methods.include?(column)
-    define_singleton_method("#{column}?") { !!instance.public_send(column) } unless singleton_methods.include?(:"#{column}?")
+    define_singleton_method(column) { get(column) } unless singleton_methods.include?(column)
+    define_singleton_method("#{column}?") { !!public_send(column) } unless singleton_methods.include?(:"#{column}?")
   end
 
   class << self

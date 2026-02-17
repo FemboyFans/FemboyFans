@@ -214,7 +214,7 @@ module FemboyFans
     end
     config(:mailgun_api_key) { nil }
 
-    config(:large_image_width) { image.variants["large"]&.width || raise("missing large image variant") }
+    config(:large_image_width) { image.large_width }
     config(:replacement_thumbnail_width) { 300 }
     subconfig(:image) do
       # env: name(width, height, method)
@@ -226,7 +226,7 @@ module FemboyFans
         }
       end
       reviver(:variants) { |v| MediaAsset::Rescale.from_string(v) }
-      config(:large_width) { image_variants["large"]&.width || raise(NotImplementedError, "missing large image variant") }
+      config(:large_width) { image.variants["large"]&.width || raise(NotImplementedError, "missing large image variant") }
     end
 
     subconfig(:video) do
@@ -399,7 +399,7 @@ module FemboyFans
     end
 
     subconfig(:backup_storage_manager) do
-      config(:type, :symbol) { :local }
+      config(:type, :symbol) { :null }
       config(:base_url) { cdn_hostname }
       config(:base_path) { "/data" }
       config(:base_dir) { Rails.public_path.join("data").to_s }

@@ -8,11 +8,13 @@ class FileValidator
     @file_path = file_path
   end
 
-  def validate(max_file_sizes: nil, max_width: nil, max_height: nil)
+  def validate(max_file_sizes: nil, min_width: nil, max_width: nil, min_height: nil, max_height: nil)
     # default arguments are evaluated when the method is defined
     max_file_sizes ||= Config.max_file_sizes.transform_values { |v| v * 1.megabyte }
-    max_width ||= Config.max_image_width
-    max_height ||= Config.max_image_height
+    min_width ||= Config.image_width.min
+    max_width ||= Config.image_width.max
+    min_height ||= Config.image_height.min
+    max_height ||= Config.image_height.max
     validate_file_ext(max_file_sizes)
     validate_file_size(max_file_sizes)
     validate_file_integrity
@@ -23,7 +25,7 @@ class FileValidator
       validate_colorspace(video)
       validate_sar(video) if record.is_webm?
     end
-    validate_resolution(max_width, max_height)
+    validate_resolution(min_width, max_width, min_height, max_height)
   end
 
   def validate_file_integrity
@@ -53,13 +55,17 @@ class FileValidator
     end
   end
 
-  def validate_resolution(max_width, max_height)
+  def validate_resolution(min_width, max_width, min_height, max_height)
     resolution = record.image_width.to_i * record.image_height.to_i
 
     if resolution > Config.instance.max_image_resolution * 1_000_000
       record.errors.add(:base, "image resolution is too large (resolution: #{(resolution / 1_000_000.0).round(1)} megapixels (#{record.image_width}x#{record.image_height}); max: #{Config.instance.max_image_resolution} megapixels)")
+    elsif record.image_width < min_width
+      record.errors.add(:image_width, "is too small (width: #{record.image_width}; min width: #{min_width})")
     elsif record.image_width > max_width
       record.errors.add(:image_width, "is too large (width: #{record.image_width}; max width: #{max_width})")
+    elsif record.image_height > min_height
+      record.errors.add(:image_height, "is too small (height: #{record.image_height}; min height: #{min_height})")
     elsif record.image_height > max_height
       record.errors.add(:image_height, "is too large (height: #{record.image_height}; max height: #{max_height})")
     end
