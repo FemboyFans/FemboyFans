@@ -65,6 +65,13 @@ module FemboyFans
         Concurrent::Promises.zip_futures_on(executor, *promises).value!
       end
     end
+
+    module Hash
+      def to_openhash
+        OpenHash.from(self)
+      end
+      alias with_open_access to_openhash
+    end
   end
 end
 
@@ -74,4 +81,8 @@ end
 
 module Enumerable
   include(FemboyFans::Extensions::Enumerable)
+end
+
+class Hash
+  include(FemboyFans::Extensions::Hash)
 end

@@ -73,7 +73,7 @@ module Permissions
           action => self.action(action) || action.titlecase,
         },
       }
-    end.reduce(&:deep_merge).with_indifferent_access.freeze
+    end.reduce(&:deep_merge).with_open_access.freeze
   end
 
   def controller_name(controller, plural: false)

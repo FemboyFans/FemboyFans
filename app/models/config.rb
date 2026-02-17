@@ -29,7 +29,7 @@ class Config < ApplicationRecord
   def self.get(option)
     v = instance.public_send(option)
     return Float::INFINITY if v == -1
-    return OpenHash.from(v) if v.is_a?(Hash)
+    return v.with_open_access if v.is_a?(Hash)
     v
   end
 
