@@ -48,7 +48,7 @@ class ConfigBuilder
 
   def env_or_value(name, args, blank: false, &)
     value = env(name)
-    value = nil if !value.nil? && value.blank? && blank
+    value = nil if !value.nil? && value.blank? && !blank
     if value.nil?
       instance_exec(*args, &)
     else
@@ -102,8 +102,8 @@ class ConfigBuilder
         @collected ||= []
       end
 
-      def self.config(name, type = :string, env: true, &block)
-        collected << [:config, name, type, env, block]
+      def self.config(name, type = :string, env: true, required: false, blank: false, &block)
+        collected << [:config, name, type, env, required, blank, block]
       end
 
       def self.reviver(name, type = nil, &block)
@@ -121,7 +121,7 @@ class ConfigBuilder
       case kind
       when :config
         full = (path + [name]).join("_").to_sym
-        config(full, args[0], env: args[1], &args[2])
+        config(full, args[0], env: args[1], required: args[2], blank: args[3], &args[4])
       when :reviver
         full = (path + [name]).join("_").to_sym
         reviver(full, args[0], &args[1])

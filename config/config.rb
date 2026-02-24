@@ -175,9 +175,9 @@ module FemboyFans
       config(:config, env: false) do
         case email_delivery_method
         when :smtp
-          [:smtp_settings, smtp_config]
+          [:smtp_settings, email_smtp_config]
         when :sendmail
-          [:sendmail_settings, sendmail_config]
+          [:sendmail_settings, email_sendmail_config]
           nil
         end
       end
