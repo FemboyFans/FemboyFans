@@ -183,36 +183,36 @@ module FemboyFans
       end
       config(:delivery_errors, :boolean) { true }
       config(:from_addr) { "system@#{domain}" }
-    end
-    subconfig(:smtp) do
-      config(:address)
-      config(:port, :integer)
-      config(:domain)
-      config(:user_name)
-      config(:password)
-      config(:authentication) { nil } # plain, login, cram_md5
-      config(:enable_starttls, :boolean) { false }
-      config(:enable_starttls_auto, :boolean) { true }
-      config(:open_timeout, :integer) { 5 }
-      config(:read_timeout, :integer) { 5 }
-      config(:timeout) { 5 }
-      config(:config, env: false) do
-        %i[address port domain user_name password authentication enable_starttls enable_starttls_auto open_timeout read_timeout]
-          .index_with { |n| public_send(:"smtp_#{n}") }
-          .compact_blank
+      subconfig(:smtp) do
+        config(:address)
+        config(:port, :integer)
+        config(:domain)
+        config(:user_name)
+        config(:password)
+        config(:authentication) { nil } # plain, login, cram_md5
+        config(:enable_starttls, :boolean) { false }
+        config(:enable_starttls_auto, :boolean) { true }
+        config(:open_timeout, :integer) { 5 }
+        config(:read_timeout, :integer) { 5 }
+        config(:timeout) { 5 }
+        config(:config, env: false) do
+          %i[address port domain user_name password authentication enable_starttls enable_starttls_auto open_timeout read_timeout]
+            .index_with { |n| public_send(:"smtp_#{n}") }
+            .compact_blank
+        end
       end
-    end
-    subconfig(:sendmail) do
-      config(:location) { "/usr/sbin/sendmail" }
-      config(:arguments, :array) { %w[-i] }
-      config(:config, env: false) do
-        {
-          location:  sendmail_location,
-          arguments: sendmail_arguments,
-        }
+      subconfig(:sendmail) do
+        config(:location) { "/usr/sbin/sendmail" }
+        config(:arguments, :array) { %w[-i] }
+        config(:config, env: false) do
+          {
+            location:  sendmail_location,
+            arguments: sendmail_arguments,
+          }
+        end
       end
+      config(:mailgun_api_key) { nil }
     end
-    config(:mailgun_api_key) { nil }
 
     config(:large_image_width) { image.large_width }
     config(:replacement_thumbnail_width) { 300 }
@@ -348,8 +348,8 @@ module FemboyFans
     subconfig(:storage_manager) do
       config(:type, :symbol) { :local }
       config(:base_url) { cdn_hostname }
-      config(:base_path) { "/data" }
-      config(:base_dir) { Rails.public_path.join("data").to_s }
+      config(:base_path, blank: true) { "/data" }
+      config(:base_dir, blank: true) { Rails.public_path.join("data").to_s }
       config(:hierarchical, :boolean) { true }
       config(:instance, env: false) do
         case storage_manager.type
@@ -401,8 +401,8 @@ module FemboyFans
     subconfig(:backup_storage_manager) do
       config(:type, :symbol) { :null }
       config(:base_url) { cdn_hostname }
-      config(:base_path) { "/data" }
-      config(:base_dir) { Rails.public_path.join("data").to_s }
+      config(:base_path, blank: true) { "/data" }
+      config(:base_dir, blank: true) { Rails.public_path.join("data").to_s }
       config(:hierarchical, :boolean) { true }
       config(:instance, env: false) do
         case backup_storage_manager.type

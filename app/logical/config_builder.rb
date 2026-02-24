@@ -12,7 +12,7 @@ class ConfigBuilder
   cattr_accessor(:reviver_map, default: {})
   cattr_accessor(:subconfigs, default: Hash.new { |h, k| h[k] = {} })
 
-  def self.config(name, type = :string, env: true, required: false, &block)
+  def self.config(name, type = :string, env: true, required: false, blank: false, &block)
     name = name.to_sym
     remove_config(name) if list.include?(name)
     list << name
@@ -22,7 +22,7 @@ class ConfigBuilder
       block = -> { raise(NotImplementedError, "Config option #{name} is not set") }
     end
     define_method(name) do |*args|
-      env_or_value(name, args, &block)
+      env_or_value(name, args, blank: blank, &block)
     end
     if type == :boolean
       define_method("#{name}?") do |*args|
@@ -46,13 +46,14 @@ class ConfigBuilder
     remove_method("#{name}?") if method_defined?("#{name}?")
   end
 
-  def env_or_value(name, args, &)
+  def env_or_value(name, args, blank: false, &)
     value = env(name)
-    if value.present?
+    value = nil if !value.nil? && value.blank? && blank
+    if value.nil?
+      instance_exec(*args, &)
+    else
       reviver = reviver_map.fetch(name, proc(&:itself))
       instance_exec(value, *args, &reviver)
-    else
-      instance_exec(*args, &)
     end
   end
 

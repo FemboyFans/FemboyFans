@@ -3,7 +3,7 @@ import Page from "./utility/page";
 import {SendQueue} from "./send_queue";
 
 export default class FileStatuses {
-  static initialize() {
+  static initialize () {
     const queueButton = $("a#queue");
     queueButton.on("click", e => {
       e.preventDefault();
@@ -28,7 +28,7 @@ export default class FileStatuses {
     }
   }
 
-  static check_and_update_loading() {
+  static check_and_update_loading () {
     const mainText = $(".main-text");
     const start = Date.now();
     let done = false, interval;
@@ -59,6 +59,6 @@ export default class FileStatuses {
 }
 
 
-$(function() {
+$(function () {
   if (Page.matches("media-assets-statuses", "show")) FileStatuses.initialize();
 });
