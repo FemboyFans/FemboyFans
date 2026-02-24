@@ -4,20 +4,64 @@
     <li>Missing: <b><%= @status.missing.size %></b> primary, <b><%= @status.backup_missing.size %></b> backup</li>
     <li>Errors: <b><%= @status.errors.size %></b></li>
   </ul>
-  <br>
   <%= link_to("Refresh", { refresh: true }) %>
-  <hr>
   <br>
-  <h2>Primary</h2>
-  <%= table_for(@status.missing, class: "striped autofit") do |t| %>
-    <% t.column("Post") do |missing| %>
-      <dl>
-        <dt><%= link_to("post ##{missing.id}", post_path(missing.id)) %></dt>
-        <dd class="hint"><%= missing.md5 %></dd>
-      </dl>
+  <% if @status.missing.any? %>
+    <hr>
+    <br>
+    <h2>Primary</h2>
+    <%= table_for(@status.missing, class: "striped autofit") do |t| %>
+      <% t.column("Post") do |missing| %>
+        <dl>
+          <dt><%= link_to("post ##{missing.id}", post_path(missing.id)) %></dt>
+          <dd class="hint"><%= missing.md5 %></dd>
+        </dl>
+      <% end %>
+      <% t.column("Type") do |missing| %>
+        <b><%= missing.type %></b> <b><%= missing.format %></b>
+      <% end %>
     <% end %>
-    <% t.column("Type") do |missing| %>
-      <b><%= missing.type %></b> <b><%= missing.format %></b>
+  <% end %>
+  <% if @status.backup_missing.any? %>
+    <hr>
+    <br>
+    <h2>Backup</h2>
+    <%= table_for(@status.backup_missing, class: "striped autofit") do |t| %>
+      <% t.column("Post") do |missing| %>
+        <dl>
+          <dt><%= link_to("post ##{missing.id}", post_path(missing.id)) %></dt>
+          <dd class="hint"><%= missing.md5 %></dd>
+        </dl>
+      <% end %>
+      <% t.column("Type") do |missing| %>
+        <b><%= missing.type %></b> <b><%= missing.format %></b>
+      <% end %>
+    <% end %>
+  <% end %>
+  <% if @status.errors.any? %>
+    <hr>
+    <br>
+    <h2>Errors</h2>
+    <%= table_for(@status.errors, class: "striped autofit") do |t| %>
+      <% t.column("Post") do |missing| %>
+        <dl>
+          <dt><%= link_to("post ##{missing.id}", post_path(missing.id)) %></dt>
+          <dd class="hint"><%= missing.md5 %></dd>
+        </dl>
+      <% end %>
+      <% t.column("Type") do |missing| %>
+        <b><%= missing.type %></b> <b><%= missing.format %></b>
+      <% end %>
+      <% t.column("Error", td: { class: "col-expand" }) do |missing| %>
+        <p><%= missing.error.message %></p>
+        <% if missing.error.backtrace.present? %>
+          <ul class="backtrace">
+            <% Rails.backtrace_cleaner.clean(missing.error.backtrace).each do |b| %>
+              <li class="backtrace-line"><%= b %></li>
+            <% end %>
+          </ul>
+        <% end %>
+      <% end %>
     <% end %>
   <% end %>
 <% else %>

@@ -17,7 +17,7 @@ class PostFilesStatus
           @missing << { id: post.id, md5: post.md5, type: var.type, format: var.format }.with_open_access unless var.storage_manager.is_a?(StorageManager::Null) | var.file_exists?
           @backup_missing << { id: post.id, md5: post.md5, type: var.type, format: var.format }.with_open_access unless var.backup_storage_manager.is_a?(StorageManager::Null) || var.backup_file_exists?
         rescue StandardError => e
-          @errors << { id: post.id, md5: post.md5, type: var.type, format: var.format, message: e }.with_open_access
+          @errors << { id: post.id, md5: post.md5, type: var.type, format: var.format, error: e }.with_open_access
         end
         Cache.write("filestatus:missing:#{post.id}:#{post.md5}", @missing.select { |m| m.id == post.id && m.md5 == post.md5 }, expires_in: 3.dayS)
       end
