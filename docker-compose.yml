@@ -111,10 +111,10 @@ services:
       - ./docker/default.conf.template:/etc/nginx/templates/default.conf.template
     environment:
       <<: *common-env
-      NGINX_PORT: ${EXPOSED_NGINX_PORT:-4000}
+      NGINX_PORT: ${NGINX_EXPOSED_PORT:-4000}
       # port must be present here in dev, all requests that require CSRF tokens will break
       NGINX_PROXY_HOST: ${NGINX_PROXY_HOST:-${FEMBOYFANS_DOMAIN:-localhost:${EXPOSED_PROXY_PORT:-4000}}}
-      NGINX_PROXY_PORT: ${EXPOSED_PROXY_PORT:-4000}
+      NGINX_PROXY_PORT: ${NGINX_PROXY_PORT:-4000}
       NGINX_PROXY_SCHEME: ${NGINX_PROXY_SCHEME:-http}
     depends_on:
       autocompleted:
@@ -124,7 +124,7 @@ services:
       reports:
         condition: service_healthy
     ports:
-      - "${EXPOSED_SERVER_PORT:-4000}:${EXPOSED_NGINX_PORT:-4000}"
+      - "${EXPOSED_SERVER_PORT:-4000}:${NGINX_EXPOSED_PORT:-4000}"
 
   postgres:
     image: postgres:17.5-alpine3.20
