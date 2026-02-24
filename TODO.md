@@ -7,7 +7,7 @@
 | [app/models/pool.rb](app/models/pool.rb#L308) | 308 | finds wrong post when the pool contains multiple copies of the same post (#2042). |
 | [app/models/post.rb](app/models/post.rb#L1621) | 1621 | This must happen *after* the `is_deleted` flag is set to true (issue #3419). |
 | [app/logical/femboy_fans/paginator/active_record_extension.rb](app/logical/femboy_fans/paginator/active_record_extension.rb#L48) | 48 | Hack: in sequential pagination we fetch one more record than we need |
-| [test/test_helper.rb](test/test_helper.rb#L260) | 260 | Testing modules should not have a say in if we can or cannot use assert_equal with nil |
+| [test/test_helper.rb](test/test_helper.rb#L272) | 272 | Testing modules should not have a say in if we can or cannot use assert_equal with nil |
 
 ### FIXMEs
 | Filename | line # | FIXME |
@@ -53,7 +53,7 @@
 | [app/javascript/src/javascripts/utility/filter_util.js](app/javascript/src/javascripts/utility/filter_util.js#L27) | 27 | Don't re-parse this on every run |
 | [app/javascript/src/styles/common/_standard_elements.scss](app/javascript/src/styles/common/_standard_elements.scss#L29) | 29 | What if button is on a light background |
 | [app/views/posts/replacements/rejection_reasons/index.html.erb](app/views/posts/replacements/rejection_reasons/index.html.erb#L3) | 3 | convert to new table syntax |
-| [test/test_helper.rb](test/test_helper.rb#L262) | 262 | look into refactoring out minitest? |
+| [test/test_helper.rb](test/test_helper.rb#L274) | 274 | look into refactoring out minitest? |
 | [test/controllers/uploads_controller_test.rb](test/controllers/uploads_controller_test.rb#L146) | 146 | reimplement ability to disable notifications |
 | [test/unit/file_methods_test.rb](test/unit/file_methods_test.rb#L357) | 357 | neither video has audio |
 | [test/unit/post_test.rb](test/unit/post_test.rb#L515) | 515 | This was moved to be a controller concern to fix issues with internal post updates |
@@ -62,7 +62,7 @@
 | [test/unit/post_test.rb](test/unit/post_test.rb#L1627) | 1627 | Needs to reload relationship to obtain non cached value |
 | [test/unit/post_test.rb](test/unit/post_test.rb#L2066) | 2066 | These don't quite make sense, what should hide deleted posts and what shouldn't? |
 | [test/unit/post_test.rb](test/unit/post_test.rb#L2459) | 2459 | These are pretty messed up, both structurally, and expectation wise. |
-| [test/controllers/posts/replacements_controller_test.rb](test/controllers/posts/replacements_controller_test.rb#L124) | 124 | reimplement ability to disable notifications |
+| [test/controllers/posts/replacements_controller_test.rb](test/controllers/posts/replacements_controller_test.rb#L129) | 129 | reimplement ability to disable notifications |
 | [config/config.rb](config/config.rb#L162) | 162 | appealed posts should be visible, but this makes it far too easy to get the contents of deleted posts at a moments notice |
 
 ### HACKs
