@@ -19,10 +19,10 @@ class PostFilesStatus
         rescue StandardError => e
           @errors << { id: post.id, md5: post.md5, type: var.type, format: var.format, message: e }.with_open_access
         end
-        Cache.write("filestatus:missing:#{post.id}:#{post.md5}", @missing.select { |m| m.id == post.id && m.md5 == post.md5 }, expires_in: 1.day)
+        Cache.write("filestatus:missing:#{post.id}:#{post.md5}", @missing.select { |m| m.id == post.id && m.md5 == post.md5 }, expires_in: 3.dayS)
       end
     end
-    Cache.write("filestatus:missing", self, expires_in: 1.day)
+    Cache.write("filestatus:missing", self, expires_in: 3.days)
     self
   end
 
@@ -39,6 +39,10 @@ class PostFilesStatus
 
   def self.cached?
     get_cached != nil
+  end
+
+  def self.load!
+    new.load
   end
 
   def self.queue
