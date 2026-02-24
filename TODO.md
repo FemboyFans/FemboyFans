@@ -30,7 +30,6 @@
 | [app/logical/favorite_manager.rb](app/logical/favorite_manager.rb#L53) | 53 | Much better and more intelligent logic can exist for this |
 | [app/logical/user_attribute.rb](app/logical/user_attribute.rb#L47) | 47 | implement clone validation logic |
 | [app/logical/view_count_cache.rb](app/logical/view_count_cache.rb#L6) | 6 | replace with defaults with rails 7.2 upgrade |
-| [app/models/config.rb](app/models/config.rb#L129) | 129 | safeguards to ensure we don't override existing methods? |
 | [app/models/forum_topic.rb](app/models/forum_topic.rb#L173) | 173 | revisit muting, it may need to be further optimized or removed due to performance issues |
 | [app/models/media_asset.rb](app/models/media_asset.rb#L100) | 100 | reimplement ability to disable notifications |
 | [app/models/post_event.rb](app/models/post_event.rb#L94) | 94 | We need access control/blocks for associations |
