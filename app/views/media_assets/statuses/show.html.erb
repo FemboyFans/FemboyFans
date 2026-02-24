@@ -1,0 +1,25 @@
+<h1>File Statuses</h1>
+<% if @status.present? %>
+  <ul>
+    <li>Missing: <b><%= @status.missing.size %></b> primary, <b><%= @status.backup_missing.size %></b> backup</li>
+    <li>Errors: <b><%= @status.errors.size %></b></li>
+  </ul>
+  <br>
+  <%= link_to("Refresh", { refresh: true }) %>
+  <hr>
+  <br>
+  <h2>Primary</h2>
+  <%= table_for(@status.missing, class: "striped autofit") do |t| %>
+    <% t.column("Post") do |missing| %>
+      <dl>
+        <dt><%= link_to("post ##{missing.id}", post_path(missing.id)) %></dt>
+        <dd class="hint"><%= missing.md5 %></dd>
+      </dl>
+    <% end %>
+    <% t.column("Type") do |missing| %>
+      <b><%= missing.type %></b> <b><%= missing.format %></b>
+    <% end %>
+  <% end %>
+<% else %>
+  <span class="main-text">The data is not currently cached. Click <%= link_to("here", "#", id: "queue") %> here to load it.</span>
+<% end %>

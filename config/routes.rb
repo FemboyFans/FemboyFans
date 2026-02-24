@@ -242,6 +242,7 @@ Rails.application.routes.draw do
   end
   resources(:email_blacklists, only: %i[new create destroy index])
   scope(module: :media_assets, path: "media_assets") do
+    resource(:status, as: "media_asset_status", only: %i[show update])
     resources(:mascots, only: %i[index], as: "mascot_media_assets")
     resources(:post_replacements, only: %i[index], as: "post_replacement_media_assets") do
       member do

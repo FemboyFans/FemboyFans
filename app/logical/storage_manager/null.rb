@@ -14,6 +14,11 @@ module StorageManager
       # no-op
     end
 
+    def exists?(_path)
+      # no-op
+      false
+    end
+
     def move_file(old_path, new_path)
       # no-op
     end

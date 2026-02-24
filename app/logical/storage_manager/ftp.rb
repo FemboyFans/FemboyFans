@@ -78,6 +78,20 @@ module StorageManager
       end
     end
 
+    def exists?(path)
+      log(%{exists("#{path}")}) do
+        exists = false
+        open_ftp do |ftp|
+          ignore_notfound do
+            ftp.size(path)
+            exists = true
+          end
+        end
+
+        exists
+      end
+    end
+
     def move_file(old_path, new_path)
       log(%{move_file("#{old_path}", "#{new_path}")}) do
         open(old_path) do |file|

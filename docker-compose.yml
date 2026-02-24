@@ -112,7 +112,8 @@ services:
     environment:
       <<: *common-env
       NGINX_PORT: ${EXPOSED_NGINX_PORT:-4000}
-      NGINX_PROXY_HOST: ${NGINX_PROXY_HOST:-${FEMBOYFANS_DOMAIN:-localhost}}
+      # port must be present here in dev, all requests that require CSRF tokens will break
+      NGINX_PROXY_HOST: ${NGINX_PROXY_HOST:-${FEMBOYFANS_DOMAIN:-localhost:${EXPOSED_SERVER_PORT:-4000}}}
       NGINX_PROXY_PORT: ${EXPOSED_SERVER_PORT:-4000}
       NGINX_PROXY_SCHEME: http
     depends_on:
@@ -123,7 +124,7 @@ services:
       reports:
         condition: service_healthy
     ports:
-      - "${EXPOSED_SERVER_PORT:-4000}:${EXPOSED_SERVER_PORT:-4000}"
+      - "${EXPOSED_SERVER_PORT:-4000}:${EXPOSED_NGINX_PORT:-4000}"
 
   postgres:
     image: postgres:17.5-alpine3.20

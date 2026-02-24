@@ -17,6 +17,14 @@ class MediaAssetPolicy < ApplicationPolicy
     member? && creator?
   end
 
+  def show_statuses?
+    user.is_admin?
+  end
+
+  def queue_statuses?
+    user.is_admin?
+  end
+
   def creator?
     !record.is_a?(MediaAsset) || record.creator_id == user.id
   end

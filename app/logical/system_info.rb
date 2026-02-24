@@ -18,7 +18,10 @@ class SystemInfo
   def reports
     @reports ||= begin
       data = Reports.get_stats
-      RecursiveOpenStruct.new(date: { code: data["date"], db: data["dbDate"] }, version: { schema: data["schemaVersion"], db: data["dbVersion"] }, health: { healthy: data["healthy"], error: data["error"] }, latency: data["latency"])
+      OpenHash.from(date:    { code: data["date"], db: data["dbDate"] },
+                    version: { schema: data["schemaVersion"], db: data["dbVersion"] },
+                    health:  { healthy: data["healthy"], error: data["error"] },
+                    latency: data["latency"])
     end
   end
 
@@ -54,7 +57,7 @@ class SystemInfo
       rescue ActiveRecord::PendingMigrationError
         pending_migrations = true
       end
-      RecursiveOpenStruct.new(date: data["date"], connection_count: data["connection_count"], deadlocks: data["deadlocks"], version: data["version"], latency: latency, database: ApplicationRecord.connection.current_database, latest_migration: data["latest_migration"], latest_migration_date: Time.strptime(data["latest_migration"], "%Y%m%d%H%M%S"), migration_count: data["migration_count"], pending_migrations: pending_migrations)
+      OpenHash.from(date: data["date"], connection_count: data["connection_count"], deadlocks: data["deadlocks"], version: data["version"], latency: latency, database: ApplicationRecord.connection.current_database, latest_migration: data["latest_migration"], latest_migration_date: Time.strptime(data["latest_migration"], "%Y%m%d%H%M%S"), migration_count: data["migration_count"], pending_migrations: pending_migrations)
     end
   end
 
@@ -67,7 +70,7 @@ class SystemInfo
       connected_clients = info["connected_clients"].to_i
       clients_per_db = Cache.redis.client("LIST").split("\n").map { |l| l.match(/db=(\d+)/)[1] }.tally
       keys_per_db = Cache.redis.info("KEYSPACE").to_h { |k, v| [k[2..], v.match(/keys=(\d+)/)[1].to_i] }
-      RecursiveOpenStruct.new(latency: latency, current_db: current_db, version: version, connected_clients: connected_clients, clients_per_db: clients_per_db, keys_per_db: keys_per_db, databases: keys_per_db.keys)
+      OpenHash.from(latency: latency, current_db: current_db, version: version, connected_clients: connected_clients, clients_per_db: clients_per_db, keys_per_db: keys_per_db, databases: keys_per_db.keys)
     end
   end
 
@@ -78,7 +81,7 @@ class SystemInfo
       all_stats.keys.to_h do |server|
         stats = all_stats[server]
         latency = time { Dalli::Client.new(server).version }
-        [server, RecursiveOpenStruct.new(
+        [server, OpenHash.from(
           version:     stats["version"],
           connections: stats["curr_connections"].to_i,
           date:        Time.zone.at(stats["time"].to_i).utc.iso8601,
@@ -97,7 +100,7 @@ class SystemInfo
         { name: r["index"], docs: r["docs.count"].to_i }
       end
       health = DocumentStore.client.cat.health(format: "json").first
-      RecursiveOpenStruct.new(version: version, latency: latency, indexes: indexes.pluck(:name), docs_per_index: indexes.to_h { |i| [i[:name], i[:docs]] }, date: Time.at(health["epoch"].to_i).utc.iso8601, status: health["status"])
+      OpenHash.from(version: version, latency: latency, indexes: indexes.pluck(:name), docs_per_index: indexes.to_h { |i| [i[:name], i[:docs]] }, date: Time.at(health["epoch"].to_i).utc.iso8601, status: health["status"])
     end
   end
 
@@ -106,7 +109,7 @@ class SystemInfo
   end
 
   def main
-    @main ||= RecursiveOpenStruct.new(ruby_version: RUBY_VERSION, rails_version: Rails.version, node_version: `node --version`.strip, alpine_version: File.read("/etc/alpine-release").strip, environment: Rails.env, hostname: FemboyFans.config.hostname, name: Config.instance.app_name, url: FemboyFans.config.app_url, description: Config.instance.app_description, safe_mode: Config.instance.safe_mode?, version: FemboyFans.config.version, date: Time.now.utc.iso8601, timezone: Time.zone.name, timezone_sys: `date +%Z`[..-1])
+    @main ||= OpenHash.from(ruby_version: RUBY_VERSION, rails_version: Rails.version, node_version: `node --version`.strip, alpine_version: File.read("/etc/alpine-release").strip, environment: Rails.env, hostname: FemboyFans.config.hostname, name: Config.instance.app_name, url: FemboyFans.config.app_url, description: Config.instance.app_description, safe_mode: Config.instance.safe_mode?, version: FemboyFans.config.version, date: Time.now.utc.iso8601, timezone: Time.zone.name, timezone_sys: `date +%Z`[..-1])
   end
 
   def gems

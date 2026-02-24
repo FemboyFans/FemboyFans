@@ -38,6 +38,10 @@ module StorageManager
       raise(NotImplementedError, "#{self.class.name}#open not implemented")
     end
 
+    def exists?(path)
+      raise(NotImplementedError, "#{self.class.name}#exists not implemented")
+    end
+
     # Move a file from the old location to the new location
     def move_file(old_path, new_path)
       raise(NotImplementedError, "#{self.class.name}#move_file not implemented")

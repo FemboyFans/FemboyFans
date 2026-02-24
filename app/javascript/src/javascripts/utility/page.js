@@ -33,9 +33,8 @@ export default class Page {
   static matches (controller, action = "") {
     if (!this._controller) this._init();
 
-    if (action)
-      return this._controller == controller && this._action == action;
-    return this._controller == controller;
+    if (action) return this._controller === controller && this._action === action;
+    return this._controller === controller;
   }
 
 }

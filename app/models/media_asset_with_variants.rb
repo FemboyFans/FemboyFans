@@ -13,8 +13,8 @@ class MediaAssetWithVariants < MediaAsset
     module ClassMethods
       def variant_valid?(options, width, height)
         return true if options.method == :none
-        return true if options.method == :exact && width > options.width && height > options.height
-        return true if options.method == :scaled && (options.width.nil? || width > options.width) && (options.height.nil? || height > options.height)
+        return true if options.method == :exact && width > options.width && height >= options.height
+        return true if options.method == :scaled && (options.width.nil? || width >= options.width) && (options.height.nil? || height >= options.height)
         false
       end
 
@@ -194,8 +194,16 @@ class MediaAssetWithVariants < MediaAsset
       storage_manager.file_path(md5, ext, type, protected: protected, prefix: path_prefix, protected_prefix: protected_path_prefix, hierarchical: hierarchical?)
     end
 
+    def file_exists?(protected: is_protected?)
+      storage_manager.exists?(file_path(protected: protected))
+    end
+
     def backup_file_path(protected: is_protected?)
       backup_storage_manager.file_path(md5, ext, type, protected: protected, prefix: path_prefix, protected_prefix: protected_path_prefix, hierarchical: hierarchical?)
+    end
+
+    def backup_file_exists?(protected: is_protected?)
+      backup_storage_manager.exists?(backup_file_path(protected: protected))
     end
 
     def file_url(user:, protected: is_protected?)

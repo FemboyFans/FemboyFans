@@ -67,10 +67,10 @@ module FemboyFans
     end
 
     module Hash
-      def to_openhash
+      def to_open_hash
         OpenHash.from(self)
       end
-      alias with_open_access to_openhash
+      alias with_open_access to_open_hash
     end
   end
 end
