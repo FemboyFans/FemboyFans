@@ -197,7 +197,7 @@ module FemboyFans
         config(:timeout) { 5 }
         config(:config, env: false) do
           %i[address port domain user_name password authentication enable_starttls enable_starttls_auto open_timeout read_timeout]
-            .index_with { |n| public_send(:"smtp_#{n}") }
+            .index_with { |n| public_send(:"email_smtp_#{n}") }
             .compact_blank
         end
       end
@@ -206,8 +206,8 @@ module FemboyFans
         config(:arguments, :array) { %w[-i] }
         config(:config, env: false) do
           {
-            location:  sendmail_location,
-            arguments: sendmail_arguments,
+            location:  email_sendmail_location,
+            arguments: email_sendmail_arguments,
           }
         end
       end
