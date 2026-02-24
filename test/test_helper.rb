@@ -50,9 +50,19 @@ BCrypt::Engine::DEFAULT_COST = BCrypt::Engine::MIN_COST
 Post.document_store.create_index!(delete_existing: true)
 PostVersion.document_store.create_index!(delete_existing: true)
 
+module CommonTestHelpers
+  def disable_image_size_checks!
+    Config.any_instance.stubs(:image_width).returns({ "max" => Float::INFINITY, "min" => 0 }.with_open_access)
+    Config.any_instance.stubs(:image_height).returns({ "max" => Float::INFINITY, "min" => 0 }.with_open_access)
+    Config.any_instance.stubs(:mascot_width).returns({ "max" => Float::INFINITY, "min" => 0 }.with_open_access)
+    Config.any_instance.stubs(:mascot_height).returns({ "max" => Float::INFINITY, "min" => 0 }.with_open_access)
+  end
+end
+
 class ActiveSupport::TestCase # rubocop:disable Style/ClassAndModuleChildren
   include(ActionDispatch::TestProcess::FixtureFile)
   include(FactoryBot::Syntax::Methods)
+  include(CommonTestHelpers)
 
   storage_root = Rails.root.join("tmp/test-storage2").to_s
   setup do
@@ -120,6 +130,8 @@ class ActiveSupport::TestCase # rubocop:disable Style/ClassAndModuleChildren
 end
 
 class ActionDispatch::IntegrationTest # rubocop:disable Style/ClassAndModuleChildren
+  include(CommonTestHelpers)
+
   def login_as(user)
     post(session_path, params: { session: { name: user.name, password: user.password } })
 

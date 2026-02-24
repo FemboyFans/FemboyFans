@@ -11,10 +11,10 @@ class FileValidator
   def validate(max_file_sizes: nil, min_width: nil, max_width: nil, min_height: nil, max_height: nil)
     # default arguments are evaluated when the method is defined
     max_file_sizes ||= Config.max_file_sizes.transform_values { |v| v * 1.megabyte }
-    min_width ||= Config.image_width.min
-    max_width ||= Config.image_width.max
-    min_height ||= Config.image_height.min
-    max_height ||= Config.image_height.max
+    min_width ||= Config.image_width[:min]
+    max_width ||= Config.image_width[:max]
+    min_height ||= Config.image_height[:min]
+    max_height ||= Config.image_height[:max]
     validate_file_ext(max_file_sizes)
     validate_file_size(max_file_sizes)
     validate_file_integrity
@@ -64,7 +64,7 @@ class FileValidator
       record.errors.add(:image_width, "is too small (width: #{record.image_width}; min width: #{min_width})")
     elsif record.image_width > max_width
       record.errors.add(:image_width, "is too large (width: #{record.image_width}; max width: #{max_width})")
-    elsif record.image_height > min_height
+    elsif record.image_height < min_height
       record.errors.add(:image_height, "is too small (height: #{record.image_height}; min height: #{min_height})")
     elsif record.image_height > max_height
       record.errors.add(:image_height, "is too large (height: #{record.image_height}; max height: #{max_height})")

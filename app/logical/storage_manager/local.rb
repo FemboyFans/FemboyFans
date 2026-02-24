@@ -53,7 +53,7 @@ module StorageManager
 
     def move_file(old_path, new_path)
       log(%{move_file("#{old_path}", "#{new_path}")}) do
-        if exists(old_path)
+        if exists?(old_path)
           FileUtils.mkdir_p(File.dirname(p(new_path)))
           FileUtils.mv(p(old_path), p(new_path))
           FileUtils.chmod(DEFAULT_PERMISSIONS, p(new_path))

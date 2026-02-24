@@ -15,6 +15,7 @@ module Posts
 
       context("create action") do
         should("work") do
+          disable_image_size_checks!
           file = fixture_file_upload("alpha.png")
           params = {
             format:           :json,
@@ -33,6 +34,7 @@ module Posts
         end
 
         should("work with direct url") do
+          disable_image_size_checks!
           file = fixture_file_upload("alpha.png")
           create(:upload_whitelist, pattern: "http://example.com/*")
           CloudflareService.stubs(:ips).returns([])
@@ -54,6 +56,7 @@ module Posts
         end
 
         should("automatically approve replacements by approvers") do
+          disable_image_size_checks!
           file = fixture_file_upload("alpha.png")
           params = {
             format:           :json,
@@ -76,6 +79,7 @@ module Posts
         end
 
         should("not automatically approve replacements by approvers if as_pending=true") do
+          disable_image_size_checks!
           file = fixture_file_upload("alpha.png")
           params = {
             format:           :json,
@@ -101,6 +105,7 @@ module Posts
           setup do
             @admin = create(:admin_user)
             @replacement.destroy_with(@admin)
+            disable_image_size_checks!
             @upload2 = create(:apng_upload, uploader: @user)
             @post2 = @upload2.post
             @post2.expunge!(@admin)
@@ -132,6 +137,7 @@ module Posts
         end
 
         should("restrict access") do
+          disable_image_size_checks!
           FemboyFans.config.stubs(:disable_age_checks).returns(true)
           file = fixture_file_upload("alpha.png")
           assert_access(User::Levels::MEMBER, anonymous_response: :forbidden) do |user|
