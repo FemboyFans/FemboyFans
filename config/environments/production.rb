@@ -66,7 +66,7 @@ Rails.application.configure do
   if FemboyFans.config.email.delivery_method
     config.action_mailer.delivery_method = FemboyFans.config.email.delivery_method
     method, settings = FemboyFans.config.email.config
-    config.action_mailer.public_send(method, settings)
+    config.action_mailer.public_send("#{method}=", settings)
   else
     TraceLogger.warn("No email delivery is configured")
   end
