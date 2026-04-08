@@ -102,7 +102,7 @@ class UploadWhitelistsControllerTest < ActionDispatch::IntegrationTest
         assert_equal(false, json["is_allowed"])
       end
 
-      should("handle invalid urls") do
+      should("handle an invalid url") do
         get_auth(is_allowed_upload_whitelists_path, @user, params: { url: "not a valid url ://", format: :json })
         assert_response(:success)
         json = response.parsed_body
