@@ -1,7 +1,7 @@
 <%= render("secondary_links") %>
 
 <% is_self = @user == CurrentUser.user %>
-<h1>Followed Tags<%= ": #{link_to_user(@user)}".html_safe unless is_self %></h1>
+<h1>Followed Tags<%= safe_join([": ", link_to_user(@user)]) unless is_self %></h1>
 
 <%= table_for(@followed_tags) do |t| %>
   <% t.column("Tag") do |follow| %>

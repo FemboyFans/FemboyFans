@@ -20,54 +20,54 @@
         <% if user.is_banned? && user.recent_ban %>
           <span>Ban reason</span>
           <span>
-            <%= presenter.ban_reason(self) %>
+            <%= presenter.ban_reason %>
           </span>
         <% end %>
 
         <span>Post Changes</span>
         <span>
-          <%= presenter.post_version_count(self) %>
+          <%= presenter.post_version_count %>
           <%= link_to_enclosed_if(policy(UserRevert).create? && UserRevert.can_revert?(user), "revert all", new_user_revert_path(user_id: user.id), char: "[]") %>
         </span>
 
         <span>Wiki Page Changes</span>
-        <span><%= presenter.wiki_page_version_count(self) %></span>
+        <span><%= presenter.wiki_page_version_count %></span>
 
         <span>Forum Posts</span>
         <span>
-          <%= presenter.forum_post_count(self) %>
+          <%= presenter.forum_post_count %>
           <%= link_to_enclosed("mentions", forum_posts_path(search: { body_matches: user.name })) %>
           <%= link_to_enclosed_if(ForumPostVotePolicy.new(CurrentUser.user, user).index?, "#{user.forum_post_vote_count} votes", action: "index", controller: "forums/posts/votes", search: { user_name: user.name }) %>
           <%= link_to_enclosed_if(policy(EditHistory).index?, "edits", edit_histories_path(search: { versionable_type: "ForumPost", user_id: user.id })) %>
         </span>
 
         <span>Note Changes</span>
-        <span><%= presenter.note_version_count(self) %> on <%= presenter.noted_posts_count(self) %> posts</span>
+        <span><%= presenter.note_version_count %> on <%= presenter.noted_posts_count %> posts</span>
 
         <span>Artist Changes</span>
-        <span><%= presenter.artist_version_count(self) %></span>
+        <span><%= presenter.artist_version_count %></span>
 
         <span>Pool Changes</span>
-        <span><%= presenter.pool_version_count(self) %></span>
+        <span><%= presenter.pool_version_count %></span>
 
         <span>Comments</span>
         <span>
-          <%= presenter.comment_count(self) %> on <%= presenter.commented_posts_count(self) %> <%= "post".pluralize(presenter.commented_on_posts_count) %>
+          <%= presenter.comment_count %> on <%= presenter.commented_posts_count %> <%= "post".pluralize(presenter.commented_on_posts_count) %>
           <%= link_to_enclosed("mentions", comments_path(group_by: :comment, search: { body_matches: user.name })) %>
           <%= link_to_enclosed_if(CommentVotePolicy.new(CurrentUser.user, user).index?, "#{user.comment_vote_count} votes", action: "index", controller: "comments/votes", search: { user_name: user.name }) %>
           <%= link_to_enclosed_if(policy(EditHistory).index?, "edits", edit_histories_path(search: { versionable_type: "Comment", user_id: user.id })) %>
         </span>
 
         <% if CurrentUser.user.id == user.id || CurrentUser.user.is_staff? %>
-          <% if presenter.previous_names(self).present? %>
+          <% if presenter.previous_names.present? %>
             <span>Previous Names</span>
-            <span><%= presenter.previous_names(self) %> -> <%= user.name %></span>
+            <span><%= presenter.previous_names %> -> <%= user.name %></span>
           <% end %>
         <% end %>
 
         <% if CurrentUser.user.is_staff? %>
           <span>Age Verified</span>
-          <span><%= presenter.age_verified(self) %></span>
+          <span><%= presenter.age_verified %></span>
         <% end %>
       </div>
 
@@ -86,7 +86,7 @@
 
         <span>Upload Limit</span>
         <span>
-          <%= presenter.upload_limit(self) %>
+          <%= presenter.upload_limit %>
           <% if CurrentUser.user.id == user.id  %>
             <%= link_to_enclosed("help", upload_limit_users_path) %>
           <% else %>
@@ -96,18 +96,18 @@
 
         <% if presenter.policy.show_approvals? %>
           <span>Approvals</span>
-          <span><%= presenter.approval_count(self) %></span>
+          <span><%= presenter.approval_count %></span>
         <% end %>
 
         <% if presenter.policy.show_flags? %>
           <span>Flags</span>
-          <span><%= presenter.flag_count(self) %></span>
+          <span><%= presenter.flag_count %></span>
         <% end %>
 
         <% if presenter.policy.show_tickets? %>
             <span>Tickets</span>
             <span>
-              <%= presenter.ticket_count(self) %>
+              <%= presenter.ticket_count %>
               <%= link_to_enclosed("pending", tickets_path(search: { creator_id: user.id, status: "pending" }), char: "[]") %>
               <%= link_to_enclosed_if(policy(Ticket).can_search_attribute?(:accused_id), "accused", tickets_path(search: { accused_id: user.id }), char: "[]") %>
             </span>

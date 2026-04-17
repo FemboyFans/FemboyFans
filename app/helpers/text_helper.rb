@@ -2,7 +2,7 @@
 
 module TextHelper
   def text_diff(this, that)
-    Diffy::Diff.new(this, that, ignore_crlf: true).to_s(:html).html_safe
+    Diffy::Diff.new(this, that, ignore_crlf: true).to_s(:html).html_safe # rubocop: disable Rails/OutputSafety
   end
 
   def hint(text)

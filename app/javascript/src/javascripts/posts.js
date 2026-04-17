@@ -7,6 +7,8 @@ import LStorage from "./utility/storage";
 import PostSet from "./post_sets";
 import Blacklist from "./blacklists";
 import Favorite from "./favorites";
+import Uploader from "./uploader";
+import CurrentUser from "./models/CurrentUser";
 
 let Post = {};
 
@@ -14,7 +16,7 @@ Post.pending_update_count = 0;
 Post.resizeMode = "unknown";
 Post._blobFrameMap = {};
 
-Post.initialize_all = function () {
+Post.initialize_all = async function () {
 
   if ($("#c-posts").length) {
     this.initialize_shortcuts();
@@ -37,6 +39,7 @@ Post.initialize_all = function () {
     this.initialize_moderation();
     this.initialize_hide_notes();
     this.initialize_thumbnail_frame_preview();
+    if (CurrentUser.isMember) await this.initialize_upload_settings();
   }
 
   if ($("#p-index-by-post").length)
@@ -116,7 +119,7 @@ Post.initialize_tag_actions = function () {
     SendQueue.add(function () {
       $.ajax({
         type: "PUT",
-        url: `/tags/${tag}/${followed ? "un" : ""}follow.json`,
+        url: `/tags/${encodeURIComponent(tag)}/${followed ? "un" : ""}follow.json`,
         dataType: "json",
         success: function () {
           if (followed) {
@@ -1288,6 +1291,11 @@ Post.initialize_thumbnail_frame_preview = function () {
   $input.on("click.femboyfans", Post.preview_thumbnail_frame);
 };
 
+Post.initialize_upload_settings = async function() {
+  const id = Number($("meta[name=post-id]").attr("content"));
+  await Uploader.loadSettings(id);
+}
+
 Post.preview_thumbnail_frame = async function (event) {
   event.preventDefault();
   const $input = $("#post_thumbnail_frame");
@@ -1326,8 +1334,6 @@ Post.get_blob_url_for_frame = async function (frame, post_id = Post.currentPost(
   return url;
 };
 
-$(document).ready(function () {
-  Post.initialize_all();
-});
+$(async() => Post.initialize_all());
 
 export default Post;

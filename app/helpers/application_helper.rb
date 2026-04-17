@@ -39,11 +39,11 @@ module ApplicationHelper
 
   def dtext_ragel(text, **)
     parsed = DTextHelper.parse(text, **)
-    return raw("") if parsed.nil?
+    return raw("") if parsed.nil? # rubocop:disable Rails/OutputSafety
     deferred_post_ids.merge(parsed[:post_ids]) if parsed[:post_ids].present?
-    raw(parsed[:dtext])
+    raw(parsed[:dtext]) # rubocop:disable Rails/OutputSafety
   rescue DText::Error
-    raw("")
+    raw("") # rubocop:disable Rails/OutputSafety
   end
 
   def bulk_dtext_ragel(texts, **)
@@ -51,7 +51,7 @@ module ApplicationHelper
     return {} if parsed.empty?
     parsed.to_h do |text, hash|
       deferred_post_ids.merge(hash[:post_ids]) if hash[:post_ids].present?
-      [text, raw(hash[:dtext])]
+      [text, raw(hash[:dtext])] # rubocop:disable Rails/OutputSafety
     end
   rescue DText::Error
     {}
@@ -62,7 +62,7 @@ module ApplicationHelper
     if options[:inline]
       dtext_ragel(text, **options)
     else
-      raw(%(<div class="styled-dtext">#{dtext_ragel(text, **options)}</div>))
+      tag.div(dtext_ragel(text, **options), class: "styled-dtext")
     end
   end
 
@@ -72,7 +72,7 @@ module ApplicationHelper
     else
       parsed = bulk_dtext_ragel(texts, **options)
       parsed.transform_values do |dtext|
-        raw(%(<div class="styled-dtext">#{dtext}</div>))
+        tag.div(dtext, class: "styled-dtext")
       end
     end
   end
@@ -86,7 +86,7 @@ module ApplicationHelper
     instance = instance_variable_get("@#{instance_name}")
 
     if instance&.errors&.any?
-      %(<div class="error-messages ui-state-error ui-corner-all"><strong>Error</strong>: #{instance.__send__(:errors).full_messages.join(', ')}</div>).html_safe
+      tag.div(safe_join([tag.b("Error"), ": ", instance.send(:errors).full_messages.join(", ")]), class: "error-messages ui-state-error ui-corner-all")
     else
       ""
     end
@@ -103,9 +103,9 @@ module ApplicationHelper
     elsif time.past?
       text = "#{time_ago_in_words(time)} ago"
       text = text.gsub(/almost|about|over/, "") if compact
-      raw(time_tag(text, time))
+      time_tag(text, time)
     else
-      raw(time_tag("in #{distance_of_time_in_words(Time.now, time)}", time))
+      time_tag("in #{distance_of_time_in_words(Time.now, time)}", time)
     end
   end
 
@@ -237,7 +237,12 @@ module ApplicationHelper
     if raw
       link
     else
-      content_for(:secondary_links) { "#{'| ' if separator}#{link}".html_safe }
+      content_for(:secondary_links) do
+        safe_join([
+          ("| " if separator),
+          link,
+        ].compact)
+      end
     end
   end
 
@@ -290,12 +295,7 @@ module ApplicationHelper
            end
   end
 
-  def sitemap_link(url, **options)
-    <<~XML.html_safe
-      <url>
-        <loc>#{url}</loc>
-        #{options.map { |k, v| "<#{k}>#{v}</#{k}>" }.join("\n")}
-      </url>
-    XML
+  def page?(controller, action = "")
+    params[:controller].downcase.to_s == controller.downcase.to_s && (action.blank? || params[:action].downcase.to_s == action.downcase.to_s)
   end
 end

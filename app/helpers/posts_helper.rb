@@ -7,13 +7,13 @@ module PostsHelper
 
   def next_page_url
     current_page = (params[:page] || 1).to_i
-    url_for(nav_params_for(current_page + 1)).html_safe
+    url_for(nav_params_for(current_page + 1))
   end
 
   def prev_page_url
     current_page = (params[:page] || 1).to_i
     if current_page >= 2
-      url_for(nav_params_for(current_page - 1)).html_safe
+      url_for(nav_params_for(current_page - 1))
     end
   end
 
@@ -23,7 +23,7 @@ module PostsHelper
       source_link = decorated_link_to(source.sub(%r{\Ahttps?://(?:www\.)?}i, ""), source, target: "_blank", rel: "nofollow noreferrer noopener")
 
       if CurrentUser.user.is_janitor?
-        source_link += " ".html_safe + link_to("»", posts_path(tags: "source:#{source.sub(%r{[^/]*$}, '')}"), rel: "nofollow")
+        source_link = safe_join([source_link, "", link_to("»", posts_path(tags: "source:#{source.sub(%r{[^/]*$}, '')}"), rel: "nofollow")])
       end
 
       source_link
@@ -35,38 +35,30 @@ module PostsHelper
   end
 
   def has_parent_message(post, parent_post_set)
-    html = +""
-
-    html += "Parent: "
-    html += link_to("post ##{post.parent_id}", post_path(id: post.parent_id))
-    html += " (deleted)" if parent_post_set.parent.first.is_deleted?
-
+    sibling_parts = []
     sibling_count = parent_post_set.children.count - 1
     if sibling_count > 0
-      html += " that has "
+      sibling_parts << " that has "
       text = sibling_count == 1 ? "a sibling" : "#{sibling_count} siblings"
-      html += link_to(text, posts_path(tags: "parent:#{post.parent_id}"))
+      sibling_parts << link_to(text, posts_path(tags: "parent:#{post.parent_id}"))
     end
 
-    html += " (#{link_to('learn more', help_page_path(id: 'post_relationships'))}) "
-
-    html += link_to("show »", "#", id: "has-parent-relationship-preview-link")
-
-    html.html_safe
+    safe_join([
+      "Parent: ", link_to("post ##{post.parent_id}", post_path(id: post.parent_id)),
+      (" (deleted)" if parent_post_set.parent.first.is_deleted?),
+      *sibling_parts,
+      " (", link_to("learn more", help_page_path(id: "post_relationships")), ") ",
+      link_to("show »", "#", id: "has-parent-relationship-preview-link"),
+    ])
   end
 
   def has_children_message(post, children_post_set)
-    html = +""
-
-    html += "Children: "
     text = children_post_set.children.one? ? "1 child" : "#{children_post_set.children.count} children"
-    html += link_to(text, posts_path(tags: "parent:#{post.id}"))
-
-    html += " (#{link_to('learn more', help_page_path(id: 'post_relationships'))}) "
-
-    html += link_to("show »", "#", id: "has-children-relationship-preview-link")
-
-    html.html_safe
+    safe_join([
+      "Children: ", link_to(text, posts_path(tags: "parent:#{post.id}")),
+      " (", link_to("learn more", help_page_path(id: "post_relationships")), ") ",
+      link_to("show »", "#", id: "has-children-relationship-preview-link"),
+    ])
   end
 
   def is_pool_selected?(pool)
@@ -121,13 +113,14 @@ module PostsHelper
     deleted = CurrentUser.user.is_staff? ? user.deleted_feedback_count : 0
 
     return "" if (positive + neutral + negative + deleted) == 0
-    positive_html = %(<span class="user-feedback-positive">#{positive}</span>).html_safe if positive > 0
-    neutral_html = %(<span class="user-feedback-neutral">#{neutral}</span>).html_safe if neutral > 0
-    negative_html = %(<span class="user-feedback-negative">#{negative}</span>).html_safe if negative > 0
-    deleted_html = %(<span class="user-feedback-deleted">#{deleted}</span>).html_safe if deleted > 0
-    list_html = "#{positive_html} #{neutral_html} #{negative_html} #{deleted_html}".strip
+    list = [
+      (tag.span(positive, class: "user-feedback-positive") if positive > 0),
+      (tag.span(neutral, class: "user-feedback-neutral") if neutral > 0),
+      (tag.span(negative, class: "user-feedback-negative") if negative > 0),
+      (tag.span(deleted, class: "user-feedback-deleted") if deleted > 0),
+    ].compact
 
-    link_to(%{(#{list_html})}.html_safe, user_feedbacks_path(search: { user_id: user.id }))
+    link_to(safe_join(["(", *list, ")"]), user_feedbacks_path(search: { user_id: user.id }))
   end
 
   private
@@ -161,7 +154,7 @@ module PostsHelper
       score_tag = tag.span(post.score, class: "post-score-#{post.id} post-score #{score_class(post_score)}", title: "#{post.up_score} up/#{post.down_score} down")
       CurrentUser.user.can_post_vote? ? up_tag + score_tag + down_tag : ""
     else
-      vote_block = tag.span(" (#{up_tag} vote #{down_tag})".html_safe)
+      vote_block = tag.span(safe_join([" (", up_tag, " vote ", down_tag, ")"]))
       score_tag = tag.span(post.score, class: "post-score-#{post.id} post-score #{score_class(post_score)}", title: "#{post.up_score} up/#{post.down_score} down")
       score_tag + (CurrentUser.user.can_post_vote? ? vote_block : "")
     end
@@ -208,50 +201,52 @@ module PostsHelper
 
   def post_ribbons(post, user = CurrentUser.user)
     tag.div(class: "ribbons") do # rubocop:disable Metrics/BlockLength
-      [if post.parent_id.present?
-         if post.has_visible_children?(user)
-           tag.div(class: "ribbon left has-parent has-children", title: "Has Parent\nHas Children") do
-             tag.span
-           end
-         else
-           tag.div(class: "ribbon left has-parent", title: "Has Parent") do
-             tag.span
-           end
-         end
-       elsif post.has_visible_children?(user)
-         tag.div(class: "ribbon left has-children", title: "Has Children") do
-           tag.span
-         end
-       end,
-       if post.is_flagged?
-         if post.is_pending?
-           tag.div(class: "ribbon right is-flagged is-pending", title: "Flagged\nPending") do
-             tag.span
-           end
-         else
-           tag.div(class: "ribbon right is-flagged", title: "Flagged") do
-             tag.span
-           end
-         end
-       elsif post.is_pending?
-         tag.div(class: "ribbon right is-pending", title: "Pending") do
-           tag.span
-         end
-       end,].join.html_safe
+      safe_join([if post.parent_id.present?
+                   if post.has_visible_children?(user)
+                     tag.div(class: "ribbon left has-parent has-children", title: "Has Parent\nHas Children") do
+                       tag.span
+                     end
+                   else
+                     tag.div(class: "ribbon left has-parent", title: "Has Parent") do
+                       tag.span
+                     end
+                   end
+                 elsif post.has_visible_children?(user)
+                   tag.div(class: "ribbon left has-children", title: "Has Children") do
+                     tag.span
+                   end
+                 end,
+                 if post.is_flagged?
+                   if post.is_pending?
+                     tag.div(class: "ribbon right is-flagged is-pending", title: "Flagged\nPending") do
+                       tag.span
+                     end
+                   else
+                     tag.div(class: "ribbon right is-flagged", title: "Flagged") do
+                       tag.span
+                     end
+                   end
+                 elsif post.is_pending?
+                   tag.div(class: "ribbon right is-pending", title: "Pending") do
+                     tag.span
+                   end
+                 end,])
     end
   end
 
   def post_vote_buttons(post, user = CurrentUser.user)
     tag.div(id: "vote-buttons") do
-      tag.button("", class: "button vote-button vote score-neutral", disabled: post.is_vote_locked?(user), data: { action: "up" }) do
-        tag.span(class: "post-vote-up-#{post.id} score-#{post.is_voted_up?(user) ? 'positive' : 'neutral'}")
-      end +
+      safe_join([
+        tag.button("", class: "button vote-button vote score-neutral", disabled: post.is_vote_locked?(user), data: { action: "up" }) do
+          tag.span(class: "post-vote-up-#{post.id} score-#{post.is_voted_up?(user) ? 'positive' : 'neutral'}")
+        end,
         tag.button("", class: "button vote-button vote score-neutral", disabled: post.is_vote_locked?(user), data: { action: "down" }) do
           tag.span(class: "post-vote-down-#{post.id} score-#{post.is_voted_down?(user) ? 'negative' : 'neutral'}")
-        end +
+        end,
         tag.button("", class: "button vote-button fav score-neutral", data: { action: "fav", state: post.is_favorited?(user) }) do
           tag.span(class: "post-favorite-#{post.id} score-neutral#{' is-favorited' if post.is_favorited?(user)}")
-        end
+        end,
+      ])
     end
   end
 end

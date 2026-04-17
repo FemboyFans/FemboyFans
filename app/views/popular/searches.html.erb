@@ -3,7 +3,7 @@
   Total Searches: <%= ActiveSupport::NumberHelper.number_to_delimited(@ranking.sum { |r| r["count"] }) %>
 </p>
 
-<%= @nav.build(self) %>
+<%= @nav.build %>
 
 <%= table_for(@ranking, class: "striped autofit") do |t| %>
   <% t.column("Count") do |rank| %>

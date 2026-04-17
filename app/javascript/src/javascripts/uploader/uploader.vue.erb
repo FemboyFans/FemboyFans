@@ -284,6 +284,7 @@
   import filePreview from "./file_preview.vue";
   import fileInput from "./file_input.vue";
   import SparkMD5 from "spark-md5";
+  import Uploader from "../uploader";
 
   const sex_checks = [
     {name: "Male"},
@@ -395,7 +396,7 @@
 
 
       return {
-        safe: window.uploaderSettings.safeSite,
+        safe: Uploader.settings.safe_site,
         showErrors: false,
         allowNavigate: false,
         submitting: false,
@@ -409,8 +410,8 @@
 
         sourceWarning: false,
         sources: [""],
-        normalMode: !window.uploaderSettings.compactMode,
-        maxFileSizePerRequest: window.uploaderSettings.maxFileSizePerRequest,
+        normalMode: !Uploader.settings.compact_mode,
+        maxFileSizePerRequest: Uploader.settings.max_file_size_per_request,
 
         checkboxes: {
           sex: sex_checks,
@@ -443,11 +444,11 @@
           tags: []
         },
 
-        allowLockedTags: window.uploaderSettings.allowLockedTags,
+        allowLockedTags: Uploader.settings.allow_locked_tags,
         lockedTags: "",
-        allowRatingLock: window.uploaderSettings.allowRatingLock,
+        allowRatingLock: Uploader.settings.allow_rating_lock,
         ratingLocked: false,
-        allowUploadAsPending: window.uploaderSettings.allowUploadAsPending,
+        allowUploadAsPending: Uploader.settings.allow_upload_as_pending,
         uploadAsPending: false,
 
         relatedTags: [],

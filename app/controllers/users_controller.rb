@@ -18,7 +18,7 @@ class UsersController < ApplicationController
 
   def show
     @user = User.find(User.name_or_id_to_id_forced(params[:id]))
-    @presenter = UserPresenter.new(@user)
+    @presenter = UserPresenter.new(@user, view: view_context)
     respond_with(@user)
   end
 
@@ -44,11 +44,11 @@ class UsersController < ApplicationController
 
   def upload_limit
     authorize(User)
-    @presenter = UserPresenter.new(CurrentUser.user)
+    @presenter = UserPresenter.new(CurrentUser.user, view: view_context)
     pieces = CurrentUser.upload_limit_pieces
-    @approved_count = pieces[:approved]
-    @deleted_count = pieces[:deleted]
-    @pending_count = pieces[:pending]
+    @approved_count = pieces.approved
+    @deleted_count = pieces.deleted
+    @pending_count = pieces.pending
   end
 
   def me

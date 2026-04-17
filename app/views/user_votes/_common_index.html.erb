@@ -41,7 +41,7 @@
     <%= time_ago_in_words_tagged(vote.user.created_at) %>
   <% end %>
   <% t.column("Vote") do |vote| %>
-    <%= vote.vote_display.html_safe %>
+    <%= vote_display(vote) %>
   <% end %>
 <% end %>
 

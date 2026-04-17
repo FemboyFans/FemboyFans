@@ -16,4 +16,5 @@
     <% end %>
   <% end %>
 <% end %>
-<%= raw(xml.target!) %>
+<%= xml.target!.html_safe # rubocop:disable Rails/OutputSafety
+%>

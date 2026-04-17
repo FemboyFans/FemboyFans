@@ -65,11 +65,13 @@ class EditHistory < ApplicationRecord
       return subject if subject.present?
       body
     when "merge"
-      %(<b>Merged into <a href="/forums/topics/#{new_topic_id}">#{new_topic_title}</a> from <a href="/forums/topics/#{old_topic_id}">#{old_topic_title}</a>.</b>).html_safe
+      content = Helpers.safe_join(["Merged into ", Helpers.link_to(new_topic_title, Routes.forum_topic_path(new_topic_id)), " from ", Helpers.link_to(old_topic_title, Routes.forum_topic_path(old_topic_id)), "."])
+      Helpers.tag.b(content)
     when "unmerge"
-      %(<b> Unmerged <a href="/forums/topics/#{new_topic_id}">#{new_topic_title}</a> from <a href="/forums/topics/#{old_topic_id}">#{old_topic_title}</a>.</b>).html_safe
+      content = Helpers.safe_join(["Unmerged ", Helpers.link_to(new_topic_title, Routes.forum_topic_path(new_topic_id)), " from ", Helpers.link_to(old_topic_title, Routes.forum_topic_path(old_topic_id)), "."])
+      Helpers.tag.b(content)
     else
-      "<b>#{EDIT_MAP[edit_type.to_sym] || pretty_edit_type}</b>".html_safe
+      Helpers.tag.b(EDIT_MAP[edit_type.to_sym] || pretty_edit_type)
     end
   end
 

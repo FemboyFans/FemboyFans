@@ -11,7 +11,8 @@
     <% end %>
 
     <% if disapprovals.map(&:message).any?(&:present?) %>
-      Messages: <%= disapprovals.map(&:message).compact_blank.map { |msg| format_text(msg, inline: true) }.to_sentence.html_safe %>.
+      Messages: <%= disapprovals.map(&:message).compact_blank.map { |msg| format_text(msg, inline: true) }.to_sentence.html_safe # rubocop:disable Rails/OutputSafety
+  %>.
     <% end %>
 
     <% @our_disapproval = disapprovals.select { |x| x.user_id == CurrentUser.user.id }.first %>

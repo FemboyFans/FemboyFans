@@ -521,7 +521,7 @@ class User < ApplicationRecord
 
     def level_string_pretty
       return level_string if title.blank?
-      %(<span title="#{level_string}">#{title}</span>).html_safe
+      Helpers.tag.span(title, title: level_string)
     end
 
     def level_name
@@ -903,7 +903,7 @@ class User < ApplicationRecord
           deleted_ignore: own_post_replaced_count - replaced_penalize_count,
           approved:       approved_count,
           pending:        unapproved_count + unapproved_replacements_count,
-        }
+        }.to_open_hash
       end
     end
 
@@ -1311,8 +1311,9 @@ class User < ApplicationRecord
     FemboyFans.config.customize_new_user(self)
   end
 
-  def presenter
-    @presenter ||= UserPresenter.new(self)
+  def presenter(view = nil)
+    @presenter ||= {}
+    @presenter[view] ||= UserPresenter.new(self, view: view)
   end
 
   # Users with invalid names may be automatically renamed in the future.
@@ -1323,8 +1324,8 @@ class User < ApplicationRecord
   end
 
   def validate_prefs
-    errors.add(:can_manage_aibur, "Members cannot have the \"Manage Tag Change Requests\" permission") if level == Levels::MEMBER && can_manage_aibur?
-    errors.add(:no_aibur_voting, "User cannot have both \"Manage Tag Change Requests\" & \"No AIBUR Voting\"") if can_manage_aibur? && no_aibur_voting?
+    errors.add(:can_manage_aibur, %(Members cannot have the "Manage Tag Change Requests" permission)) if level == Levels::MEMBER && can_manage_aibur?
+    errors.add(:no_aibur_voting, %(User cannot have both "Manage Tag Change Requests" & "No AIBUR Voting")) if can_manage_aibur? && no_aibur_voting?
   end
 
   def clear_favorites

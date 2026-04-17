@@ -1,10 +1,10 @@
 import Blacklist from "./blacklists";
 import PostCache from "./models/PostCache";
+import {DeferredPosts} from "../../packs/application";
 
 const Thumbnails = {};
 
 Thumbnails.initialize = function () {
-  const postsData = window.___deferred_posts || {};
   const posts = $(".post-thumb.placeholder, .thumb-placeholder-link");
   const replacedPosts = [];
 
@@ -19,7 +19,7 @@ Thumbnails.initialize = function () {
     }
 
     // Data exists for this post
-    const postData = postsData[postID];
+    const postData = DeferredPosts.get(postID);
     if (!postData) {
       clearPlaceholder($post);
       continue;
@@ -34,7 +34,7 @@ Thumbnails.initialize = function () {
       .addClass("post-thumbnail")
       .toggleClass("dtext", $post.hasClass("thumb-placeholder-link"));
 
-    if (Danbooru.Blacklist.hiddenPosts.has(postID))
+    if (Blacklist.hiddenPosts.has(postID))
       thumbnail.addClass("blacklisted");
 
     for (const key in postData)
@@ -75,8 +75,7 @@ Thumbnails.initialize = function () {
 $(() => {
   Thumbnails.initialize();
   $(window).on("e621:add_deferred_posts", (_, posts) => {
-    window.___deferred_posts = window.___deferred_posts || {};
-    window.___deferred_posts = $.extend(window.___deferred_posts, posts);
+    Object.values(posts).forEach(post => DeferredPosts.add(post));
     Thumbnails.initialize();
   });
   $(document).on("thumbnails:apply", Thumbnails.initialize);

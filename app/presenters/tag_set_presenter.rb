@@ -5,58 +5,55 @@
 #   This class makes it easy to fetch the categories for all the
 #   tags in one call instead of fetching them sequentially.
 
-class TagSetPresenter < Presenter
-  include(Rails.application.routes.url_helpers)
-
+class TagSetPresenter < ApplicationPresenter
   attr_reader(:tag_names)
 
   # @param [Array<String>] tag_names a list of tags to present. Tags will be presented in
   # the order given. The list should not contain duplicates. The list may
   # contain tags that do not exist in the tags table, such as metatags.
-  def initialize(tag_names)
+  def initialize(tag_names, helper: nil, view: nil)
+    super(helper, view)
     @tag_names = tag_names
   end
 
   def post_index_sidebar_tag_list_html(followed_tags:, current_query: "")
-    html = +""
+    html = []
     if ordered_tags.present?
-      html += "<ul>"
       ordered_tags.each do |tag|
         html << build_list_item(tag, current_query: current_query, followed: followed_tags.include?(tag.name))
       end
-      html += "</ul>"
     end
 
-    html.html_safe
+    h.tag.ul(safe_join(html))
   end
 
   def post_show_sidebar_tag_list_html(highlighted_tags:, followed_tags:, current_query: "")
-    html = +""
+    html = []
 
     TagCategory::SPLIT_HEADER_LIST.each do |category|
       typetags = tags_for_category(category)
 
       next unless typetags.any?
-      html += %(<h2 class="#{category}-tag-list-header tag-list-header" data-category="#{category}">#{TagCategory.get(category).header}</h2>)
-      html += %(<ul class="#{category}-tag-list">)
+      html << h.tag.h2(TagCategory.get(category).header, class: "#{category}-tag-list-header tag-list-header", data: { category: category })
+      tags = []
       typetags.each do |tag|
-        html += build_list_item(tag, current_query: current_query, highlight: highlighted_tags.include?(tag.name), followed: followed_tags.include?(tag.name))
+        tags << build_list_item(tag, current_query: current_query, highlight: highlighted_tags.include?(tag.name), followed: followed_tags.include?(tag.name))
       end
-      html << "</ul>"
+      html << h.tag.ul(safe_join(tags), class: "#{category}-tag-list")
     end
 
-    html.html_safe
+    safe_join(html)
   end
 
   # compact (horizontal) list, as seen in the /comments index.
   def inline_tag_list_html(link_type = :tag)
-    html = TagCategory::CATEGORIZED_LIST.map do |category|
+    tags = safe_join(TagCategory::CATEGORIZED_LIST.map do |category|
       tags_for_category(category).map do |tag|
         category = tag.antecedent_alias&.consequent_tag&.category || category
-        %(<li class="category-#{tag.category}">#{tag_link(tag, tag.name, link_type)}</li>)
-      end.join
-    end.join
-    %(<ul class="inline-tag-list">#{html}</ul>).html_safe
+        h.tag.li(tag_link(tag, tag.name, link_type), class: "category-#{tag.category}")
+      end
+    end)
+    h.tag.ul(tags, class: "inline-tag-list")
   end
 
   # the list of tags inside the tag box in the post edit form.
@@ -126,27 +123,27 @@ class TagSetPresenter < Presenter
   end
 
   def build_list_item(tag, current_query: "", highlight: false, followed: false)
+    html = safe_join([
+      build_list_item_category(tag),
+      build_list_item_tag_type(tag, current_query: current_query, highlight: highlight),
+      build_list_item_actions(tag, followed: followed),
+    ])
+    h.tag.li(html, class: "category-#{tag.category}")
+  end
+
+  def build_list_item_tag_type(tag, current_query: "", highlight: false)
     name = tag.name
     count = tag.post_count
     category = tag.category
-
-    html = %(<li class="category-#{tag.category}">)
-
-    if category == TagCategory.artist
-      html += %(<a class="wiki-link" rel="nofollow" href="/artists/show_or_new?name=#{u(name)}">?</a> )
-    else
-      html += %(<a class="wiki-link" rel="nofollow" href="/wiki_pages/show_or_new?title=#{u(name)}">?</a> )
-    end
-
-    html += %(<span class="tag-type">)
+    parts = []
 
     if current_query.present?
-      html += %(<a rel="nofollow" href="/posts?tags=#{u(current_query)}+#{u(name)}" class="search-inc-tag">+</a> )
-      html += %(<a rel="nofollow" href="/posts?tags=#{u(current_query)}+-#{u(name)}" class="search-exl-tag">–</a> )
+      parts += [link_to("+", r.posts_path(tags: "#{current_query} #{name}"), class: "search-inc-tag"), " "]
+      parts += [link_to("-", r.posts_path(tags: "#{current_query} -#{name}"), class: "search-exl-tag"), " "]
     end
 
-    html += tag_link(tag, name.tr("_", " "))
-    html += %(<i title="Uploaded by the artist" class="highlight fa-regular fa-circle-check"></i>) if highlight
+    parts << tag_link(tag, name.tr("_", " "))
+    parts << h.tag.i(title: "Uploaded by the artist", class: "highlight fa-regular fa-circle-check") if highlight
 
     if count >= 10_000
       post_count = "#{count / 1_000}k"
@@ -158,25 +155,35 @@ class TagSetPresenter < Presenter
 
     is_underused_tag = count <= 1 && category == TagCategory.general
     klass = "color-muted post-count#{' low-post-count' if is_underused_tag}"
-    title = "New general tag detected. Check the spelling or populate it now."
+    title = is_underused_tag ? { title: "New general tag detected. Check the spelling or populate it now." } : {}
 
-    html += %(<span data-count='#{count}' class="#{klass}"#{" title='#{title}'" if is_underused_tag}>#{post_count}</span>)
-    html += %(</span>)
+    parts << h.tag.span(post_count, class: klass, data: { count: count }, **title)
+    h.tag.span(safe_join(parts), class: "tag-type")
+  end
 
-    html += %(<div class="tag-actions" data-tag="#{tag.name}">)
-    if CurrentUser.user.is_member?
-      html += %(<span class="tag-action-blacklist"><a href="#" class="blacklist-tag-toggle" title="Blacklist Tag"><i class='fas fa-times'></i></a></span>)
-      html += %(<span class="tag-action-follow"><a href="#" class="follow-button-minor" title="Follow Tag" data-followed="#{followed}"></a></span>)
+  def build_list_item_category(tag)
+    name = tag.name
+    category = tag.category
+
+    if category == TagCategory.artist
+      safe_join([link_to("?", r.show_or_new_artists_path(name: name), class: "wiki-link", rel: "nofollow"), " "])
+    else
+      safe_join([link_to("?", r.show_or_new_wiki_pages_path(title: name), class: "wiki-link", rel: "nofollow"), " "])
     end
-    html += %(</div>)
+  end
 
-    html += "</li>"
-    html
+  def build_list_item_actions(tag, followed: false)
+    parts = []
+    if CurrentUser.user.is_member?
+      parts << h.tag.span(link_to(h.tag.i(class: "fas fa-times"), "#", class: "blacklist-tag-toggle", title: "Blacklist Tag"), class: "tag-action-blacklist")
+      parts << h.tag.span(link_to("", "#", class: "follow-button-minor", title: "Follow Tag", data: { followed: followed }), class: "tag-action-follow")
+    end
+    h.tag.div(safe_join(parts), class: "tag-actions", data: { tag: tag.name })
   end
 
   def tag_link(tag, link_text = tag.name, link_type = :tag)
-    link = link_type == :wiki_page ? show_or_new_wiki_pages_path(title: tag.name) : posts_path(tags: tag.name)
-    itemprop = 'itemprop="author"' if tag.artist?
-    %(<a rel="nofollow" class="search-tag" #{itemprop} href="#{link}">#{h(link_text)}</a> )
+    link = link_type == :wiki_page ? r.show_or_new_wiki_pages_path(title: tag.name) : r.posts_path(tags: tag.name)
+    itemprop = tag.artist? ? { itemprop: "author" } : {}
+    safe_join([link_to(link_text, link, rel: "nofollow", class: "search-tag", **itemprop), " "])
   end
 end

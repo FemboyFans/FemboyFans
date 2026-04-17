@@ -16,8 +16,7 @@ module WikiPagesHelper
   def wiki_page_post_previews(wiki_page)
     tag.div(id: "wiki-page-posts") do
       if Post.system_count(wiki_page.title) > 0
-        view_all_link = link_to("view all", posts_path(tags: wiki_page.title))
-        header = tag.h2("Posts (#{view_all_link})".html_safe)
+        header = tag.h2(safe_join(["Posts (", link_to("view all", posts_path(tags: wiki_page.title)), ")"]))
         header + wiki_page.post_set(CurrentUser.user).presenter.post_previews_html(self)
       end
     end

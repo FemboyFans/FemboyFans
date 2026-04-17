@@ -34,6 +34,7 @@
   import Post from './posts';
   import Autocomplete from "./autocomplete.js.erb";
   import Utility from "./utility.js";
+  import Uploader from "./uploader";
 
   function tagSorter(a, b) {
     return a.name > b.name ? 1 : -1;
@@ -52,7 +53,7 @@
           tags: []
         },
         expandRelated: true,
-        tags: window.uploaderSettings.postTags,
+        tags: Uploader.settings.post_tags,
         relatedTags: [],
         loadingRelated: false,
       };

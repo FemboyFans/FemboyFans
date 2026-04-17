@@ -62,4 +62,5 @@
     <% xml.lastmod(now.utc.iso8601) %>
   <% end %>
 <% end %>
-<%= xml.target!.html_safe %>
+<%= xml.target!.html_safe # rubocop:disable Rails/OutputSafety
+%>

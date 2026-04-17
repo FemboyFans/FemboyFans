@@ -1,7 +1,7 @@
 <%# locals: (header_title:, data:) -%>
 
 <%= table_for(data) do |t| %>
-  <% t.column("<h2>#{header_title}</h2>".html_safe, th: { style: "width: 275px;" }) do |(data_title, _data_or_stats_key, _data_total_key)| %>
+  <% t.column(tag.h2(header_title), th: { style: "width: 275px;" }) do |(data_title, _data_or_stats_key, _data_total_key)| %>
     <%= data_title %>
   <% end %>
   <% t.column(th: { style: "width: 75px;" }) do |(_data_title, data_or_stats_key, _data_total_key)| %>

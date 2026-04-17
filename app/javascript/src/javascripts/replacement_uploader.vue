@@ -42,6 +42,8 @@ import fileInput from "./uploader/file_input.vue";
 import sources from "./uploader/sources.vue";
 import Utility from "./utility";
 import SparkMD5 from "spark-md5";
+import Uploader from "./uploader";
+import CurrentUser from "./models/CurrentUser";
 
 export default {
   components: {
@@ -59,15 +61,15 @@ export default {
       sources: [""],
       uploadValue: "",
       reason: "",
-      allowUploadAsPending: Utility.meta("current-user-can-approve-posts") === "true",
+      allowUploadAsPending: Uploader.settings.allow_upload_as_pending,
       uploadAsPending: false,
       errorMessage: undefined,
       showErrors: false,
       sourceWarning: false,
       submitting: false,
       submittedReason: undefined,
-      canApprove: Utility.meta("current-user-can-approve-posts") === "true",
-      maxFileSizePerRequest: window.uploaderSettings.maxFileSizePerRequest,
+      canApprove: CurrentUser.canApprovePosts,
+      maxFileSizePerRequest: Uploader.settings.max_file_size_per_request,
     };
   },
   mounted() {

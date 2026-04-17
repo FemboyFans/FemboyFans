@@ -5,6 +5,10 @@ class UploadPolicy < ApplicationPolicy
     user.is_janitor?
   end
 
+  def settings?
+    create?
+  end
+
   def permitted_attributes
     attr = %i[file direct_url source tag_string rating parent_id description checksum]
     attr += %i[as_pending] if user.unrestricted_uploads?

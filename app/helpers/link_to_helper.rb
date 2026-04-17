@@ -10,7 +10,7 @@ module LinkToHelper
     content = super
     content = format.gsub("%s", content) if format
     content = %(<li>#{content}</li>) if li
-    content.html_safe
+    content.html_safe # rubocop:disable Rails/OutputSafety
   end
 
   def link_to_enclosed(*, char: "()", **)

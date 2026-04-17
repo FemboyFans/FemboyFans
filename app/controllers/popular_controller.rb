@@ -37,7 +37,7 @@ class PopularController < ApplicationController
     @date, @scale, @min_date, @max_date = parse_date(params, scales: %w[day])
     @ranking = Reports.get_post_searches_rank(@date).first(limit)
     @tags = Tag.find_by_name_list(@ranking.map(&:first))
-    @nav = NavLinks.new(@date, "searches_popular_index_path", "top_searches_popular_index_path")
+    @nav = NavLinks.new(@date, "searches_popular_index_path", "top_searches_popular_index_path", helper: view_context, routes: view_context)
     respond_with(@ranking, &format_json(@ranking))
   rescue ArgumentError => e
     render_expected_error(422, e)
@@ -53,7 +53,7 @@ class PopularController < ApplicationController
   def missed_searches
     @date, @scale, @min_date, @max_date = parse_date(params, scales: %w[day])
     @ranking = Reports.get_missed_searches_rank(@date).first(limit)
-    @nav = NavLinks.new(@date, "missed_searches_popular_index_path", "top_missed_searches_popular_index_path")
+    @nav = NavLinks.new(@date, "missed_searches_popular_index_path", "top_missed_searches_popular_index_path", helper: view_context, routes: view_context)
     respond_with(@ranking, &format_json(@ranking))
   rescue ArgumentError => e
     render_expected_error(422, e)
@@ -91,12 +91,14 @@ class PopularController < ApplicationController
 
   # used for routes that don't have a post set
   class NavLinks
-    attr_reader(:date, :path, :top_path)
+    attr_reader(:date, :path, :top_path, :h, :r)
 
-    def initialize(date, path, top_path)
+    def initialize(date, path, top_path, helper: nil, routes: nil)
       @date = date
       @path = path
       @top_path = top_path
+      @h = helper || Helpers
+      @r = routes || Routes
     end
 
     def next_date
@@ -107,38 +109,21 @@ class PopularController < ApplicationController
       date - 1.day
     end
 
-    def build(template)
-      html =  []
-      html << "<p id=\"popular-nav-links\">"
-      html << "<span class=\"period\">"
-      html << template.link_to(
-        "«prev",
-        template.public_send(path,
-                             date: prev_date.strftime("%Y-%m-%d")),
-        "id":            "paginator-prev",
-        "rel":           "prev",
-        "data-shortcut": "a left",
-      )
-      html << template.link_to(
-        "Day",
-        template.public_send(path,
-                             date: date.strftime("%Y-%m-%d")),
-        class: "desc",
-      )
-      html << template.link_to(
-        "next»",
-        template.public_send(path,
-                             date: next_date.strftime("%Y-%m-%d")),
-        "id":            "paginator-next",
-        "rel":           "next",
-        "data-shortcut": "d right",
-      )
-      html << "</span>"
-      html << "<span class=\"period\">"
-      html << template.link_to("All Time", template.public_send(top_path))
-      html << "</span>"
-      html << "</p>"
-      html.join("\n").html_safe
+    def build
+      h.tag.p(id: "popular-nav-links") do
+        h.safe_join([
+          h.tag.span(class: "period") do
+            h.safe_join([
+              h.link_to("«prev", r.public_send(path, date: prev_date.strftime("%Y-%m-%d")), id: "paginator-prev", rel: "prev", data: { shortcut: "a left" }),
+              h.link_to("Day", r.public_send(path, date: date.strftime("%Y-%m-%d")), class: "desc"),
+              h.link_to("next»", r.public_send(path, date: next_date.strftime("%Y-%m-%d")), id: "paginator-next", rel: "next", data: { shortcut: "d right" }),
+            ], "\n")
+          end,
+          h.tag.span(class: "period") do
+            h.link_to("All Time", r.public_send(top_path))
+          end,
+        ], "\n")
+      end
     end
   end
 end

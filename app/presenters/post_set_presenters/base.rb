@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module PostSetPresenters
-  class Base
+  class Base < ::ApplicationPresenter
     def posts
       raise(NotImplementedError)
     end

@@ -49,9 +49,9 @@
     <% last_order = reason.order %>
     <a class="button delreason-button" data-text="<%= reason.reason.gsub(/%(PARENT|OTHER)_ID%/, "%ID%") %>">
       <%= reason.reason
-            .gsub("%PARENT_ID%", "<input type=\"text\" value=\"#{@post.parent_id || ''}\" />")
-            .gsub("%OTHER_ID%", "<input type=\"text\" />")
-            .html_safe
+            .gsub("%PARENT_ID%", tag.input(type: "text", value: @post.parent_id))
+            .gsub("%OTHER_ID%", tag.input(type: "text"))
+            .html_safe # rubocop:disable Rails/OutputSafety
       %>
     </a>
   <% end %>

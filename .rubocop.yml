@@ -179,7 +179,7 @@ Rails/NotNullColumn:
   Enabled: false
 
 Rails/OutputSafety:
-  Enabled: false
+  Enabled: true
 
 Lint/MissingSuper:
   Enabled: false

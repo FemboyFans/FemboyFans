@@ -4,7 +4,7 @@
       <%= render("posts/blank") %>
     <% else %>
       <% @posts.each do |post| %>
-        <%= post.preview_html(self, { tags: @post_set.public_tag_string, show_cropped: true, stats: true }) %>
+        <%= post.preview_html({ tags: @post_set.public_tag_string, show_cropped: true, stats: true }) %>
       <% end %>
     <% end %>
   </div>

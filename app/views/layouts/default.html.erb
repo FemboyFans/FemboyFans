@@ -2,6 +2,7 @@
 <!doctype html>
 <html>
 <head>
+  <%= render("static/deferred_posts") %>
   <%= render("layouts/head") %>
 </head>
 <%= tag.body(**body_attributes(CurrentUser.user)) do %>
@@ -77,6 +78,5 @@
     <%= render("static/guest_warning") %>
   <% end %>
   <%= render("static/footer") %>
-  <%= render("static/deferred_posts") %>
 <% end %>
 </html>

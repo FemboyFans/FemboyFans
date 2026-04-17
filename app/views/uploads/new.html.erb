@@ -15,8 +15,8 @@
     <p>
       You currently have <span class="post-uploads-remaining-count"><%= CurrentUser.upload_limit %></span> upload<%= CurrentUser.upload_limit == 1 ? "" : "s" %> remaining.
 
-      <% if @limit_pieces[:pending] > 0 %>
-        This number will go up as some of your <%= link_to("<span class='post-uploads-remaining-count'>#{@limit_pieces[:pending]}</span> pending/flagged posts".html_safe, posts_path(tags: "user:#{CurrentUser.name} status:pending")) %> are approved.
+      <% if @limit_pieces.pending > 0 %>
+        This number will go up as some of your <%= link_to(sanitize("<span class='post-uploads-remaining-count'>#{@limit_pieces.pending}</span> pending/flagged posts", tags: %w[span], attributes: %w[class]), posts_path(tags: "user:#{CurrentUser.name} status:pending")) %> are approved.
       <% end %>
     </p>
     You have <span class="post-uploads-remaining-count"><%= CurrentUser.post_upload_throttle %></span> uploads remaining this hour.
@@ -28,21 +28,6 @@
     See <%= link_to("here", upload_limit_users_path) %> for more details.
   </div>
 <% end %>
-<%= javascript_tag(nonce: true) do -%>
-  var uploaderSettings = {
-    compactMode: <%= CurrentUser.compact_uploader?.to_json %>,
-    safeSite: <%= CurrentUser.safe_mode?.to_json %>,
-    uploadTags: <%= CurrentUser.presenter.favorite_tags_with_types.to_json.html_safe %>,
-    recentTags: <%= CurrentUser.presenter.recent_tags_with_types.to_json.html_safe %>,
-    allowLockedTags: <%= policy(Upload).can_use_attribute?(:locked_tags).to_json %>,
-    allowRatingLock: <%= policy(Upload).can_use_attribute?(:locked_rating).to_json %>,
-    allowUploadAsPending: <%= policy(Upload).can_use_attribute?(:as_pending).to_json %>,
-    maxFileSize: <%= Config.instance.max_file_size * 1.megabyte %>,
-    maxFileSizeMap: <%= sanitize(Config.instance.max_file_sizes.transform_values { |v| v * 1.megabyte }.to_json) %>,
-    maxFileSizePerRequest: <%= Config.instance.max_upload_per_request * 1.megabyte %>,
-  };
-  Danbooru.Uploader.init();
-<% end -%>
 <%= render("posts/partials/common/secondary_links") %>
 
 <% content_for(:page_title) do %>

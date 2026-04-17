@@ -46,6 +46,13 @@ class UploadsController < ApplicationController
     respond_after_upload
   end
 
+  def settings
+    authorize(Upload)
+    @post = Post.find(params[:post_id]) if params[:post_id].present?
+    @settings = UploadSettings.new(CurrentUser.user, @post)
+    respond_with(@settings)
+  end
+
   private
 
   def respond_after_upload

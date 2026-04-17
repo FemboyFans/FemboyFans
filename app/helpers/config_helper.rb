@@ -104,7 +104,11 @@ module ConfigHelper
 
   def label_for_attribute(attribute, name: nil, disabled: false)
     label = label_tag("config[#{attribute}]", name)
-    return safe_join([label, raw("&nbsp;"), hint("(disabled)")]) if disabled && attribute != :id
+    if disabled && attribute != :id
+      return safe_join([label,
+                        raw("&nbsp;"), # rubocop:disable Rails/OutputSafety
+                        hint("(disabled)"),])
+    end
     label
   end
 end

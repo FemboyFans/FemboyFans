@@ -7,7 +7,8 @@ module PostSetPresenters
 
       delegate(:posts, :date, :min_date, :max_date, to: :post_set)
 
-      def initialize(post_set)
+      def initialize(post_set, helper: nil, view: nil)
+        super(helper, view)
         @post_set = post_set
       end
 
@@ -43,13 +44,10 @@ module PostSetPresenters
         case scale
         when "Day"
           next_day
-
         when "Week"
           next_week
-
         when "Month"
           next_month
-
         end
       end
 
@@ -65,48 +63,25 @@ module PostSetPresenters
       end
 
       def nav_links_for_scale(template, scale)
-        html = []
-        html << "<span class=\"period\">"
-        html << template.link_to(
-          "«prev",
-          template.uploads_popular_index_path(
-            date:  prev_date_for_scale(scale).strftime("%Y-%m-%d"),
-            scale: scale.downcase,
-          ),
-          "id":            (link_rel_for_scale?(template, scale.downcase) ? "paginator-prev" : nil),
-          "rel":           (link_rel_for_scale?(template, scale.downcase) ? "prev" : nil),
-          "data-shortcut": (link_rel_for_scale?(template, scale.downcase) ? "a left" : nil),
-        )
-        html << template.link_to(
-          scale,
-          template.uploads_popular_index_path(
-            date:  date.strftime("%Y-%m-%d"),
-            scale: scale.downcase,
-          ),
-          class: "desc",
-        )
-        html << template.link_to(
-          "next»",
-          template.uploads_popular_index_path(
-            date:  next_date_for_scale(scale).strftime("%Y-%m-%d"),
-            scale: scale.downcase,
-          ),
-          "id":            (link_rel_for_scale?(template, scale.downcase) ? "paginator-next" : nil),
-          "rel":           (link_rel_for_scale?(template, scale.downcase) ? "next" : nil),
-          "data-shortcut": (link_rel_for_scale?(template, scale.downcase) ? "d right" : nil),
-        )
-        html << "</span>"
-        html.join("\n").html_safe
+        parts = []
+        parts << link_to("«prev", r.uploads_popular_index_path(date: prev_date_for_scale(scale).strftime("%Y-%m-%d"), scale: scale.downcase),
+                         id:   link_rel_for_scale?(template, scale.downcase) ? "paginator-prev" : nil,
+                         rel:  link_rel_for_scale?(template, scale.downcase) ? "prev" : nil,
+                         data: { shortcut: link_rel_for_scale?(template, scale.downcase) ? "a left" : nil })
+        parts << link_to(scale, r.uploads_popular_index_path(date: date.strftime("%Y-%m-%d"), scale: scale.downcase), class: "desc")
+        parts << link_to("next»", r.uploads_popular_index_path(date: next_date_for_scale(scale).strftime("%Y-%m-%d"), scale: scale.downcase),
+                         id:   link_rel_for_scale?(template, scale.downcase) ? "paginator-next" : nil,
+                         rel:  link_rel_for_scale?(template, scale.downcase) ? "next" : nil,
+                         data: { shortcut: link_rel_for_scale?(template, scale.downcase) ? "d right" : nil })
+        h.tag.span(safe_join(parts), class: "period")
       end
 
       def nav_links(template)
-        html =  []
-        html << "<p id=\"popular-nav-links\">"
-        html << nav_links_for_scale(template, "Day")
-        html << nav_links_for_scale(template, "Week")
-        html << nav_links_for_scale(template, "Month")
-        html << "</p>"
-        html.join("\n").html_safe
+        parts =  []
+        parts << nav_links_for_scale(template, "Day")
+        parts << nav_links_for_scale(template, "Week")
+        parts << nav_links_for_scale(template, "Month")
+        h.tag.p(safe_join(parts), id: "popular-nav-links")
       end
 
       def range_text

@@ -1,3 +1,5 @@
+import {page} from "./utility/page";
+
 let User = {};
 
 User.initialize_tabs = function () {
@@ -10,7 +12,7 @@ User.initialize_tabs = function () {
     let element = $(event.target);
     if (element.is("a")) element = element.parents("h2.tab");
     const newTab = element.attr("tab");
-    if (newTab == selectedTab) return;
+    if (newTab === selectedTab) return;
 
     container.find(`h2[tab="${selectedTab}"]`).removeClass("active");
     container.find(`div.tab-posts[tab="${selectedTab}"]`).addClass("hidden");
@@ -24,7 +26,7 @@ User.initialize_tabs = function () {
 };
 
 User.initialize_permissions = function () {
-  const $text = $("text.permissions-list");
+  const $text = $("span.permissions-list");
   const $expand = $(".expand-permissions-link");
   const $collapse = $(".collapse-permissions-link");
 
@@ -43,10 +45,25 @@ User.initialize_permissions = function () {
   });
 };
 
+User.initialize_edit = function() {
+  $("#advanced-settings-section,#enhancement-settings-section,#security-settings-section").hide();
+  $("#edit-options a:not(#delete-account)").on("click", function(event) {
+    const $target = $(event.target);
+    $("h2 a").removeClass("active");
+    $("#basic-settings-section,#advanced-settings-section,#enhancement-settings-section,#security-settings-section").hide();
+    $target.addClass("active");
+    $($target.attr("href") + "-section").show();
+    event.preventDefault();
+  });
+};
+
 $(function () {
-  if ($("#c-users #a-index")) {
+  if (page("users", "show")) {
     User.initialize_tabs();
     User.initialize_permissions();
+  }
+  if (page("users", "edit")) {
+    User.initialize_edit();
   }
 });
 

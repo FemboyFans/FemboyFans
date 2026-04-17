@@ -21,6 +21,9 @@
 <meta name="enable-js-navigation" content="<%= CurrentUser.user.enable_keyboard_navigation %>">
 <meta name="enable-autocomplete" content="<%= CurrentUser.user.enable_autocomplete %>">
 <meta name="style-usernames" content="<%= CurrentUser.user.style_usernames? %>">
+<% if page?("static", "home") %>
+  <meta name="active-mascots" content="<%= Mascot.active_for_user(CurrentUser.user).to_json %>">
+<% end %>
 <% if CurrentUser.user.custom_style.present? %>
   <%= stylesheet_link_tag(custom_style_users_path(md5: Digest::MD5.hexdigest(CurrentUser.user.custom_style)), media: "screen", nonce: true) %>
 <% end %>
@@ -68,5 +71,7 @@
   </style>
 </noscript>
 
-<%= raw(FemboyFans.config.custom_html_header_content) %>
+<%= raw(FemboyFans.config.custom_html_header_content) # rubocop:disable Rails/OutputSafety
+%>
+
 <%= yield(:html_header) %>

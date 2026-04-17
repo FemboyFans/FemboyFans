@@ -8,7 +8,8 @@
     <p class="full">To get started, install an authenticator app to your device. We recommend one linked to your phone number, such as <%= link_to("Authy", "https://authy.com/download") %>, then use it to scan the qr code below.</p>
   <% end %>
   <div id="mfa-qr-code">
-    <%= @mfa.qr_code_svg.html_safe %>
+    <%= @mfa.qr_code_svg.html_safe # rubocop:disable Rails/OutputSafety
+    %>
   </div>
   <div>
     <a class="show-code-link" href="javascript:void(0)">Can't scan the qr code?</a>

@@ -416,7 +416,9 @@ Rails.application.routes.draw do
       put(:correct)
     end
   end
-  resources(:uploads, only: %i[index show new create])
+  resources(:uploads, only: %i[index show new create]) do
+    get(:settings, on: :collection)
+  end
   resources(:users, except: %i[edit update]) do
     resource(:password, only: %i[edit], controller: "users/passwords")
     resources(:api_keys, controller: "api_keys")

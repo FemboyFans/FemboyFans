@@ -21,7 +21,7 @@
   </div>
 <% else %>
   <h2 class="user-greeting-outer">
-    <%= [
+    <%= sanitize([
             "<span dir='ltr' class='user-greeting' title='\"Welcome\" in Afrikaans'>Welkom</span>",
             "<span dir='ltr' class='user-greeting' title='\"Welcome\" in Albanian'>Mirëseerdhët</span>",
             "<span dir='ltr' class='user-greeting' title='\"Welcome\" in Amharic'>እንኳን ደህና መጣህ</span>",
@@ -124,7 +124,7 @@
             "<span dir='ltr' class='user-greeting' title='\"Welcome\" in Elvish'>Alatúlië</span>",
             "<span dir='ltr' class='user-greeting' title='\"Welcome\" in Klingon'>yI'el</span>",
             "<span dir='ltr' class='user-greeting' title='\"Welcome\" in Zombie'>Uuuugggghh...</span>"
-        ].sample.html_safe %>, <%= CurrentUser.pretty_name %>!
+        ].sample, tags: %w[span], attributes: %w[dir class title]) %>, <%= CurrentUser.pretty_name %>!
   </h2>
   <p>From here you can access account-specific options and features.</p>
 

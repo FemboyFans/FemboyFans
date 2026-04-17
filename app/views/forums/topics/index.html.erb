@@ -9,7 +9,7 @@
 <p>
   Categories:
   <%= link_to("All", forum_topics_path) %>,
-  <%= ForumCategory.visible(CurrentUser.user).ordered_categories.all.map { |rec| link_to_unless_current(rec.name, forum_topics_path(search: { category_id: rec.id })) }.join(", ").html_safe %>
+  <%= safe_join(ForumCategory.visible(CurrentUser.user).ordered_categories.all.map { |rec| link_to_unless_current(rec.name, forum_topics_path(search: { category_id: rec.id })) }, ", ") %>
   <%= link_to(" »", forums_path) %>
 </p>
 

@@ -70,6 +70,8 @@
 </template>
 
 <script>
+import Uploader from "../uploader";
+
 export default {
   data() {
     return {
@@ -86,8 +88,8 @@ export default {
       uploadURL: new URLSearchParams(window.location.search).get("upload_url") || "",
       fileTooLarge: false,
       exceededFileSize: 0,
-      maxFileSize: window.uploaderSettings.maxFileSize,
-      maxFileSizeMap: window.uploaderSettings.maxFileSizeMap,
+      maxFileSize: Uploader.settings.max_file_size,
+      maxFileSizeMap: Uploader.settings.max_file_size_map,
       disableFileUpload: false,
       disableURLUpload: false,
     }

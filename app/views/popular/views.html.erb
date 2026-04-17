@@ -3,7 +3,7 @@
   Total Views: <%= ActiveSupport::NumberHelper.number_to_delimited(@ranking.sum(&:second)) %>
 </p>
 
-<%= @post_set.presenter.nav_links(self) %>
+<%= @post_set.presenter.nav_links %>
 
 <%= render("posts/partials/common/inline_blacklist") %>
 

@@ -1,3 +1,6 @@
-<%= javascript_tag(nonce: true) do -%>
-  window.___deferred_posts = <%= raw(deferred_posts.to_json) %>;
-<% end -%>
+<% content_for(:html_header) do %>
+  <meta name="deferred-posts" content="<%= deferred_posts.keys.join(",") %>">
+  <% deferred_posts.each do |id, post| %>
+    <%= tag.meta(name: "deferred-posts-#{id}", content: post.to_json) %>
+  <% end %>
+<% end %>

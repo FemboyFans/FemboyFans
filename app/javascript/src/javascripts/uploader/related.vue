@@ -13,6 +13,8 @@
 
 <script>
 
+  import Uploader from "../uploader";
+
   function tagSorter(a, b) {
     return a.name > b.name ? 1 : -1;
   }
@@ -20,8 +22,8 @@
     props: ['tags', 'related', 'loading'],
     data: function () {
       return {
-        uploaded: (window.uploaderSettings.uploadTags || []),
-        recent: (window.uploaderSettings.recentTags || []).sort(tagSorter),
+        uploaded: (Uploader.settings.upload_tags || []),
+        recent: (Uploader.settings.recent_tags || []).sort(tagSorter),
       };
     },
     methods: {

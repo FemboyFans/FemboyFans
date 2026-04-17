@@ -38,3 +38,15 @@ export default class Page {
   }
 
 }
+
+/**
+ * Checks if the current page matches the provided parameters.
+ * If both params are provided, checks against both of them.
+ * If only the controller is provided, action is ignored.
+ * @param {string} controller Controller to match against
+ * @param {string} action Action to match against
+ * @returns {boolean} True if the params match, false otherwise
+ */
+export function page(controller, action = "") {
+  return Page.matches(controller, action);
+}

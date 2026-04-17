@@ -14,7 +14,7 @@ module RulesHelper
       html += format_category_rules_toc(category)
       html += "\n\n"
     end
-    format_text(html.html_safe, **OPTIONS)
+    format_text(html, **OPTIONS)
   end
 
   def format_category_rules_toc(category)
@@ -39,7 +39,7 @@ module RulesHelper
         html = html.gsub("delete_rule_#{rule.id}_link", link_to("delete", rule_path(rule), method: :delete, data: { confirm: "Are you sure you want to delete this rule? This cannot be undone." }))
       end
     end
-    html.html_safe
+    html.html_safe # rubocop:disable Rails/OutputSafety
   end
 
   def format_category(category)
