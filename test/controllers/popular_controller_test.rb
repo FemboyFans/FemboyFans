@@ -65,6 +65,17 @@ class PopularControllerTest < ActionDispatch::IntegrationTest
         assert_response(:success)
       end
 
+      should("escape search tags in the html response") do
+        tag = %("><script>alert("xss")</script>)
+        Reports.stubs(:get_post_searches_rank).returns([{ "tag" => tag, "count" => 1 }])
+
+        get(searches_popular_index_path)
+
+        assert_response(:success)
+        assert_includes(@response.body, CGI.escapeHTML(tag))
+        assert_not_includes(@response.body, tag)
+      end
+
       should("restrict access") do
         assert_access(User::Levels::ANONYMOUS) { |user| get_auth(searches_popular_index_path, user) }
       end

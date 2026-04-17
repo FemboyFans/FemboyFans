@@ -73,6 +73,18 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
         assert_response(:success)
       end
 
+      should("escape dtext html in post descriptions") do
+        @post.update_column(:description, %(<script>alert("xss")</script><img src=x onerror=alert("xss")>))
+
+        get(post_path(@post))
+
+        assert_response(:success)
+        assert_includes(@response.body, '&lt;script&gt;alert("xss")&lt;/script&gt;')
+        assert_includes(@response.body, '&lt;img src=x onerror=alert("xss")&gt;')
+        assert_not_includes(@response.body, "<script>alert(\"xss\")</script>")
+        assert_not_includes(@response.body, %{<img src=x onerror=alert("xss")>})
+      end
+
       should("restrict access") do
         assert_access(User::Levels::ANONYMOUS) { |user| get_auth(post_path(@post), user) }
       end

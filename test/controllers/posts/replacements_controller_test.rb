@@ -187,6 +187,18 @@ module Posts
           assert_response(:success)
         end
 
+        should("escape prebuilt rejection reasons in text and data attributes") do
+          reason_text = %("><script>alert("xss")</script>)
+          create(:post_replacement_rejection_reason, creator: @admin, reason: reason_text)
+
+          get_auth(reject_with_reason_post_replacement_path(@replacement), @user)
+
+          assert_response(:success)
+          assert_includes(@response.body, CGI.escapeHTML(reason_text))
+          assert_not_includes(@response.body, %(data-text="#{reason_text}"))
+          assert_not_includes(@response.body, "<script>alert(\"xss\")</script>")
+        end
+
         should("restrict access") do
           assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER]) { |user| get_auth(reject_with_reason_post_replacement_path(@replacement), user) }
         end
