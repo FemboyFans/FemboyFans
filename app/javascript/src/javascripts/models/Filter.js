@@ -126,15 +126,14 @@ class FilterToken {
   constructor (raw) {
     raw = raw.trim().toLowerCase();
 
-    // Token prefixes
-    // TODO: This REQUIRES the tokens to be formatted properly.
-    // -~ format is not accepted. This may cause issues with the the quick blacklist.
-    // Regular blacklist edits do get fixed server-side.
-    this.optional = raw.startsWith("~");
-    if (this.optional) raw = raw.slice(1);
-
-    this.inverted = raw.startsWith("-");
-    if (this.inverted) raw = raw.slice(1);
+    // Accept the optional/inverted prefixes in either order.
+    this.optional = false;
+    this.inverted = false;
+    while (raw.startsWith("~") || raw.startsWith("-")) {
+      this.optional ||= raw.startsWith("~");
+      this.inverted ||= raw.startsWith("-");
+      raw = raw.slice(1);
+    }
 
     // Get filter type: tag, id, score, rating, etc.
     this.type = FilterUtils.getFilterType(raw);
@@ -172,6 +171,9 @@ class FilterToken {
       }
     } else {
       this.value = FilterUtils.normalizeData(raw, this.type);
+      if (this.type === "uploader" && this.value.startsWith("!")) {
+        this.uploaderID = parseInt(this.value.slice(1)) || -1;
+      }
       if (this.comparison === "=" && this.type === "filesize") {
         // If the comparison uses direct equality, mirror the fudging behavior of
         // the filesize search metatag by changing the comparison to a range of

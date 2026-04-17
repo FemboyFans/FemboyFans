@@ -24,9 +24,8 @@ FilterUtils.FilterTests = {
 
   uploader: (token, post) => {
     // Funky uploaderid: alternative
-    // TODO: Don't re-parse this on every run
-    if (token.value.startsWith("!"))
-      return post.uploader_id === parseInt(token.value.slice(1));
+    if (token.uploaderID !== undefined)
+      return post.uploader_id === token.uploaderID;
     return post.uploader === token.value;
   },
   uploaderid: (token, post) => FilterUtils.compare(post.uploader_id, token),

@@ -128,8 +128,8 @@ Blacklist.init_comment_blacklist = function () {
 
     switch (token.type) {
       case "uploader": {
-        if (token.value.startsWith("!")) {
-          $(`article[data-uploader-id="${token.value.slice(1)}"]`).hide();
+        if (token.uploaderID !== undefined) {
+          $(`article[data-uploader-id="${token.uploaderID}"]`).hide();
           break;
         }
         $(`article[data-uploader="${token.value}"]`).hide();
@@ -168,8 +168,8 @@ Blacklist.add_posts = function ($posts) {
  * Also applies or removed `blacklist` class wherever necessary.
  */
 Blacklist.update_visibility = function () {
-  let oldPosts = [...this.hiddenPosts],
-    newPosts = [];
+  const oldPosts = this.hiddenPosts;
+  let newPosts = [];
 
   // Tally up the new blacklisted posts
   for (const filter of Object.values(Blacklist.filters)) {
@@ -177,17 +177,15 @@ Blacklist.update_visibility = function () {
     newPosts = newPosts.concat(Array.from(filter.matchIDs));
   }
 
-  // Calculate diffs
-  // TODO I feel like this could be optimized.
-  this.hiddenPosts = new Set(newPosts.filter(n => n));
-  let added = [...this.hiddenPosts].filter((n) => !oldPosts.includes(n)),
-    removed = oldPosts.filter((n) => !this.hiddenPosts.has(n));
+  // Calculate diffs with sets so we don't rescan the full list for every post.
+  this.hiddenPosts = new Set(newPosts.filter((n) => n));
+  const added = [...this.hiddenPosts].filter((n) => !oldPosts.has(n));
+  const removed = [...oldPosts].filter((n) => !this.hiddenPosts.has(n));
 
   // Update the UI
   for (const ui of Blacklist.ui) ui.rebuildFilters();
 
-  // Apply / remove classes
-  // TODO: Cache the post elements to avoid repeat lookups
+  // Apply / remove classes using the cached thumbnail elements in PostCache.
   for (const postID of added)
     PostCache.apply(postID, ($element) => {
       $element.addClass("blacklisted").trigger("blk:hide");

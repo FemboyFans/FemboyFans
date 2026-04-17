@@ -46,11 +46,7 @@
 | [app/views/posts/index.html.erb](app/views/posts/index.html.erb#L12) | 12 | Lock off these extra items? |
 | [app/views/posts/index.html.erb](app/views/posts/index.html.erb#L28) | 28 | Fix tag array with forced -status:deleted |
 | [app/views/posts/show.html.erb](app/views/posts/show.html.erb#L113) | 113 | find some way to remove the whitespace that's being inserted here, then return the margin to 0.5 |
-| [app/javascript/src/javascripts/blacklists.js](app/javascript/src/javascripts/blacklists.js#L181) | 181 | I feel like this could be optimized. |
-| [app/javascript/src/javascripts/blacklists.js](app/javascript/src/javascripts/blacklists.js#L190) | 190 | Cache the post elements to avoid repeat lookups |
 | [app/views/posts/deletion_reasons/index.html.erb](app/views/posts/deletion_reasons/index.html.erb#L3) | 3 | convert to new table syntax |
-| [app/javascript/src/javascripts/models/Filter.js](app/javascript/src/javascripts/models/Filter.js#L130) | 130 | This REQUIRES the tokens to be formatted properly. |
-| [app/javascript/src/javascripts/utility/filter_util.js](app/javascript/src/javascripts/utility/filter_util.js#L27) | 27 | Don't re-parse this on every run |
 | [app/javascript/src/styles/common/_standard_elements.scss](app/javascript/src/styles/common/_standard_elements.scss#L29) | 29 | What if button is on a light background |
 | [app/views/posts/replacements/rejection_reasons/index.html.erb](app/views/posts/replacements/rejection_reasons/index.html.erb#L3) | 3 | convert to new table syntax |
 | [test/test_helper.rb](test/test_helper.rb#L278) | 278 | look into refactoring out minitest? |
