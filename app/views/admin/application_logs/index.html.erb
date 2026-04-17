@@ -1,0 +1,30 @@
+<h1>Application Logs</h1>
+
+<p>
+  Environment: <%= @log.environment %><br>
+  File: <code><%= @log.path %></code><br>
+  <span id="application-log-status" data-status-url="<%= status_admin_application_logs_path(format: :json) %>" data-current-count="<%= @entries.total_count %>">
+    <span class="new-log-lines-indicator" style="display: none;"></span>
+  </span>
+</p>
+
+<% if @log.exists? %>
+  <%= table_for(@entries) do |t| %>
+    <% t.column("Line", th: { style: "width: 120px;" }) do |entry| %>
+      <%= entry.line_number %>
+    <% end %>
+    <% t.column("Message") do |entry| %>
+      <%= tag.pre(format_application_log_line(entry.text), class: "log-entry-line") %>
+    <% end %>
+  <% end %>
+
+  <%= numbered_paginator(@entries) if @entries.total_count > 0 %>
+<% else %>
+  <p>The log file could not be found.</p>
+<% end %>
+
+<%= render(partial: "moderator/dashboards/secondary_links") %>
+
+<% content_for(:page_title) do %>
+  Application Logs
+<% end %>

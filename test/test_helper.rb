@@ -57,6 +57,10 @@ module CommonTestHelpers
     Config.any_instance.stubs(:mascot_width).returns({ "max" => Float::INFINITY, "min" => 0 }.with_open_access)
     Config.any_instance.stubs(:mascot_height).returns({ "max" => Float::INFINITY, "min" => 0 }.with_open_access)
   end
+
+  def stub_env_config(name, value)
+    FemboyFans::Config.any_instance.stubs(name).returns(value)
+  end
 end
 
 class ActiveSupport::TestCase # rubocop:disable Style/ClassAndModuleChildren
