@@ -29,7 +29,8 @@ RUN apk --no-cache add ffmpeg vips \
   sudo xz gcompat \
   libwebp-tools exiftool \
   libpng libjpeg-turbo libwebp \
-  giflib librsvg imagemagick
+  giflib librsvg imagemagick \
+  logrotate
 
 WORKDIR /app
 COPY . .

@@ -22,6 +22,7 @@ Bundler.require(*Rails.groups)
 
 require_relative("config")
 require_relative("local_config")
+require_relative("../lib/middleware/json_log")
 require_relative("../lib/middleware/silence_healthcheck_logging")
 
 module FemboyFans
@@ -73,6 +74,7 @@ module FemboyFans
     config.generators.assets = false
     config.generators.helper = false
     config.generators.test_framework = nil
+    config.middleware.insert_before(Rails::Rack::Logger, Middleware::JsonLog)
     config.middleware.insert_before(Rails::Rack::Logger, Middleware::SilenceHealthcheckLogging)
   end
 end

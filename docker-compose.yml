@@ -59,6 +59,7 @@ services:
       - post_data:/app/public/data
       - ./docker/cron_tasks/daily:/etc/periodic/daily
       - ./docker/cron_tasks/hourly:/etc/periodic/hourly
+      - ./docker/logrotate.d:/etc/logrotate.d
     environment:
       <<: *common-env
       RAILS_ENV: development
