@@ -4,21 +4,21 @@ import {page} from "./utility/page";
 class Mascots {
   static current = 0;
 
-  static get active() {
+  static get active () {
     return JSON.parse(Utility.meta("active-mascots") || "{}");
   }
 
-  static show(mascot) {
+  static show (mascot) {
     $("body").css("background-image", `url(${mascot.background_url})`)
-             .css("background-color", mascot.background_color);
+      .css("background-color", mascot.background_color);
     $(".mascotbox").css("background-image", `url(${mascot.background_url})`)
-                   .css("background-color", mascot.background_color);
+      .css("background-color", mascot.background_color);
 
     const artistLink = $("<span>").text("Mascot by ").append($("<a>").text(mascot.artist_name).attr("href", mascot.artist_url));
     $("#mascot_artist").empty().append(artistLink);
   }
 
-  static change() {
+  static change () {
     const availableMascotIds = Object.keys(this.active);
     const currentMascotIndex = availableMascotIds.indexOf(this.current + "");
 
@@ -28,7 +28,7 @@ class Mascots {
     LStorage.Site.Mascot = Mascots.current;
   }
 
-  static init() {
+  static init () {
     const changeMascotButton = $("#change-mascot");
     if (Object.keys(this.active).length === 0) {
       console.log("No mascots to display");
@@ -50,7 +50,7 @@ class Mascots {
 export default Mascots;
 
 $(function () {
-    if (page("static", "home")) {
-      Mascots.init();
-    }
+  if (page("static", "home")) {
+    Mascots.init();
+  }
 });

@@ -74,7 +74,7 @@ module FemboyFans
     config.generators.assets = false
     config.generators.helper = false
     config.generators.test_framework = nil
-    config.middleware.insert_before(Rails::Rack::Logger, Middleware::JsonLog)
+    config.middleware.insert_before(Rails::Rack::Logger, Middleware::JsonLog) unless Rails.env.test?
     config.middleware.insert_before(Rails::Rack::Logger, Middleware::SilenceHealthcheckLogging)
   end
 end

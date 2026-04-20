@@ -1,9 +1,9 @@
-<h1>Application Logs</h1>
+<h1><%= @title %></h1>
 
 <p>
   Environment: <%= @log.environment %><br>
   File: <code><%= @log.path %></code><br>
-  <span id="application-log-status" data-status-url="<%= status_admin_application_logs_path(format: :json) %>" data-current-count="<%= @entries.total_count %>">
+  <span class="log-status" data-status-url="<%= @status_path %>" data-current-count="<%= @entries.total_count %>">
     <span class="new-log-lines-indicator" style="display: none;"></span>
   </span>
 </p>
@@ -14,7 +14,7 @@
       <%= entry.line_number %>
     <% end %>
     <% t.column("Message") do |entry| %>
-      <%= tag.pre(format_application_log_line(entry.text), class: "log-entry-line") %>
+      <%= render_log_entry(@log, entry.text) %>
     <% end %>
   <% end %>
 
@@ -26,5 +26,5 @@
 <%= render(partial: "moderator/dashboards/secondary_links") %>
 
 <% content_for(:page_title) do %>
-  Application Logs
+  <%= @title %>
 <% end %>

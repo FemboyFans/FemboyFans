@@ -1,0 +1,134 @@
+# frozen_string_literal: true
+
+module Admin
+  module LogsHelper
+    include(ApplicationLogsHelper)
+
+    def render_log_entry(log, text)
+      case log
+      when Admin::RequestLog
+        render_request_log_entry(text)
+      else
+        tag.pre(format_application_log_line(text), class: "log-entry-line")
+      end
+    end
+
+    private
+
+    def render_request_log_entry(text)
+      entry = JSON.parse(text)
+
+      blocks = []
+      blocks << tag.pre(format_request_log_summary(entry), class: "log-entry-line")
+      blocks << render_header_details("Request Headers", entry["request_headers"])
+      blocks << render_header_details("Response Headers", entry["response_headers"])
+      blocks.concat(render_exception_section(entry["exception"]))
+      tag.div(safe_join(blocks.compact), class: "log-entry")
+    rescue JSON::ParserError
+      tag.pre(text, class: "log-entry-line")
+    end
+
+    def format_request_log_summary(entry)
+      lines = []
+      lines << safe_join([format_request_log_time(entry["time"]), entry["method"], entry["path"], format_status(entry["status"]), format_duration(entry["duration"])].compact, " ")
+      lines << "IP: #{entry['ip']}" if entry["ip"].present?
+      lines << "Request ID: #{entry['request_id']}" if entry["request_id"].present?
+      lines << "Request Body Size: #{entry['request_body_size']} bytes" unless entry["request_body_size"].nil?
+      lines << "Total Request Size: #{entry['total_request_size']} bytes" unless entry["total_request_size"].nil?
+      lines << "Response Body Size: #{entry['response_body_size']} bytes" unless entry["response_body_size"].nil?
+      lines << "Total Response Size: #{entry['total_response_size']} bytes" unless entry["total_response_size"].nil?
+      lines << "Referer: #{entry['referer']}" if entry["referer"].present?
+      lines << "User-Agent: #{entry['user_agent']}" if entry["user_agent"].present?
+      safe_join(lines, "\n")
+    end
+
+    def format_status(status)
+      return if status.blank?
+
+      label = [status, Rack::Utils::HTTP_STATUS_CODES[status.to_i]].compact.join(" ")
+      safe_join(["-> ", tag.span(label, class: status_class(status))])
+    end
+
+    def format_duration(duration)
+      return if duration.blank?
+
+      return "(#{duration}ms)" if duration.to_f < default_user_statement_timeout
+
+      safe_join(["(", tag.span("#{duration}ms", class: "text-red"), ")"])
+    end
+
+    def render_header_details(title, headers)
+      return if headers.blank?
+
+      tag.details(class: "log-entry-details") do
+        safe_join([
+          tag.summary(title),
+          render_header_table(headers),
+        ])
+      end
+    end
+
+    def render_exception_section(exception)
+      return [] if exception.blank?
+
+      details = ["Exception:"]
+      details << "  Class: #{exception['class']}" if exception["class"].present?
+      details << "  Message: #{exception['message']}" if exception["message"].present?
+      [tag.pre(details.join("\n"), class: "log-entry-line")]
+    end
+
+    def render_header_table(headers)
+      rows = headers.sort_by { |key, _value| key.to_s }.map do |key, value|
+        tag.tr do
+          safe_join([
+            tag.td(key),
+            tag.td(render_header_value(value)),
+          ])
+        end
+      end
+
+      tag.table(class: "striped autofit") do
+        safe_join([
+          tag.thead do
+            tag.tr do
+              safe_join([
+                tag.th("Header"),
+                tag.th("Value"),
+              ])
+            end
+          end,
+          tag.tbody do
+            safe_join(rows)
+          end,
+        ])
+      end
+    end
+
+    def format_request_log_time(value)
+      return value if value.blank?
+
+      compact_time(Time.zone.parse(value))
+    rescue ArgumentError
+      value
+    end
+
+    def render_header_value(value)
+      return hint("empty") if value.blank?
+
+      value
+    end
+
+    def status_class(status)
+      code = status.to_i
+
+      return "text-green" if code.between?(200, 299)
+      return "text-red" if code >= 400
+
+      "hint"
+    end
+
+    def default_user_statement_timeout
+      @default_user_statement_timeout ||= User.new.statement_timeout
+    end
+  end
+end

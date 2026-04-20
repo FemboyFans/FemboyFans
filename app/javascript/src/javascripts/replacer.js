@@ -12,7 +12,7 @@ class Replacer {
 
 export default Replacer;
 
-$(async function() {
+$(async function () {
   if (Page.matches("posts-replacements", "new")) {
     await Uploader.loadSettings();
     Replacer.init();

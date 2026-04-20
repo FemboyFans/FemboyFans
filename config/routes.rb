@@ -22,8 +22,11 @@ Rails.application.routes.draw do
     resource(:bulk_update_request_import, only: %i[new create])
     resource(:dashboard, only: %i[show])
     resources(:exceptions, only: %i[index show])
-    resources(:application_logs, only: %i[index]) do
-      get(:status, on: :collection)
+    resource(:logs, only: []) do
+      get("application", action: :application_logs)
+      get("application/status", action: :application_status, as: :application_status)
+      get("request", action: :request_logs)
+      get("request/status", action: :request_status, as: :request_status)
     end
     resource(:reowner, controller: "reowner", only: %i[new create])
     resource(:stuck_dnp, controller: "stuck_dnp", only: %i[new create])

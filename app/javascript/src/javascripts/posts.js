@@ -1291,10 +1291,10 @@ Post.initialize_thumbnail_frame_preview = function () {
   $input.on("click.femboyfans", Post.preview_thumbnail_frame);
 };
 
-Post.initialize_upload_settings = async function() {
+Post.initialize_upload_settings = async function () {
   const id = Number($("meta[name=post-id]").attr("content"));
   await Uploader.loadSettings(id);
-}
+};
 
 Post.preview_thumbnail_frame = async function (event) {
   event.preventDefault();
@@ -1334,6 +1334,6 @@ Post.get_blob_url_for_frame = async function (frame, post_id = Post.currentPost(
   return url;
 };
 
-$(async() => Post.initialize_all());
+$(async () => Post.initialize_all());
 
 export default Post;

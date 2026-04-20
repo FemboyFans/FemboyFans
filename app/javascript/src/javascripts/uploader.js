@@ -1,7 +1,6 @@
 import VueUploader from "./uploader/uploader.vue.erb";
 import { createApp } from "vue";
 import {SendQueue} from "./send_queue";
-import Utility from "./utility";
 import Page from "./utility/page";
 
 /**
@@ -26,15 +25,16 @@ import Page from "./utility/page";
  */
 class Uploader {
   static settings = null;
+
   static settingsPostID = null;
 
-  static init() {
+  static init () {
     const app = createApp(VueUploader);
     app.mount("#uploader");
   }
 
   /** @return UploadSettings */
-  static async getSettings(postID = null) {
+  static async getSettings (postID = null) {
     if (this.settings && this.settingsPostID === postID) return this.settings;
     return new Promise(resolve => {
       SendQueue.add(() => {
@@ -43,13 +43,13 @@ class Uploader {
           url: `/uploads/settings.json${postID ? `?post_id=${postID}` : ""}`,
           success: (response) => {
             resolve(response);
-          }
-        })
+          },
+        });
       });
     });
   }
 
-  static async loadSettings(postID = null) {
+  static async loadSettings (postID = null) {
     if (this.settings && this.settingsPostID === postID) return;
     this.settings = await this.getSettings(postID);
     this.settingsPostID = postID;
@@ -58,7 +58,7 @@ class Uploader {
 
 export default Uploader;
 
-$(async function() {
+$(async function () {
   if (Page.matches("uploads", "new")) {
     await Uploader.loadSettings();
     Uploader.init();

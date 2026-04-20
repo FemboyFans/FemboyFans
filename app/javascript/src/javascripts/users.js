@@ -45,9 +45,9 @@ User.initialize_permissions = function () {
   });
 };
 
-User.initialize_edit = function() {
+User.initialize_edit = function () {
   $("#advanced-settings-section,#enhancement-settings-section,#security-settings-section").hide();
-  $("#edit-options a:not(#delete-account)").on("click", function(event) {
+  $("#edit-options a:not(#delete-account)").on("click", function (event) {
     const $target = $(event.target);
     $("h2 a").removeClass("active");
     $("#basic-settings-section,#advanced-settings-section,#enhancement-settings-section,#security-settings-section").hide();

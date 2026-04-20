@@ -1,8 +1,8 @@
 import Page from "./utility/page";
 
 export default class ApplicationLogs {
-  static init() {
-    const status = $("#application-log-status");
+  static init () {
+    const status = $(".log-status");
     if (!status.length) return;
 
     const indicator = status.find(".new-log-lines-indicator");
@@ -34,5 +34,5 @@ export default class ApplicationLogs {
 }
 
 $(function () {
-  if (Page.matches("admin-application-logs", "index")) ApplicationLogs.init();
+  if (Page.matches("admin-logs", "application_logs") || Page.matches("admin-logs", "request_logs")) ApplicationLogs.init();
 });
