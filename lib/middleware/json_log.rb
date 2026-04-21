@@ -32,7 +32,7 @@ module Middleware
 
     private
 
-    def content(env, request:, start:, status:, headers:, body:, exception:) # rubocop:disable Lint/UnusedMethodArgument
+    def content(env, request:, start:, status:, headers:, body:, exception:)
       exception ||= env["action_dispatch.exception"]
       duration = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start) * 1000).round(3)
       request_headers = extract_request_headers(env)
@@ -40,22 +40,22 @@ module Middleware
       response_headers = headers ? headers.to_h : {}
       response_body_size = calculate_response_body_size(response_headers, body)
       json = {
-        time:               Time.now.utc.iso8601(6),
-        request_id:         request.request_id,
-        method:             request.request_method,
-        path:               request.fullpath,
-        ip:                 request.remote_ip,
-        user_agent:         request.user_agent,
-        referer:            request.referer,
-        status:             status,
-        duration:           duration,
-        request_body_size:  request_body_size,
-        total_request_size: calculate_total_request_size(env, request, request_headers, request_body_size),
-        request_headers:    request_headers,
-        response_body_size: response_body_size,
+        time:                Time.now.utc.iso8601(6),
+        request_id:          request.request_id,
+        method:              request.request_method,
+        path:                request.fullpath,
+        ip:                  request.remote_ip,
+        user_agent:          request.user_agent,
+        referer:             request.referer,
+        status:              status,
+        duration:            duration,
+        request_body_size:   request_body_size,
+        total_request_size:  calculate_total_request_size(env, request, request_headers, request_body_size),
+        request_headers:     request_headers,
+        response_body_size:  response_body_size,
         total_response_size: calculate_total_response_size(status, response_headers, response_body_size),
-        response_headers:   response_headers,
-        exception:          nil,
+        response_headers:    response_headers,
+        exception:           nil,
       }
 
       if exception
