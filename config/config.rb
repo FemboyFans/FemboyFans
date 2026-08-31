@@ -192,8 +192,8 @@ module GayFurCity
         { name: "Already", text: "User already received a record for that message." },
         { name: "Banned", text: "This user is already banned." },
         { name: "Blacklist", text: "If you find the contents of that post objectionable, \"blacklist\":/help/blacklisting it." },
-        { name: "Takedown", text: "Artists and character owners may request a takedown \"here\":/static/takedown.\nWe do not accept third party takedowns." },
-      ]
+        ({ name: "Takedown", text: "Artists and character owners may request a takedown \"here\":/static/takedown.\nWe do not accept third party takedowns." } if AdminConfig.enable_takedowns?),
+      ].compact
     end
 
     config(:user_needs_login_for_post, :boolean, env: false) { |_post| false }

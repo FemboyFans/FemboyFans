@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Takedown < ApplicationRecord
+  class DisabledError < StandardError; end
+
   belongs_to_user(:creator, ip: true, clones: :updater, optional: true)
   belongs_to_user(:updater, ip: true, optional: true)
   belongs_to_user(:approver, ip: true, optional: true)

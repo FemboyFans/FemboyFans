@@ -40,6 +40,12 @@ class Post < ApplicationRecord
 
   has_bit_flags(Flags.map)
 
+  def is_taken_down
+    return false unless AdminConfig.enable_takedowns?
+    bit_flags.allbits?(Post.flag_value_for("is_taken_down"))
+  end
+  alias is_taken_down? is_taken_down
+
   before_validation(:merge_old_changes)
   before_validation(:apply_source_diff)
   before_validation(:merge_tag_inputs!)

@@ -65,7 +65,9 @@ Disallow: /popular
 Disallow: <%= post_sets_path %>
 Disallow: /sessions
 Disallow: <%= tags_path %>
+<% if AdminConfig.enable_takedowns? %>
 Disallow: <%= takedowns_path %>
+<% end %>
 Disallow: <%= tickets_path %>
 Disallow: <%= upload_whitelists_path %>
 Disallow: <%= uploads_path %>

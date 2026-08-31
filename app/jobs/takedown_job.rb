@@ -3,8 +3,10 @@
 class TakedownJob < ApplicationJob
   queue_as(:high)
   good_job_control_concurrency_with(enqueue_limit: 1, key: -> { "TakedownJob-#{arguments[0]}" })
+  discard_on(Takedown::DisabledError)
 
   def perform(id, approver, del_reason)
+    raise(Takedown::DisabledError) unless AdminConfig.enable_takedowns?
     @takedown = Takedown.find(id)
     @takedown.update_with!(approver, approver: approver, status: @takedown.calculated_status)
     @takedown.log_process

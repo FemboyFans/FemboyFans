@@ -165,11 +165,11 @@ module MigrationHelpers
   # inverse it generates is `add_column(table, column, type, index: {...})`, and add_column has no
   # `index:` option - it raises "Unknown key: :index" on rollback. Splits the down direction into
   # add_column + a separate add_index instead.
-  def remove_column_with_index(table, column, type, index:, **options)
+  def remove_column_with_index(table, column, type, index:, **)
     reversible do |dir|
-      dir.up { remove_column(table, column, type, **options) }
+      dir.up { remove_column(table, column, type, **) }
       dir.down do
-        add_column(table, column, type, **options)
+        add_column(table, column, type, **)
         add_index(table, column, **(index.is_a?(Hash) ? index : {}))
       end
     end
@@ -192,7 +192,7 @@ module MigrationHelpers
 
     connection.select_value(<<~SQL.squish)
       INSERT INTO users (name, password_hash, level, email, created_at)
-      VALUES (#{connection.quote("System")}, '', #{User::Levels::SYSTEM}, #{connection.quote("system@#{GayFurCity.config.domain}")}, NOW())
+      VALUES (#{connection.quote('System')}, '', #{User::Levels::SYSTEM}, #{connection.quote("system@#{GayFurCity.config.domain}")}, NOW())
       RETURNING id
     SQL
   end

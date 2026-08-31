@@ -18,7 +18,8 @@ class RemoveUnusedTextIndexColumns < ActiveRecord::Migration[7.0]
         remove_column(table, "#{column}_index")
       end
       r.down do
-        add_column(table, "#{column}_index", :tsvector, null: false, index: true)
+        add_column(table, "#{column}_index", :tsvector, null: false)
+        add_index(table, "#{column}_index")
         execute("CREATE TRIGGER trigger_#{table}_on_update BEFORE INSERT OR UPDATE ON #{table} FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('#{column}_index', 'pg_catalog.english', '#{column}')")
       end
     end

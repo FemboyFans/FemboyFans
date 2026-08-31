@@ -84,7 +84,7 @@ div#c-takedowns {
 }
 
 div#c-static div#a-takedown {
-  ul {
+  ul:not(.backtrace) {
     list-style: disc;
     padding: revert;
   }

@@ -1,36 +1,40 @@
 # frozen_string_literal: true
 
 class TakedownPolicy < ApplicationPolicy
+  def index?
+    enabled?
+  end
+
   def create?
-    true
+    enabled?
   end
 
   def show?
-    true
+    enabled?
   end
 
   def update?
-    user.can_handle_takedowns?
+    enabled? && user.can_handle_takedowns?
   end
 
   def destroy?
-    user.can_handle_takedowns?
+    enabled? && user.can_handle_takedowns?
   end
 
   def add_by_ids?
-    user.can_handle_takedowns?
+    enabled? && user.can_handle_takedowns?
   end
 
   def add_by_tags?
-    user.can_handle_takedowns?
+    enabled? && user.can_handle_takedowns?
   end
 
   def count_matching_posts?
-    user.can_handle_takedowns?
+    enabled? && user.can_handle_takedowns?
   end
 
   def remove_by_ids?
-    user.can_handle_takedowns?
+    enabled? && user.can_handle_takedowns?
   end
 
   def permitted_attributes
@@ -57,5 +61,9 @@ class TakedownPolicy < ApplicationPolicy
 
   def html_data_attributes
     super + %i[status]
+  end
+
+  def enabled?
+    AdminConfig.enable_takedowns?
   end
 end

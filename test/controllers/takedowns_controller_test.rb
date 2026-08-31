@@ -4,6 +4,10 @@ require("test_helper")
 
 class TakedownsControllerTest < ActionDispatch::IntegrationTest
   context("The takedowns controller") do
+    setup do
+      stub_admin_config(:enable_takedowns, true)
+    end
+
     context("index action") do
       should("render") do
         create_list(:takedown, 2)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_31_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_31_130001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -71,6 +71,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_130000) do
     t.boolean "enable_signups", default: true, null: false
     t.boolean "enable_sock_puppet_validation", default: false, null: false
     t.boolean "enable_stale_forum_topics", default: true, null: false
+    t.boolean "enable_takedowns", default: false, null: false
     t.boolean "flag_ai_posts", default: true, null: false
     t.string "flag_notice_wiki_page", default: "internal:flag_notice", null: false
     t.jsonb "followed_tag_limit", default: {"10" => 100, "15" => 500, "20" => 1000}, null: false

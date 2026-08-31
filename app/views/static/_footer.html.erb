@@ -5,7 +5,9 @@
       on <i><%= GayFurCity.config.server_name %></i>
     <% end %>
     – <%= link_to("Rules", rules_path) %>
-    – <%= link_to("Takedowns", takedown_static_path) %>
+    <% if AdminConfig.enable_takedowns? %>
+      – <%= link_to("Takedowns", takedown_static_path) %>
+    <% end %>
     – <%= link_to("Privacy", privacy_policy_path) %>
     – <%= link_to("Contact", contact_path) %>
     – <%= link_to("Status", status_path) %>

@@ -250,7 +250,8 @@ CREATE TABLE public.admin_config (
     post_set_create_limit_bypass integer DEFAULT 20 NOT NULL,
     post_set_limit jsonb DEFAULT '{"4": 5, "10": 75, "15": 150, "40": -1}'::jsonb NOT NULL,
     character_edit_limit integer DEFAULT 25 NOT NULL,
-    character_edit_limit_bypass integer DEFAULT 15 NOT NULL
+    character_edit_limit_bypass integer DEFAULT 15 NOT NULL,
+    enable_takedowns boolean DEFAULT false NOT NULL
 );
 
 
@@ -8783,6 +8784,7 @@ ALTER TABLE ONLY public.help_pages
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260831130001'),
 ('20260831130000'),
 ('20260831120000'),
 ('20260830100200'),

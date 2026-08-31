@@ -8,6 +8,10 @@ module ModActions
     include(Helper)
     include(Rails.application.routes.url_helpers)
 
+    setup do
+      stub_admin_config(:enable_takedowns, true)
+    end
+
     context("mod actions for takedowns") do
       setup do
         @takedown = create(:takedown)

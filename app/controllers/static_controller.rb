@@ -19,6 +19,10 @@ class StaticController < ApplicationController
   end
 
   def takedown
+    unless AdminConfig.enable_takedowns?
+      raise(FeatureUnavailable) if CurrentUser.user.is_staff?
+      return render404
+    end
     @page = view_context.safe_wiki("help:takedown")
   end
 
