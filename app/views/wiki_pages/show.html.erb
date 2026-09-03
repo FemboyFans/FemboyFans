@@ -5,6 +5,7 @@
   <h1 id="wiki-page-title">
     <%= link_to(wiki_content.pretty_title_with_category, posts_path(tags: wiki_content.title), class: "tag-type-#{wiki_content.category_id}") %>
   </h1>
+  <div class="wiki-page-edited-by">Lasted edited by <%= link_to_user(@wiki_page.updater) %> at <%= compact_time(@wiki_page.updated_at) %></div>
   <% if @wiki_redirect.present? %>
     <div class="wiki-page-redirect"><i class="fa-solid fa-turn-up fa-rotate-90"></i> <%= @wiki_page.title %></div>
   <% end %>
