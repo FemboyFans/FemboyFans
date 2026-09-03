@@ -1,0 +1,9 @@
+<%= form_search(path: audio_track_media_assets_path, policy: policy(AudioTrackMediaAsset)) do |f| %>
+  <%= f.user(:creator) %>
+  <%= f.input(:checksum) %>
+  <%= f.input(:md5, label: "MD5") %>
+  <%= f.input(:file_ext, label: "Type") %>
+  <%= f.input(:status, collection: AudioTrackMediaAsset.statuses) %>
+  <%= f.input(:status_message_matches, label: "Status Message") %>
+  <%= f.input(:audio_track_id, label: "Audio Track") %>
+<% end %>

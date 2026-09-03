@@ -200,6 +200,14 @@ class PostsController < ApplicationController
     respond_with(@post)
   end
 
+  def regenerate_audio_track
+    @post = authorize(Post.find(params[:id]))
+    raise(User::PrivilegeError, "Cannot regenerate audio on deleted posts") if @post.is_deleted?
+    raise(User::PrivilegeError, "Post is not a video") unless @post.is_video?
+    @post.regenerate_default_audio_track!
+    respond_with(@post)
+  end
+
   def approve
     @post = authorize(Post.find(params[:id]))
     if @post.is_approvable?

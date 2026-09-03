@@ -644,6 +644,178 @@ textarea[data-autocomplete="tag-edit"] {
   }
 }
 
+.video-player {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  line-height: 0;
+
+  &:fullscreen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    background: black;
+
+    video {
+      // The video's rendered size is otherwise whatever the resize-sample selector last set it
+      // to (e.g. a 44% sample, or even "Original" at its native pixel size) - none of which fill
+      // a fullscreen viewport on their own. object-fit scales it up to fill the available space,
+      // letterboxing to preserve the aspect ratio instead of stretching it.
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  video {
+    display: block;
+  }
+
+  .video-controls {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.5rem 0.75rem 0.4rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+    opacity: 1;
+    transition: opacity 0.2s ease;
+    line-height: normal;
+  }
+
+  &.controls-idle .video-controls {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .video-seek {
+    position: relative;
+    height: 0.9rem;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    touch-action: none;
+  }
+
+  .video-seek-track {
+    position: relative;
+    width: 100%;
+    height: 0.25rem;
+    border-radius: 0.15rem;
+    background: rgba(255, 255, 255, 0.25);
+    overflow: hidden;
+  }
+
+  .video-seek-buffered {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  .video-seek-played {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: var(--color-button-active);
+  }
+
+  .video-seek-handle {
+    position: absolute;
+    top: 50%;
+    width: 0.7rem;
+    height: 0.7rem;
+    margin-left: -0.35rem;
+    border-radius: 50%;
+    background: var(--color-button-active);
+    transform: translateY(-50%);
+  }
+
+  .video-controls-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+    // Small players don't have room for every control at its natural width - without this,
+    // flex items refuse to shrink past their content size and the row overflows the player.
+    min-width: 0;
+  }
+
+  .video-btn {
+    background: none;
+    border: 0;
+    color: var(--color-text-white);
+    cursor: pointer;
+    font-size: 1rem;
+    opacity: 0.9;
+
+    // Fixed size so swapping icons (play/pause, volume level) never reflows whatever sits next
+    // to it - width alone isn't enough since Font Awesome glyphs also vary in visual width
+    // within that box, hence centering the icon rather than just padding around it.
+    width: 1.75rem;
+    height: 1.5rem;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    &.active {
+      color: var(--color-button-active);
+      opacity: 1;
+    }
+
+    &:disabled {
+      cursor: default;
+      opacity: 0.4;
+
+      &:hover {
+        opacity: 0.4;
+      }
+    }
+  }
+
+  .video-volume {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .video-volume-slider {
+    width: 4.5rem;
+    min-width: 2rem;
+  }
+
+  .video-time {
+    color: var(--color-text-white);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    flex-shrink: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .video-spacer {
+    flex: 1;
+  }
+
+  .video-audio-track-select {
+    max-width: 9rem;
+    min-width: 3rem;
+    font-size: 0.8rem;
+    flex-shrink: 3;
+  }
+}
+
 section#image-extra-controls {
   display: flex;
   align-items: center;

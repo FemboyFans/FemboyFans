@@ -57,6 +57,7 @@ export { default as PostVersions } from "../src/javascripts/post_versions.js";
 export { default as RecordBuilder } from "../src/javascripts/record_builder.js";
 export { default as CharacterAttributes } from "../src/javascripts/character_attributes.js";
 export { default as Replacer } from "../src/javascripts/replacer.js";
+export { default as AudioTracker } from "../src/javascripts/audio_tracker.js";
 export { default as Rules } from "../src/javascripts/rules.js";
 export { default as Shortcuts } from "../src/javascripts/shortcuts.js";
 export { default as StaffNote } from "../src/javascripts/staff_notes.js";
@@ -67,6 +68,7 @@ export { default as Theme } from "../src/javascripts/themes.js";
 export { default as Thumbnails } from "../src/javascripts/thumbnails.js";
 export { default as Tickets } from "../src/javascripts/tickets.js";
 export { default as Uploader } from "../src/javascripts/uploader.js";
+export { default as VideoPlayerLoader } from "../src/javascripts/video_player.js";
 export { default as VoteManager } from "../src/javascripts/vote_manager.js";
 export { default as HoverZoom } from "../src/javascripts/hover_zoom.js";
 

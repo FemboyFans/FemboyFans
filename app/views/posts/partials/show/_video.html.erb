@@ -1,19 +1,13 @@
-<%= tag.video(id: "image", class: post.display_class_for(CurrentUser.user), loop: "true", controls: "controls", poster: post.video_poster_url(CurrentUser.user)) do %>
-  <%= tag.source(src: post.file_url_ext_for(CurrentUser.user, "webm"), type: "video/webm") %>
-  <%= tag.source(src: post.file_url_ext_for(CurrentUser.user, "mp4"), type: "video/mp4") %>
-<% end %>
-
-<%= javascript_tag(nonce: true) do -%>
-  (function () {
-    var videoEl = document.getElementById('image');
-    var savedVolume = parseFloat(localStorage.getItem('video_volume') || '1.0');
-    if (videoEl) {
-      videoEl.volume = savedVolume;
-      videoEl.addEventListener('volumechange', function (evt) {
-      if (evt.target) {
-        localStorage.setItem('video_volume', evt.target.volume);
-      }
-    });
-  }
-  })();
-<% end -%>
+<%
+  sources = [
+    { src: post.file_url_ext_for(CurrentUser.user, "webm"), type: "video/webm" },
+    { src: post.file_url_ext_for(CurrentUser.user, "mp4"), type: "video/mp4" },
+  ]
+%>
+<div
+  id="video-player"
+  data-sources="<%= sources.to_json %>"
+  data-poster="<%= post.video_poster_url(CurrentUser.user) %>"
+  data-video-class="<%= post.display_class_for(CurrentUser.user) %>"
+  data-audio-tracks="<%= post.audio_tracks_for_api(CurrentUser.user).to_json %>"
+></div>

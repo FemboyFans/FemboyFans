@@ -103,6 +103,7 @@ class Post < ApplicationRecord
   has_many(:disapprovals, class_name: "PostDisapproval", dependent: :destroy)
   has_many(:favorites)
   has_many(:replacements, -> { default_order }, class_name: "PostReplacement", dependent: :destroy)
+  has_many(:audio_tracks, -> { default_order }, dependent: :destroy)
   has_many(:pool_covers, class_name: "Pool", foreign_key: :cover_post_id, dependent: :nullify)
   revertible do |version|
     self.tag_string = version.tags
@@ -376,6 +377,22 @@ class Post < ApplicationRecord
 
     def has_dimensions?
       image_width.present? && image_height.present?
+    end
+
+    def approved_audio_tracks
+      audio_tracks.approved.where(file_md5: md5)
+    end
+
+    def default_audio_track
+      approved_audio_tracks.default.first
+    end
+
+    # Destroys the current default track (if any) and re-runs extraction from scratch - lets a
+    # mod recover a post whose auto-extraction never completed (see AudioTrackExtractionJob) or
+    # redo one that came out wrong, without needing console access.
+    def regenerate_default_audio_track!
+      approved_audio_tracks.default.find_each { |track| track.destroy_with_current(:destroyer) }
+      AudioTrackExtractionJob.perform_later(upload_media_asset_id)
     end
 
     def has_variant_size?(scale)
@@ -2009,6 +2026,18 @@ class Post < ApplicationRecord
       results
     end
 
+    def audio_tracks_for_api(user)
+      approved_audio_tracks.map do |track|
+        {
+          id:         track.id,
+          label:      track.label,
+          is_default: track.is_default,
+          duration:   track.media_asset.duration&.to_f,
+          url:        track.file_url(user),
+        }
+      end
+    end
+
     def status
       if is_pending?
         "pending"
@@ -2044,6 +2073,7 @@ class Post < ApplicationRecord
           url:    visible?(user) ? file_url(user) : nil,
         },
         variants:         variants(user),
+        audio_tracks:     audio_tracks_for_api(user),
         score:            {
           up:    up_score,
           down:  down_score,

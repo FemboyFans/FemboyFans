@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module PostIndex
-  PostData = Struct.new(:id, :pool_ids, :post_set_ids, :commenter_ids, :comment_count, :noter_ids, :note_bodies, :fav_user_ids, :upvote_user_ids, :downvote_user_ids, :child_post_ids, :disapprover_ids, :disapproval_count, :deleter_id, :deletion_reason, :has_pending_replacements, :has_verified_artist, :file_size, :image_width, :image_height, :duration, :framecount, :md5, :file_ext, keyword_init: true) do
+  PostData = Struct.new(:id, :pool_ids, :post_set_ids, :commenter_ids, :comment_count, :noter_ids, :note_bodies, :fav_user_ids, :upvote_user_ids, :downvote_user_ids, :child_post_ids, :disapprover_ids, :disapproval_count, :deleter_id, :deletion_reason, :has_pending_replacements, :has_pending_audio, :audiocount, :has_verified_artist, :file_size, :image_width, :image_height, :duration, :framecount, :md5, :file_ext, keyword_init: true) do
     def initialize(**options)
       %i[pool_ids post_set_ids commenter_ids noter_ids note_bodies fav_user_ids upvote_user_ids downvote_user_ids child_post_ids disapprover_ids].each do |key|
         next unless options.key?(key)
@@ -106,6 +106,8 @@ module PostIndex
           in_progress:              { type: "boolean" },
           has_children:             { type: "boolean" },
           has_pending_replacements: { type: "boolean" },
+          has_pending_audio:        { type: "boolean" },
+          audiocount:               { type: "integer" },
           artverified:              { type: "boolean" },
         },
       },
@@ -146,6 +148,8 @@ module PostIndex
         deleter_ids              = data.to_h { |d| [d.id, d.deleter_id] }
         deletion_reasons         = data.to_h { |d| [d.id, d.deletion_reason] }
         has_pending_replacements = data.to_h { |d| [d.id, d.has_pending_replacements] }
+        has_pending_audio        = data.to_h { |d| [d.id, d.has_pending_audio] }
+        audiocounts              = data.to_h { |d| [d.id, d.audiocount] }
         has_verified_artist      = data.to_h { |d| [d.id, d.has_verified_artist] }
         file_sizes               = data.to_h { |d| [d.id, d.file_size] }
         image_widths             = data.to_h { |d| [d.id, d.image_width] }
@@ -173,6 +177,8 @@ module PostIndex
             disapprovers:             disapprover_ids[p.id] || empty,
             del_reason:               deletion_reasons[p.id],
             has_pending_replacements: has_pending_replacements[p.id] || false,
+            has_pending_audio:        has_pending_audio[p.id] || false,
+            audiocount:               audiocounts[p.id] || 0,
             disapproval_count:        disapproval_counts[p.id] || 0,
             artverified:              has_verified_artist[p.id] || false,
             views:                    views[p.id] || 0,
@@ -215,6 +221,8 @@ module PostIndex
                     "post_disapprovals_agg.disapprover_ids", "post_disapprovals_agg.disapproval_count",
                     "last_flag.deleter_id, last_flag.deletion_reason",
                     "post_replacements_agg.has_pending_replacements",
+                    "audio_tracks_agg.has_pending_audio",
+                    "audio_tracks_agg.audiocount",
                     "verified_artist_agg.has_verified_artist",
                     "upload_media_assets.file_size",
                     "upload_media_assets.image_width",
@@ -236,6 +244,8 @@ module PostIndex
             .joins("LEFT JOIN linked_artists ON linked_artists.linked_user_id = posts.uploader_id")
             .joins("LEFT JOIN LATERAL (SELECT EXISTS(SELECT 1 FROM unnest(string_to_array(posts.tag_string, ' ')) AS tag WHERE tag = ANY(linked_artists.artist_names)) AS has_verified_artist) verified_artist_agg ON TRUE")
             .joins("LEFT JOIN upload_media_assets ON upload_media_assets.id = posts.upload_media_asset_id")
+            # references upload_media_assets.md5, so must come after that join above
+            .joins("LEFT JOIN LATERAL (SELECT EXISTS(SELECT 1 FROM audio_tracks WHERE audio_tracks.post_id = posts.id AND audio_tracks.status = 'pending' AND audio_tracks.file_md5 = upload_media_assets.md5) as has_pending_audio, (SELECT COUNT(*) FROM audio_tracks WHERE audio_tracks.post_id = posts.id AND audio_tracks.status = 'approved' AND audio_tracks.file_md5 = upload_media_assets.md5) as audiocount) audio_tracks_agg ON TRUE")
             .order(id: :asc)
             .merge(relation)
             .to_sql
@@ -348,6 +358,8 @@ module PostIndex
       in_progress:              is_in_progress,
       has_children:             has_children,
       has_pending_replacements: options_or_get.call(:has_pending_replacements, -> { replacements.pending.any? }),
+      has_pending_audio:        options_or_get.call(:has_pending_audio, -> { audio_tracks.pending.where(file_md5: md5).any? }),
+      audiocount:               options_or_get.call(:audiocount, -> { approved_audio_tracks.count }),
       artverified:              options_or_get.call(:artverified, -> { uploader_linked_artists.any? }),
     }
   end

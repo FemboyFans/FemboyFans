@@ -6,7 +6,8 @@ module FileMethods
   VIDEO_EXTENSIONS = %w[webm mp4].freeze
   IMAGE_EXTENSIONS = %w[png jpg gif webp].freeze
   GIF_EXTENSIONS = %w[gif].freeze
-  EXTENSIONS = (IMAGE_EXTENSIONS + VIDEO_EXTENSIONS + GIF_EXTENSIONS).uniq.freeze
+  AUDIO_EXTENSIONS = %w[m4a].freeze
+  EXTENSIONS = (IMAGE_EXTENSIONS + VIDEO_EXTENSIONS + GIF_EXTENSIONS + AUDIO_EXTENSIONS).uniq.freeze
 
   module ClassMethods
     include(AiMethods)
@@ -27,6 +28,8 @@ module FileMethods
           "webm"
         when "video/mp4"
           "mp4"
+        when "audio/mp4", "audio/x-m4a"
+          "m4a"
         else
           mime_type
         end
@@ -57,6 +60,35 @@ module FileMethods
 
       hash[:audio_streams] = []
       video.audio_streams.each do |audio|
+        audhash = {}
+        %i[index channels codec_name sample_rate bitrate channel_layout tags overview].each do |p|
+          audhash[p] = audio.public_send(:[], p)
+        end
+        hash[:audio_streams].push(audhash)
+      end
+
+      hash
+    end
+
+    def audio(file_path, ...)
+      return unless is_file_audio?(file_path)
+      FFMPEG::Movie.new(file_path, ...)
+    end
+
+    # Audio-only equivalent of #video_metadata - no width/height/video_codec, and frame_rate is
+    # always 0.0 (the "not applicable" placeholder MediaAsset::FileMethods#set_file_attributes
+    # already expects, since framecount = duration * frame_rate for every media type).
+    def audio_metadata(file_path)
+      movie = FFMPEG::Movie.new(file_path)
+      hash = {}
+      %i[container duration bitrate].each do |p|
+        hash[p] = movie.public_send(p)
+      end
+      hash[:frame_rate] = 0.0
+      hash[:raw] = movie.metadata
+
+      hash[:audio_streams] = []
+      movie.audio_streams.each do |audio|
         audhash = {}
         %i[index channels codec_name sample_rate bitrate channel_layout tags overview].each do |p|
           audhash[p] = audio.public_send(:[], p)
@@ -200,6 +232,14 @@ module FileMethods
 
     def is_video?(file_ext)
       VIDEO_EXTENSIONS.include?(file_ext)
+    end
+
+    def is_audio?(file_ext)
+      AUDIO_EXTENSIONS.include?(file_ext)
+    end
+
+    def is_file_audio?(file_path)
+      is_audio?(file_header_to_file_ext(file_path))
     end
 
     def is_file_video?(file_path)
@@ -348,6 +388,21 @@ module FileMethods
       self.class.video_metadata(get_file.path)
     end
 
+    def audio(&)
+      if block_given?
+        get_file { |file| yield(self.class.audio(file.path)) }
+        return
+      end
+      self.class.audio(get_file.path)
+    end
+
+    def audio_metadata(&)
+      if block_given?
+        get_file { |file| yield(self.class.audio_metadata(file.path)) }
+      end
+      self.class.audio_metadata(get_file.path)
+    end
+
     def gif(&)
       if block_given?
         get_file { |file| yield(self.class.gif(file.path)) }
@@ -403,6 +458,14 @@ module FileMethods
 
     def is_file_video?
       get_file { |file| self.class.is_file_video?(file.path) }
+    end
+
+    def is_audio?
+      self.class.is_audio?(file_ext)
+    end
+
+    def is_file_audio?
+      get_file { |file| self.class.is_file_audio?(file.path) }
     end
 
     # def is_animated_png?

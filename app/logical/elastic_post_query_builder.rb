@@ -134,7 +134,7 @@ class ElasticPostQueryBuilder < ElasticQueryBuilder
     elsif q[:status] == "appealed"
       must.push({ term: { appealed: true } })
     elsif q[:status] == "modqueue"
-      must.push(match_any({ term: { pending: true } }, { term: { flagged: true } }, { term: { appealed: true } }))
+      must.push(match_any({ term: { pending: true } }, { term: { flagged: true } }, { term: { appealed: true } }, { term: { has_pending_replacements: true } }, { term: { has_pending_audio: true } }))
     elsif q[:status] == "deleted"
       must.push({ term: { deleted: true } })
     elsif q[:status] == "unlisted"
@@ -154,7 +154,7 @@ class ElasticPostQueryBuilder < ElasticQueryBuilder
     elsif q[:status_must_not] == "appealed"
       must_not.push({ term: { appealed: true } })
     elsif q[:status_must_not] == "modqueue"
-      must_not.push(match_any({ term: { pending: true } }, { term: { flagged: true } }, { term: { appealed: true } }))
+      must_not.push(match_any({ term: { pending: true } }, { term: { flagged: true } }, { term: { appealed: true } }, { term: { has_pending_replacements: true } }, { term: { has_pending_audio: true } }))
     elsif q[:status_must_not] == "deleted"
       must_not.push({ term: { deleted: true } })
     elsif q[:status_must_not] == "unlisted"
@@ -235,6 +235,7 @@ class ElasticPostQueryBuilder < ElasticQueryBuilder
     add_boolean_exists_relation(:isparent, :children)
     add_boolean_exists_relation(:inpool, :pools)
     add_boolean_relation(:pending_replacements, :has_pending_replacements)
+    add_boolean_relation(:pending_audio, :has_pending_audio)
     add_boolean_relation(:artverified, :artverified)
 
     add_tag_string_search_relation(q[:tags])

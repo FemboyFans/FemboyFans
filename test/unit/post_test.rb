@@ -2218,6 +2218,21 @@ class PostTest < ActiveSupport::TestCase
       assert_tag_match(all, "-status:active")
     end
 
+    should("include posts with pending replacements or pending audio tracks in the modqueue") do
+      pending_replacement = create(:post)
+      create(:png_replacement, creator: @user, post: pending_replacement)
+      pending_audio = create(:mp4_post)
+      pending_audio.audio_tracks.create!(attributes_for(:audio_track).merge(creator: @user, status: "pending"))
+      clean = create(:post)
+
+      assert_tag_match([pending_audio, pending_replacement], "status:modqueue")
+      assert_tag_match([clean], "-status:modqueue")
+
+      # same conditions, via the non-Elasticsearch (SQL) fallback query builder
+      assert_equal([pending_audio, pending_replacement].map(&:id).sort, Post.tag_match_sql("status:modqueue", @user).pluck(:id).sort)
+      assert_equal([clean.id], Post.tag_match_sql("-status:modqueue", @user).pluck(:id))
+    end
+
     should("hide unlisted posts from search unless searched for by status or id") do
       unlisted = create(:post, is_unlisted: true)
       listed = create(:post)
@@ -2514,6 +2529,42 @@ class PostTest < ActiveSupport::TestCase
       assert_tag_match([promoted_post, post4, post3, post2, post1], "-pending_replacements:true")
       assert_tag_match([], "~pending_replacements:true")
       assert_tag_match([promoted_post, post4, post3, post2, post1], "~pending_replacements:false")
+    end
+
+    should("return posts for pending audio tracks") do
+      assert_tag_match([], "pending_audio:true")
+      assert_tag_match([], "pending_audio:false")
+      post = create(:mp4_post)
+      post.audio_tracks.create!(attributes_for(:audio_track).merge(creator: @user, status: "pending"))
+
+      assert_tag_match([post], "pending_audio:true")
+    end
+
+    should("return no posts when the audio track is not pending anymore") do
+      # mp4_post hardcodes its checksum/md5, so build these directly with distinct ones - needed
+      # since both posts must coexist and match the audio_track factory's 5.7s duration.
+      post1 = create(:post, media_asset: build(:mp4_upload_media_asset, :active, creator: @user, checksum: SecureRandom.hex(16), md5: SecureRandom.hex(16)))
+      post2 = create(:post, media_asset: build(:mp4_upload_media_asset, :active, creator: @user, checksum: SecureRandom.hex(16), md5: SecureRandom.hex(16)))
+      track1 = post1.audio_tracks.create!(attributes_for(:audio_track).merge(creator: @user, status: "pending"))
+      track1.reject!(@user, "not needed")
+      track2 = post2.audio_tracks.create!(attributes_for(:audio_track).merge(creator: @user, status: "pending"))
+      track2.approve!(@user)
+
+      assert_tag_match([], "pending_audio:true")
+      assert_tag_match([post2, post1], "pending_audio:false")
+      assert_tag_match([], "-pending_audio:false")
+      assert_tag_match([post2, post1], "-pending_audio:true")
+    end
+
+    should("count approved audio tracks for the audiocount metatag") do
+      post = create(:mp4_post)
+      track = post.audio_tracks.create!(attributes_for(:audio_track).merge(creator: @user, status: "pending"))
+
+      assert_tag_match([], "audiocount:1")
+      track.approve!(@user)
+
+      assert_tag_match([post], "audiocount:1")
+      assert_tag_match([], "audiocount:0")
     end
 
     should("not error for values beyond Integer.MAX_VALUE") do
@@ -3103,6 +3154,41 @@ class PostTest < ActiveSupport::TestCase
         save_with_groups(post, [{ characters: ["fluffy_(oc)"], tags: ["blue_eyes"] }], "solo")
 
         assert_equal(["solo"], post.ungrouped_tags)
+      end
+    end
+  end
+
+  context("API:") do
+    context("#audio_tracks_for_api") do
+      should("list approved audio tracks for the post's current file") do
+        post = create(:mp4_post)
+        user = create(:user, created_at: 2.weeks.ago)
+        post.audio_tracks.create!(attributes_for(:audio_track).merge(creator: user, status: "pending"))
+        approved = post.audio_tracks.create!(attributes_for(:audio_track).merge(creator: user, status: "approved", is_default: true))
+
+        result = post.audio_tracks_for_api(user)
+
+        assert_equal([approved.id], result.pluck(:id))
+
+        track = result.first
+
+        assert_equal(approved.label, track[:label])
+        assert(track[:is_default])
+        assert_in_delta(approved.media_asset.duration, track[:duration])
+        assert_equal(approved.file_url(user), track[:url])
+
+        assert_equal(result.as_json, post.as_json(user: user)["audio_tracks"])
+      end
+
+      should("exclude tracks left over from a previous version of the file") do
+        post = create(:mp4_post)
+        user = create(:user, created_at: 2.weeks.ago)
+        post.audio_tracks.create!(attributes_for(:audio_track).merge(creator: user, status: "approved"))
+        other_asset = create(:png_upload).upload_media_asset
+        post.update_column(:upload_media_asset_id, other_asset.id)
+        post.reload_media_asset
+
+        assert_equal([], post.audio_tracks_for_api(user))
       end
     end
   end

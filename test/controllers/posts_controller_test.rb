@@ -672,6 +672,34 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
+    context("regenerate_audio_track action") do
+      setup { @video_post = create(:mp4_post) }
+
+      should("destroy the existing default track and re-enqueue extraction") do
+        old_track = create(:audio_track, post: @video_post, creator: @admin, status: "approved", is_default: true)
+
+        assert_enqueued_with(job: AudioTrackExtractionJob, args: [@video_post.upload_media_asset_id]) do
+          put_auth(regenerate_audio_track_post_path(@video_post), @admin, params: { format: :json })
+        end
+
+        assert_response(:success)
+        assert_not(AudioTrack.exists?(old_track.id))
+      end
+
+      should("refuse for a non-video post") do
+        put_auth(regenerate_audio_track_post_path(@post), @admin, params: { format: :json })
+
+        assert_response(:forbidden)
+      end
+
+      context("access control") do
+        asserts do
+          access.gte(User::Levels::JANITOR).put { regenerate_audio_track_post_path(@video_post) }.success(:redirect)
+          access.gte(User::Levels::JANITOR).json.put { regenerate_audio_track_post_path(@video_post) }
+        end
+      end
+    end
+
     context("uploaders action") do
       should("render") do
         get_auth(uploaders_posts_path, @admin)

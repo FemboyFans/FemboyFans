@@ -41,6 +41,10 @@ class PostPolicy < ApplicationPolicy
     user.is_janitor?
   end
 
+  def regenerate_audio_track?
+    user.is_janitor?
+  end
+
   def uploaders?
     user.is_janitor?
   end

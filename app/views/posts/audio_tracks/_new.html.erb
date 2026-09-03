@@ -1,0 +1,12 @@
+<div class="audio-track-dialog-body">
+  <p>Suggest an additional audio track for this post - a language dub, an instrumental version, commentary, etc. An approver reviews it before it goes live.</p>
+
+  <div>
+    <% if post.visible?(CurrentUser.user) %>
+      <%= PostPresenter.preview(post, show_deleted: true, no_blacklist: true) %>
+    <% end %>
+  </div>
+  <br>
+
+  <div id="audio-track-uploader" class="simple_form"></div>
+</div>

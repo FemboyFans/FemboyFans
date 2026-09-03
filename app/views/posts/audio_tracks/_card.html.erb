@@ -1,0 +1,44 @@
+<div id="audio-track-<%= audio_track.id %>" class="box-section" data-audio-track-id="<%= audio_track.id %>">
+  <div>
+    <%= link_to("post ##{audio_track.post_id}", post_path(audio_track.post_id)) %>
+    &mdash; <strong><%= audio_track.label %></strong>
+    <% if audio_track.is_default? %><span class="audio-track-default-badge">default</span><% end %>
+    <span class="audio-track-status">[<%= audio_track.status %>]</span>
+    <% unless audio_track.for_current_file? %>
+      <span class="audio-track-stale-badge">for a previous version of this file</span>
+    <% end %>
+  </div>
+
+  <div>
+    <%= link_to_user(audio_track.creator) %>
+    &middot; <%= compact_time(audio_track.created_at) %>
+    <% if audio_track.approver.present? %>
+      &middot; handled by <%= link_to_user(audio_track.approver) %>
+    <% end %>
+  </div>
+
+  <% if audio_track.reason.present? %>
+    <div>Reason: <%= audio_track.reason %></div>
+  <% end %>
+
+  <% if audio_track.rejected? && audio_track.rejection_reason.present? %>
+    <div>Rejected: <%= audio_track.rejection_reason %></div>
+  <% end %>
+
+  <% policy = policy(audio_track) %>
+  <div class="audio-track-actions">
+    <% if audio_track.pending? && policy.approve? %>
+      <%= button_to("Approve", approve_post_audio_track_path(audio_track), method: :put, class: "st-button success") %>
+      <%= button_to("Approve as default", approve_post_audio_track_path(audio_track, set_default: true), method: :put, class: "st-button success") %>
+    <% end %>
+    <% if audio_track.pending? && policy.reject? %>
+      <%= button_to("Reject", reject_post_audio_track_path(audio_track), method: :put, class: "st-button danger") %>
+    <% end %>
+    <% if audio_track.approved? && !audio_track.is_default? && policy.set_default? %>
+      <%= button_to("Set as default", set_default_post_audio_track_path(audio_track), method: :put, class: "st-button") %>
+    <% end %>
+    <% if policy.destroy? %>
+      <%= button_to("Destroy", post_audio_track_path(audio_track), method: :delete, class: "st-button danger", form: { data: { confirm: "Are you sure you want to destroy this audio track?" } }) %>
+    <% end %>
+  </div>
+</div>

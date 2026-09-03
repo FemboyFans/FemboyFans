@@ -1,0 +1,84 @@
+<h1>Audio Track Media Assets</h1>
+
+<%= render(partial: "search") %>
+
+<%= table_for(@assets) do |t| %>
+  <% t.column("Creator") do |asset| %>
+    <%= link_to_user(asset.creator) %>
+    <% if policy(asset).can_see_ip_addr? %>
+      (<%= link_to_ip(asset.creator_ip_addr) %>)
+    <% end %>
+    <p><%= compact_time(asset.created_at) %></p>
+  <% end %>
+  <% t.column("File") do |asset| %>
+    <% if asset.visible?(CurrentUser.user) && asset.md5.present? && asset.file_url(user: CurrentUser.user).present? %>
+      <%= link_to_if(asset.file_visible?(CurrentUser.user), "show", asset.file_url(user: CurrentUser.user)) %>
+      <% if asset.duplicate? && (url = asset.link_to_duplicate) %>
+        <%= link_to("»", url) %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <% t.column("Status") do |asset| %>
+    <%= asset.format_status %>
+  <% end %>
+  <% t.column("Details") do |asset| %>
+    <ul>
+      <% if asset.checksum.present? %>
+        <li>
+          Checksum: <%= link_to(asset.checksum, audio_track_media_assets_path(search: { checksum: asset.checksum })) %>
+          <% if asset.md5.present? %>
+            <% if asset.checksum == asset.md5 %>
+              <i class="fa-solid fa-check text-green checksum-matches"></i>
+            <% else %>
+              <i class="fa-solid fa-xmark text-red checksum-matches"></i>
+            <% end %>
+          <% end %>
+        </li>
+      <% end %>
+      <% if asset.md5.present? %>
+        <li>MD5: <%= link_to(asset.md5, audio_track_media_assets_path(search: { md5: asset.md5 })) %></li>
+      <% end %>
+      <% if asset.file_ext.present? %>
+        <li>Type: <%= link_to(asset.file_ext, audio_track_media_assets_path(search: { file_ext: asset.file_ext })) %></li>
+      <% end %>
+      <% if asset.file_size.present? %>
+        <li>Size: <%= number_to_human_size(asset.file_size) %></li>
+      <% end %>
+      <% if asset.duration.present? %>
+        <li>Duration: <%= asset.duration.round(2) %>s</li>
+      <% end %>
+      <% if asset.in_progress? %>
+        <li>
+          Last Chunk: <%= asset.last_chunk_id %>
+          <% if asset.last_chunk_id == 0 %>
+            (not started)
+          <% end %>
+        </li>
+        <li>
+          Current Size: <%= number_to_human_size(asset.tempfile_size) %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+  <% t.column("Related") do |asset| %>
+    <ul>
+      <% if asset.audio_track.present? %>
+        <%= li_link_to("audio track ##{asset.audio_track.id}", post_audio_tracks_path(search: { id: asset.audio_track.id })) %>
+        <%= li_link_to("post ##{asset.audio_track.post_id}", post_path(asset.audio_track.post_id)) %>
+      <% end %>
+    </ul>
+  <% end %>
+  <% t.column("Actions") do |asset| %>
+    <% if asset.in_progress? && policy(asset).cancel? %>
+      <%= link_to("cancel", cancel_audio_track_media_asset_path(asset), method: :put) %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= numbered_paginator(@assets) %>
+
+<%= render(partial: "media_assets/secondary_links") %>
+
+<% content_for(:page_title) do %>
+  Audio Track Media Assets
+<% end %>

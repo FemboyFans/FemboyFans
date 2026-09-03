@@ -276,6 +276,13 @@ Rails.application.routes.draw do
         put(:cancel)
       end
     end
+    resources(:audio_tracks, only: %i[index], as: "audio_track_media_assets") do
+      member do
+        put(:append)
+        put(:finalize)
+        put(:cancel)
+      end
+    end
     resources(:uploads, only: %i[index], as: "upload_media_assets") do
       member do
         put(:append)
@@ -357,6 +364,13 @@ Rails.application.routes.draw do
           end
         end
       end
+      resources(:audio_tracks, controller: "posts/audio_tracks", as: "post_audio_tracks", only: %i[index new create destroy]) do
+        member do
+          put(:approve)
+          put(:reject)
+          put(:set_default)
+        end
+      end
       resources(:versions, controller: "posts/versions", as: "post_versions", only: %i[index]) do
         member do
           put(:undo)
@@ -384,6 +398,7 @@ Rails.application.routes.draw do
       put(:undelete)
       put(:regenerate_thumbnails)
       put(:regenerate_videos)
+      put(:regenerate_audio_track)
       put(:ai_check)
       post(:add_to_pool)
       post(:remove_from_pool)

@@ -558,7 +558,13 @@ class BulkUpdateRequestCommandsTest < ActiveSupport::TestCase
       end
 
       should("format") do
+        # Post#added_tags_are_valid strips deprecated tags on save (see its comment), so the
+        # post has to pick up the tag while it's still usable, then have deprecation applied
+        # after - matching the real scenario this counts for: a tag already in wide use before
+        # it was deprecated.
+        @tag.update_columns(is_deprecated: false)
         create(:post, tag_string: @tag.name)
+        @tag.update_columns(is_deprecated: true)
 
         assert_equal("undeprecate [[#{@tag.name}]] (1)", @bur.processor.dtext)
       end

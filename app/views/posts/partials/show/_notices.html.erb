@@ -94,3 +94,9 @@
     <p>This post has <%= link_to("pending replacements.", post_replacements_path(search: { post_id: @post.id })) %></p>
   </div>
 <% end %>
+
+<% if CurrentUser.user.can_approve_posts? && post.audio_tracks.pending.where(file_md5: post.md5).any? %>
+  <div class="notice notice-flagged">
+    <p>This post has <%= link_to("pending audio track suggestions.", post_audio_tracks_path(search: { post_id: @post.id })) %></p>
+  </div>
+<% end %>

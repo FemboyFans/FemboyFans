@@ -1,0 +1,5 @@
+<%= render("new", audio_track: @audio_track, post: @post) %>
+
+<% content_for(:page_title) do %>
+  New Audio Track - #<%= @audio_track.post_id %>
+<% end %>

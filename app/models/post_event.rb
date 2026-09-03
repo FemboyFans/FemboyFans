@@ -39,6 +39,9 @@ class PostEvent < ApplicationRecord
     in_progress_finished:    32,
     in_progress_forced:      33,
     replacement_transferred: 34,
+    audio_track_accepted:    35,
+    audio_track_rejected:    36,
+    audio_track_deleted:     37,
   })
 
   MOD_ONLY_SEARCH_ACTIONS = [
@@ -60,6 +63,7 @@ class PostEvent < ApplicationRecord
     post_flag_id
     post_replacement_id old_md5 new_md5 md5 storage_id old_post new_post
     min_edit_level
+    audio_track_id
   ].freeze
 
   store_accessor(:extra_data, *EXTRA_DATA)
@@ -192,6 +196,18 @@ class PostEvent < ApplicationRecord
     replacement_transferred: {
       text: ->(log) { "\"replacement ##{log.post_replacement_id}\":#{url.post_replacements_path(search: { id: log.post_replacement_id })} (post ##{log.old_post} -> post ##{log.new_post})" },
       json: %i[post_replacement_id old_post new_post],
+    },
+    audio_track_accepted:    {
+      text: ->(log) { "\"audio track ##{log.audio_track_id}\":#{url.post_audio_tracks_path(search: { id: log.audio_track_id })}" },
+      json: %i[audio_track_id],
+    },
+    audio_track_rejected:    {
+      text: ->(log) { "\"audio track ##{log.audio_track_id}\":#{url.post_audio_tracks_path(search: { id: log.audio_track_id })}" },
+      json: %i[audio_track_id],
+    },
+    audio_track_deleted:     {
+      text: ->(_log) { "" },
+      json: %i[audio_track_id],
     },
     expunged:                BLANK,
     comment_disabled:        BLANK,

@@ -58,7 +58,7 @@ Disallow: <%= post_votes_path(post_id: "*") %>
 Disallow: <%= post_flag_path(post_id: "*") %>
 Disallow: <%= move_favorites_post_path(id: "*") %>
 Disallow: <%= comments_post_path(id: "*") %>
-<% %w[update_iqdb revert copy_notes show_seq mark_as_translated favorites expunge delete undelete regenerate_thumbnails regenerate_videos add_to_pool remove_from_pool].each do |action| %>
+<% %w[update_iqdb revert copy_notes show_seq mark_as_translated favorites expunge delete undelete regenerate_thumbnails regenerate_videos regenerate_audio_track add_to_pool remove_from_pool].each do |action| %>
 Disallow: <%= url_for(controller: "posts", action: action, id: "*") %>
 <% end %>
 Disallow: /popular

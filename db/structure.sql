@@ -251,7 +251,11 @@ CREATE TABLE public.admin_config (
     post_set_limit jsonb DEFAULT '{"4": 5, "10": 75, "15": 150, "40": -1}'::jsonb NOT NULL,
     character_edit_limit integer DEFAULT 25 NOT NULL,
     character_edit_limit_bypass integer DEFAULT 15 NOT NULL,
-    enable_takedowns boolean DEFAULT false NOT NULL
+    enable_takedowns boolean DEFAULT false NOT NULL,
+    audio_track_per_day_limit integer DEFAULT 2 NOT NULL,
+    audio_track_per_day_limit_bypass integer DEFAULT 20 NOT NULL,
+    audio_track_per_post_limit integer DEFAULT 5 NOT NULL,
+    audio_track_per_post_limit_bypass integer DEFAULT 20 NOT NULL
 );
 
 
@@ -413,6 +417,97 @@ CREATE SEQUENCE public.artists_id_seq
 --
 
 ALTER SEQUENCE public.artists_id_seq OWNED BY public.artists.id;
+
+
+--
+-- Name: audio_track_media_assets; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.audio_track_media_assets (
+    id bigint NOT NULL,
+    creator_id bigint NOT NULL,
+    media_metadata_id bigint NOT NULL,
+    creator_ip_addr inet NOT NULL,
+    checksum character varying(32),
+    md5 character varying(32),
+    file_ext character varying(4),
+    is_animated_png boolean,
+    is_animated_gif boolean,
+    is_animated_webp boolean,
+    file_size integer,
+    image_width integer,
+    image_height integer,
+    duration numeric,
+    framecount integer,
+    pixel_hash character varying(32),
+    status character varying DEFAULT 'pending'::character varying NOT NULL,
+    status_message character varying,
+    last_chunk_id integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: audio_track_media_assets_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.audio_track_media_assets_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: audio_track_media_assets_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.audio_track_media_assets_id_seq OWNED BY public.audio_track_media_assets.id;
+
+
+--
+-- Name: audio_tracks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.audio_tracks (
+    id bigint NOT NULL,
+    post_id bigint NOT NULL,
+    audio_track_media_asset_id bigint NOT NULL,
+    creator_id bigint NOT NULL,
+    approver_id bigint,
+    rejector_id bigint,
+    creator_ip_addr inet NOT NULL,
+    label character varying NOT NULL,
+    reason character varying,
+    rejection_reason character varying,
+    is_default boolean DEFAULT false NOT NULL,
+    sequence_number integer NOT NULL,
+    file_md5 character varying(32) NOT NULL,
+    status character varying DEFAULT 'uploading'::character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: audio_tracks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.audio_tracks_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: audio_tracks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.audio_tracks_id_seq OWNED BY public.audio_tracks.id;
 
 
 --
@@ -3739,6 +3834,20 @@ ALTER TABLE ONLY public.artists ALTER COLUMN id SET DEFAULT nextval('public.arti
 
 
 --
+-- Name: audio_track_media_assets id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_track_media_assets ALTER COLUMN id SET DEFAULT nextval('public.audio_track_media_assets_id_seq'::regclass);
+
+
+--
+-- Name: audio_tracks id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_tracks ALTER COLUMN id SET DEFAULT nextval('public.audio_tracks_id_seq'::regclass);
+
+
+--
 -- Name: avoid_posting_versions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -4351,6 +4460,22 @@ ALTER TABLE ONLY public.artist_versions
 
 ALTER TABLE ONLY public.artists
     ADD CONSTRAINT artists_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: audio_track_media_assets audio_track_media_assets_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_track_media_assets
+    ADD CONSTRAINT audio_track_media_assets_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: audio_tracks audio_tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_tracks
+    ADD CONSTRAINT audio_tracks_pkey PRIMARY KEY (id);
 
 
 --
@@ -5167,6 +5292,97 @@ CREATE INDEX index_artists_on_other_names ON public.artists USING gin (other_nam
 --
 
 CREATE INDEX index_artists_on_updater_id ON public.artists USING btree (updater_id);
+
+
+--
+-- Name: index_audio_track_media_assets_on_checksum; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_audio_track_media_assets_on_checksum ON public.audio_track_media_assets USING btree (checksum);
+
+
+--
+-- Name: index_audio_track_media_assets_on_creator_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_audio_track_media_assets_on_creator_id ON public.audio_track_media_assets USING btree (creator_id);
+
+
+--
+-- Name: index_audio_track_media_assets_on_md5; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_audio_track_media_assets_on_md5 ON public.audio_track_media_assets USING btree (md5);
+
+
+--
+-- Name: index_audio_track_media_assets_on_media_metadata_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_audio_track_media_assets_on_media_metadata_id ON public.audio_track_media_assets USING btree (media_metadata_id);
+
+
+--
+-- Name: index_audio_track_media_assets_on_pixel_hash; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_audio_track_media_assets_on_pixel_hash ON public.audio_track_media_assets USING btree (pixel_hash);
+
+
+--
+-- Name: index_audio_tracks_on_approver_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_audio_tracks_on_approver_id ON public.audio_tracks USING btree (approver_id);
+
+
+--
+-- Name: index_audio_tracks_on_audio_track_media_asset_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_audio_tracks_on_audio_track_media_asset_id ON public.audio_tracks USING btree (audio_track_media_asset_id);
+
+
+--
+-- Name: index_audio_tracks_on_creator_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_audio_tracks_on_creator_id ON public.audio_tracks USING btree (creator_id);
+
+
+--
+-- Name: index_audio_tracks_on_post_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_audio_tracks_on_post_id ON public.audio_tracks USING btree (post_id);
+
+
+--
+-- Name: index_audio_tracks_on_post_id_and_file_md5; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_audio_tracks_on_post_id_and_file_md5 ON public.audio_tracks USING btree (post_id, file_md5);
+
+
+--
+-- Name: index_audio_tracks_on_post_id_and_sequence_number; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_audio_tracks_on_post_id_and_sequence_number ON public.audio_tracks USING btree (post_id, sequence_number);
+
+
+--
+-- Name: index_audio_tracks_on_post_id_file_md5_default_approved; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_audio_tracks_on_post_id_file_md5_default_approved ON public.audio_tracks USING btree (post_id, file_md5) WHERE ((is_default = true) AND ((status)::text = 'approved'::text));
+
+
+--
+-- Name: index_audio_tracks_on_rejector_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_audio_tracks_on_rejector_id ON public.audio_tracks USING btree (rejector_id);
 
 
 --
@@ -7362,6 +7578,14 @@ CREATE TRIGGER posts_update_change_seq BEFORE UPDATE ON public.posts FOR EACH RO
 
 
 --
+-- Name: audio_track_media_assets fk_rails_009e687156; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_track_media_assets
+    ADD CONSTRAINT fk_rails_009e687156 FOREIGN KEY (creator_id) REFERENCES public.users(id);
+
+
+--
 -- Name: tag_aliases fk_rails_0157a2fd88; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7471,6 +7695,14 @@ ALTER TABLE ONLY public.tag_followers
 
 ALTER TABLE ONLY public.artists
     ADD CONSTRAINT fk_rails_0bf7d416ae FOREIGN KEY (updater_id) REFERENCES public.users(id);
+
+
+--
+-- Name: audio_tracks fk_rails_10424702f9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_tracks
+    ADD CONSTRAINT fk_rails_10424702f9 FOREIGN KEY (creator_id) REFERENCES public.users(id);
 
 
 --
@@ -7914,11 +8146,27 @@ ALTER TABLE ONLY public.post_replacements
 
 
 --
+-- Name: audio_tracks fk_rails_52b23e0b82; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_tracks
+    ADD CONSTRAINT fk_rails_52b23e0b82 FOREIGN KEY (post_id) REFERENCES public.posts(id);
+
+
+--
 -- Name: forum_topics fk_rails_53d4e863cd; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.forum_topics
     ADD CONSTRAINT fk_rails_53d4e863cd FOREIGN KEY (updater_id) REFERENCES public.users(id);
+
+
+--
+-- Name: audio_tracks fk_rails_54018dd6ba; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_tracks
+    ADD CONSTRAINT fk_rails_54018dd6ba FOREIGN KEY (rejector_id) REFERENCES public.users(id);
 
 
 --
@@ -7991,6 +8239,14 @@ ALTER TABLE ONLY public.post_versions
 
 ALTER TABLE ONLY public.post_set_maintainers
     ADD CONSTRAINT fk_rails_5fdbb10ec8 FOREIGN KEY (post_set_id) REFERENCES public.post_sets(id);
+
+
+--
+-- Name: audio_track_media_assets fk_rails_6052c2c0de; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_track_media_assets
+    ADD CONSTRAINT fk_rails_6052c2c0de FOREIGN KEY (media_metadata_id) REFERENCES public.media_metadata(id);
 
 
 --
@@ -8231,6 +8487,14 @@ ALTER TABLE ONLY public.forum_topics
 
 ALTER TABLE ONLY public.notes
     ADD CONSTRAINT fk_rails_a167a78679 FOREIGN KEY (post_id) REFERENCES public.posts(id);
+
+
+--
+-- Name: audio_tracks fk_rails_a25380ace1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_tracks
+    ADD CONSTRAINT fk_rails_a25380ace1 FOREIGN KEY (approver_id) REFERENCES public.users(id);
 
 
 --
@@ -8530,6 +8794,14 @@ ALTER TABLE ONLY public.upload_whitelists
 
 
 --
+-- Name: audio_tracks fk_rails_cee028dd3d; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.audio_tracks
+    ADD CONSTRAINT fk_rails_cee028dd3d FOREIGN KEY (audio_track_media_asset_id) REFERENCES public.audio_track_media_assets(id);
+
+
+--
 -- Name: favorites fk_rails_d20e53bb68; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -8784,6 +9056,9 @@ ALTER TABLE ONLY public.help_pages
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260831140200'),
+('20260831140100'),
+('20260831140000'),
 ('20260831130001'),
 ('20260831130000'),
 ('20260831120000'),
@@ -8967,6 +9242,11 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20220106081415');
 
 INSERT INTO "fixes" (id, "index") VALUES
+(237, 2),
+(237, 1),
+(236, 2),
+(236, 1),
+(235, NULL),
 (234, NULL),
 (233, 2),
 (233, 1),

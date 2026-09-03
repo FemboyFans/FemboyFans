@@ -178,6 +178,7 @@ module PostSearch
       add_boolean_field(:ischild, name: "Is Child")
       add_boolean_field(:inpool, name: "In A Pool")
       add_boolean_field(:pending_replacements, name: "Has Pending Replacements")
+      add_boolean_field(:pending_audio, name: "Has Pending Audio Tracks")
       add_boolean_field(:artverified, name: "Verified Artist Upload")
     end
 

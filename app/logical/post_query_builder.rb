@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
 class PostQueryBuilder
+  # self-contained EXISTS checks (no dependency on prior joins) mirroring the has_pending_replacements/
+  # has_pending_audio fields computed in PostIndex#get_data
+  PENDING_REPLACEMENTS_SQL = "EXISTS (SELECT 1 FROM post_replacements WHERE post_replacements.post_id = posts.id AND post_replacements.status = 'pending')"
+  PENDING_AUDIO_SQL = "EXISTS (SELECT 1 FROM audio_tracks WHERE audio_tracks.post_id = posts.id AND audio_tracks.status = 'pending' AND audio_tracks.file_md5 = (SELECT md5 FROM upload_media_assets WHERE upload_media_assets.id = posts.upload_media_asset_id))"
+
   attr_accessor(:query_string, :user)
 
   def initialize(query_string, user)
@@ -75,7 +80,11 @@ class PostQueryBuilder
       relation = relation.joins(:appeals).where("post_appeals.status": :pending)
     elsif q[:status] == "modqueue"
       relation = relation.left_joins(:appeals) # required for both for enum conversion, and outside for structure
-      relation = relation.where("posts.is_pending": true).or(relation.where("posts.is_flagged": true)).or(relation.where.not("post_appeals.id": nil).where("post_appeals.status": :pending))
+      relation = relation.where("posts.is_pending": true)
+                         .or(relation.where("posts.is_flagged": true))
+                         .or(relation.where.not("post_appeals.id": nil).where("post_appeals.status": :pending))
+                         .or(relation.where(PENDING_REPLACEMENTS_SQL))
+                         .or(relation.where(PENDING_AUDIO_SQL))
     elsif q[:status] == "deleted"
       relation = relation.where("posts.is_deleted": true)
     elsif q[:status] == "unlisted"
@@ -95,7 +104,10 @@ class PostQueryBuilder
       relation = relation.where("post_appeals.id": nil).or(relation.where.not("post_appeals.status": :pending))
     elsif q[:status_must_not] == "modqueue"
       relation = relation.left_joins(:appeals) # required for both for enum conversion, and outside for structure
-      relation = relation.where("posts.is_pending": false, "posts.is_flagged": false).and(relation.where("post_appeals.id": nil).or(relation.where.not("post_appeals.status": :pending)))
+      relation = relation.where("posts.is_pending": false, "posts.is_flagged": false)
+                         .and(relation.where("post_appeals.id": nil).or(relation.where.not("post_appeals.status": :pending)))
+                         .and(relation.where.not(PENDING_REPLACEMENTS_SQL))
+                         .and(relation.where.not(PENDING_AUDIO_SQL))
     elsif q[:status_must_not] == "deleted"
       relation = relation.where("posts.is_deleted": false)
     elsif q[:status_must_not] == "unlisted"

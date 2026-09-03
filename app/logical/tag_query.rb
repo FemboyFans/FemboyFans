@@ -53,10 +53,11 @@ class TagQuery
 
   COUNT_METATAGS = %w[
     comment_count
+    audiocount
   ].freeze
 
   BOOLEAN_METATAGS = %w[
-    hassource hasdescription isparent ischild inpool pending_replacements artverified
+    hassource hasdescription isparent ischild inpool pending_replacements pending_audio artverified
   ].freeze
 
   UNIQUE_METATAGS = %w[

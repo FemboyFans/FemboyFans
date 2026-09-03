@@ -477,6 +477,10 @@ Post.initialize_links = function () {
     e.preventDefault();
     Post.regenerate_video_variants($(e.target).data("pid"));
   });
+  $("#regenerate-audio-track-link").on("click", e => {
+    e.preventDefault();
+    Post.regenerate_audio_track($(e.target).data("pid"));
+  });
   $(".disapprove-post-link").on("click", e => {
     e.preventDefault();
     const target = $(e.target);
@@ -1026,6 +1030,18 @@ Post.regenerate_video_variants = function (post_id) {
       Utility.error("Error: " + data.responseJSON.reason);
     }).done(() => {
       Utility.notice("Video variants will be regenerated in a few minutes.");
+    });
+};
+
+Post.regenerate_audio_track = function (post_id) {
+  $.ajax({
+    method: "PUT",
+    url: `/posts/${post_id}/regenerate_audio_track.json`,
+  })
+    .fail(data => {
+      Utility.error("Error: " + data.responseJSON.reason);
+    }).done(() => {
+      Utility.notice("Default audio track will be regenerated in a few minutes.");
     });
 };
 

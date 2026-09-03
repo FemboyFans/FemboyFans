@@ -23,7 +23,7 @@ module Security
     end
 
     def permitted_attributes_for_enact
-      %i[uploads post_replacements pools post_sets comments forums blips aiburs favorites votes discord]
+      Security::Lockdown::BOOLEAN_TYPES.map(&:to_sym)
     end
 
     def permitted_attributes_for_uploads_min_level

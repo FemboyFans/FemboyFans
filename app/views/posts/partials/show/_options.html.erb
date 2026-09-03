@@ -15,6 +15,9 @@
   <% if PostReplacementPolicy.new(CurrentUser.user, post).create? %>
     <li><%= link_to("Replace image", new_post_replacement_path(post_id: post.id), id: "replace-image") %></li>
   <% end %>
+  <% if post.is_video? && AudioTrackPolicy.new(CurrentUser.user, post).create? %>
+    <li><%= link_to("Suggest audio track", new_post_audio_track_path(post_id: post.id), id: "suggest-audio-track") %></li>
+  <% end %>
   <% if CurrentUser.user.is_member? %>
     <li><%= link_to("Reupload image", post.reupload_url(CurrentUser.user), id: "reupload-image") %></li>
   <% end %>
@@ -58,5 +61,8 @@
   <% end %>
   <% if post.is_video? && policy(post).regenerate_videos? %>
     <li><%= tag.a("Regenerate Video variants", "href": "#", "id": "regenerate-video-variants-link", "data-pid": post.id) %></li>
+<% end %>
+  <% if post.is_video? && policy(post).regenerate_audio_track? %>
+    <li><%= tag.a("Regenerate default audio track", "href": "#", "id": "regenerate-audio-track-link", "data-pid": post.id) %></li>
 <% end %>
 </ul>

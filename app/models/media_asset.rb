@@ -35,9 +35,11 @@ class MediaAsset < ApplicationRecord
   validates(:md5, uniqueness: { conditions: -> { duplicate_relevant } }, if: :active?)
   validates(:md5, :file_ext, presence: true, if: :active?)
   validates(:is_animated_png, :is_animated_gif, :is_animated_webp, inclusion: { in: [true, false] }, if: :active?)
-  validates(:file_size, :image_width, :image_height, presence: true, comparison: { greater_than: 0 }, if: :active?)
+  validates(:file_size, presence: true, comparison: { greater_than: 0 }, if: :active?)
+  # Audio-only assets (AudioTrackMediaAsset) have no width/height concept - see #requires_dimensions.
+  validates(:image_width, :image_height, presence: true, comparison: { greater_than: 0 }, if: -> { active? && requires_dimensions? })
   # noinspection RubyArgCount
-  validates(:duration, presence: true, comparison: { greater_than: 0 }, if: -> { active? && is_video? })
+  validates(:duration, presence: true, comparison: { greater_than: 0 }, if: -> { active? && (is_video? || is_audio?) })
   validates(:checksum, length: { is: 32 }, if: -> { checksum.present? })
   # noinspection RubyArgCount
   validates(:pixel_hash, presence: true, if: -> { active? && is_image? && !is_animated? })
@@ -52,6 +54,7 @@ class MediaAsset < ApplicationRecord
   scope(:images_only, -> { where(file_ext: ::FileMethods::IMAGE_EXTENSIONS) })
   scope(:gifs_only, -> { where(file_ext: ::FileMethods::GIF_EXTENSIONS) })
   scope(:videos_only, -> { where(file_ext: ::FileMethods::VIDEO_EXTENSIONS) })
+  scope(:audio_only, -> { where(file_ext: ::FileMethods::AUDIO_EXTENSIONS) })
   scope(:for_creator, ->(user) { where(creator_id: u2id(user)) })
 
   enum(:status, %i[pending uploading active deleted cancelled expunged replaced failed duplicate].index_with(&:to_s))
@@ -60,6 +63,7 @@ class MediaAsset < ApplicationRecord
   attr_accessor(:file, :is_direct, :skip_files)
 
   class_attribute(:deletion_supported, default: false) # soft deletion
+  class_attribute(:requires_dimensions, default: true) # false for audio-only assets (AudioTrackMediaAsset)
   alias is_direct? is_direct
 
   def self.prune_expired!
@@ -130,6 +134,10 @@ class MediaAsset < ApplicationRecord
     is_a?(MascotMediaAsset)
   end
 
+  def is_audio_track?
+    is_a?(AudioTrackMediaAsset)
+  end
+
   def has_variants?
     is_a?(MediaAssetWithVariants)
   end
@@ -159,7 +167,7 @@ class MediaAsset < ApplicationRecord
     end
 
     def hierarchical?
-      is_upload? || is_post_replacement? ? :default : false
+      is_upload? || is_post_replacement? || is_audio_track? ? :default : false
     end
 
     def validate_file
@@ -198,6 +206,8 @@ class MediaAsset < ApplicationRecord
         file.present? ? self.class.webp_metadata(file.path) : webp_metadata
       elsif is_image?
         file.present? ? self.class.image_metadata(file.path) : image_metadata
+      elsif is_audio?
+        file.present? ? self.class.audio_metadata(file.path) : audio_metadata
       end
     end
 
@@ -403,7 +413,7 @@ class MediaAsset < ApplicationRecord
     "#{status}: #{status_message}"
   end
 
-  DELEGATED = %i[is_png? is_jpeg? is_gif? is_webp? is_webm? is_mp4? is_image? is_video? is_animated_png? is_animated_gif? is_animated_webp? is_corrupt? is_ai_generated?
+  DELEGATED = %i[is_png? is_jpeg? is_gif? is_webp? is_webm? is_mp4? is_m4a? is_image? is_video? is_audio? is_animated_png? is_animated_gif? is_animated_webp? is_corrupt? is_ai_generated?
                  file_path file_url md5 file_ext file_size image_width image_height duration framecount pixel_hash checksum].freeze
   module DelegateProperties
     delegate(*DELEGATED, to: :media_asset)

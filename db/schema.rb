@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_31_130001) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_31_140200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -27,6 +27,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_130001) do
     t.integer "artist_edit_limit", default: 25, null: false
     t.integer "artist_edit_limit_bypass", default: 15, null: false
     t.text "artist_exclusion_tags", default: "avoid_posting, conditional_dnp, epilepsy_warning, sound_warning", null: false
+    t.integer "audio_track_per_day_limit", default: 2, null: false
+    t.integer "audio_track_per_day_limit_bypass", default: 20, null: false
+    t.integer "audio_track_per_post_limit", default: 5, null: false
+    t.integer "audio_track_per_post_limit_bypass", default: 20, null: false
     t.string "avoid_posting_notice_wiki_page", default: "internal:avoid_posting_notice", null: false
     t.string "ban_notice_wiki_page", default: "internal:ban_notice", null: false
     t.string "blacklisted_preview_url", default: "/images/blacklisted-preview.png", null: false
@@ -236,6 +240,60 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_130001) do
     t.index ["name"], name: "index_artists_on_name_trgm", opclass: :gin_trgm_ops, using: :gin
     t.index ["other_names"], name: "index_artists_on_other_names", using: :gin
     t.index ["updater_id"], name: "index_artists_on_updater_id"
+  end
+
+  create_table "audio_track_media_assets", force: :cascade do |t|
+    t.string "checksum", limit: 32
+    t.datetime "created_at", null: false
+    t.bigint "creator_id", null: false
+    t.inet "creator_ip_addr", null: false
+    t.decimal "duration"
+    t.string "file_ext", limit: 4
+    t.integer "file_size"
+    t.integer "framecount"
+    t.integer "image_height"
+    t.integer "image_width"
+    t.boolean "is_animated_gif"
+    t.boolean "is_animated_png"
+    t.boolean "is_animated_webp"
+    t.integer "last_chunk_id", default: 0, null: false
+    t.string "md5", limit: 32
+    t.bigint "media_metadata_id", null: false
+    t.string "pixel_hash", limit: 32
+    t.string "status", default: "pending", null: false
+    t.string "status_message"
+    t.datetime "updated_at", null: false
+    t.index ["checksum"], name: "index_audio_track_media_assets_on_checksum"
+    t.index ["creator_id"], name: "index_audio_track_media_assets_on_creator_id"
+    t.index ["md5"], name: "index_audio_track_media_assets_on_md5"
+    t.index ["media_metadata_id"], name: "index_audio_track_media_assets_on_media_metadata_id"
+    t.index ["pixel_hash"], name: "index_audio_track_media_assets_on_pixel_hash"
+  end
+
+  create_table "audio_tracks", force: :cascade do |t|
+    t.bigint "approver_id"
+    t.bigint "audio_track_media_asset_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "creator_id", null: false
+    t.inet "creator_ip_addr", null: false
+    t.string "file_md5", limit: 32, null: false
+    t.boolean "is_default", default: false, null: false
+    t.string "label", null: false
+    t.bigint "post_id", null: false
+    t.string "reason"
+    t.string "rejection_reason"
+    t.bigint "rejector_id"
+    t.integer "sequence_number", null: false
+    t.string "status", default: "uploading", null: false
+    t.datetime "updated_at", null: false
+    t.index ["approver_id"], name: "index_audio_tracks_on_approver_id"
+    t.index ["audio_track_media_asset_id"], name: "index_audio_tracks_on_audio_track_media_asset_id"
+    t.index ["creator_id"], name: "index_audio_tracks_on_creator_id"
+    t.index ["post_id", "file_md5"], name: "index_audio_tracks_on_post_id_and_file_md5"
+    t.index ["post_id", "file_md5"], name: "index_audio_tracks_on_post_id_file_md5_default_approved", unique: true, where: "((is_default = true) AND ((status)::text = 'approved'::text))"
+    t.index ["post_id", "sequence_number"], name: "index_audio_tracks_on_post_id_and_sequence_number", unique: true
+    t.index ["post_id"], name: "index_audio_tracks_on_post_id"
+    t.index ["rejector_id"], name: "index_audio_tracks_on_rejector_id"
   end
 
   create_table "avoid_posting_versions", force: :cascade do |t|
@@ -1790,6 +1848,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_130001) do
   add_foreign_key "artists", "users", column: "creator_id"
   add_foreign_key "artists", "users", column: "linked_user_id"
   add_foreign_key "artists", "users", column: "updater_id"
+  add_foreign_key "audio_track_media_assets", "media_metadata", column: "media_metadata_id"
+  add_foreign_key "audio_track_media_assets", "users", column: "creator_id"
+  add_foreign_key "audio_tracks", "audio_track_media_assets"
+  add_foreign_key "audio_tracks", "posts"
+  add_foreign_key "audio_tracks", "users", column: "approver_id"
+  add_foreign_key "audio_tracks", "users", column: "creator_id"
+  add_foreign_key "audio_tracks", "users", column: "rejector_id"
   add_foreign_key "avoid_posting_versions", "avoid_postings"
   add_foreign_key "avoid_posting_versions", "users", column: "updater_id"
   add_foreign_key "avoid_postings", "artists"

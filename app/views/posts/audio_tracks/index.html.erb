@@ -1,0 +1,13 @@
+<h1>Audio Tracks</h1>
+
+<%= render("posts/partials/common/inline_blacklist") %>
+
+<div class="audio-track-list">
+  <%= render(partial: "card", collection: @audio_tracks, as: :audio_track) %>
+</div>
+
+<%= numbered_paginator(@audio_tracks) %>
+
+<% content_for(:page_title) do %>
+  Audio Tracks
+<% end %>

@@ -11,12 +11,15 @@ class UploadMediaAsset < MediaAssetWithVariants
   after_finalize(:regenerate_image_variants_and_data!, if: :file_later?)
   # noinspection RubyArgCount
   after_finalize(:regenerate_video_variants, if: -> { file_later? && is_video? })
+  # noinspection RubyArgCount
+  after_finalize(:extract_audio_track, if: -> { file_later? && is_video? && !is_replacement })
   after_create(:create_post, if: :file_now?)
   after_create(-> {
     regenerate_image_variants_and_data!
     save!
   }, if: :file_now?)
   after_create(:regenerate_video_variants, if: -> { file_now? && is_video? })
+  after_create(:extract_audio_track, if: -> { file_now? && is_video? && !is_replacement })
 
   scope(:duplicate_relevant, -> { active.joins(:post).where.not("posts.id": nil) })
 
@@ -27,6 +30,10 @@ class UploadMediaAsset < MediaAssetWithVariants
   # can be called multiple times
   def create_post
     upload&.create_post unless upload&.is_replacement
+  end
+
+  def extract_audio_track
+    AudioTrackExtractionJob.perform_later(id)
   end
 
   def link_to_duplicate

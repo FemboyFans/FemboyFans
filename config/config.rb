@@ -49,6 +49,7 @@ module GayFurCity
     config(:protected_path_prefix) { "deleted/" }
     config(:replacement_path_prefix) { "replacements/" }
     config(:mascot_path_prefix) { "mascots/" }
+    config(:audio_track_path_prefix) { "audio_tracks/" }
 
     config(:protected_file_secret, required: true) { required!(:protected_file_secret) }
     config(:replacement_file_secret, required: true) { required!(:replacement_file_secret) }
@@ -192,7 +193,7 @@ module GayFurCity
         { name: "Already", text: "User already received a record for that message." },
         { name: "Banned", text: "This user is already banned." },
         { name: "Blacklist", text: "If you find the contents of that post objectionable, \"blacklist\":/help/blacklisting it." },
-        ({ name: "Takedown", text: "Artists and character owners may request a takedown \"here\":/static/takedown.\nWe do not accept third party takedowns." } if AdminConfig.enable_takedowns?),
+        ({ name: "Takedown", text: "Artists and character owners may request a takedown \"here\":/static/takedown.\nWe do not accept third party takedowns." } if ::AdminConfig.enable_takedowns?),
       ].compact
     end
 
@@ -371,6 +372,24 @@ module GayFurCity
         ]
       end
       reviver(:scale_options_mp4) { |v, width, height, file_path| v.gsub("$WIDTH", width).gsub("$HEIGHT", height).gsub("$FILE_PATH", file_path) }
+    end
+
+    subconfig(:audio) do
+      config(:scale_options_aac, nil) do |file_path|
+        [
+          "-vn",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "128k",
+          "-map_metadata",
+          "-1",
+          "-movflags",
+          "+faststart",
+          file_path,
+        ]
+      end
+      reviver(:scale_options_aac) { |v, file_path| v.gsub("$FILE_PATH", file_path) }
     end
 
     config(:variant_location, env: false) do |variant, _file_ext|
