@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_03_135212) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_03_135858) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -27,6 +27,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_135212) do
     t.integer "artist_edit_limit", default: 25, null: false
     t.integer "artist_edit_limit_bypass", default: 15, null: false
     t.text "artist_exclusion_tags", default: "avoid_posting, conditional_dnp, epilepsy_warning, sound_warning", null: false
+    t.string "artist_tag_placeholder", default: "artist_name, unknown_artist, anonymous_artist etc.", null: false
     t.integer "audio_track_per_day_limit", default: 2, null: false
     t.integer "audio_track_per_day_limit_bypass", default: 20, null: false
     t.integer "audio_track_per_post_limit", default: 5, null: false
@@ -40,6 +41,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_135212) do
     t.string "canonical_app_name", default: "GayFur City", null: false
     t.integer "character_edit_limit", default: 25, null: false
     t.integer "character_edit_limit_bypass", default: 15, null: false
+    t.string "character_tag_placeholder", default: "character_name solo_focus 1_male 2_females etc.", null: false
     t.integer "comment_bump_threshold", default: 40, null: false
     t.integer "comment_limit", default: 15, null: false
     t.integer "comment_limit_bypass", default: 15, null: false
@@ -48,6 +50,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_135212) do
     t.integer "comment_vote_limit_bypass", default: 15, null: false
     t.integer "compact_uploader_minimum_posts", default: 10, null: false
     t.string "contact_email", default: "admin@gayfur.city", null: false
+    t.string "contact_wiki_page", default: "help:contact", null: false
+    t.string "content_tag_placeholder", default: "cub scatplay watersports diaper my_little_pony vore rape hyper etc.", null: false
     t.text "contributor_suffixes", default: "va, modeler", null: false
     t.integer "custom_style_max_size", default: 500000, null: false
     t.boolean "db_exports_enabled", default: false, null: false
@@ -85,6 +89,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_135212) do
     t.integer "forum_topic_stale_window", default: 180, null: false
     t.integer "forum_vote_limit", default: 25, null: false
     t.integer "forum_vote_limit_bypass", default: 15, null: false
+    t.string "home_wiki_page", default: "help:home", null: false
     t.integer "hourly_upload_limit", default: 30, null: false
     t.jsonb "image_height", default: {"max" => 40000, "min" => 300}, null: false
     t.jsonb "image_width", default: {"max" => 40000, "min" => 300}, null: false
@@ -140,6 +145,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_135212) do
     t.integer "post_vote_limit", default: 1000, null: false
     t.integer "post_vote_limit_bypass", default: 15, null: false
     t.jsonb "postgres_query_timeout", default: {"0" => 3000, "15" => 6000, "19" => 9000}, null: false
+    t.string "privacy_policy_wiki_page", default: "help:privacy_policy", null: false
     t.integer "records_per_page", default: 100, null: false
     t.string "rejected_notice_wiki_page", default: "internal:rejected_notice", null: false
     t.string "replacement_notice_wiki_page", default: "internal:replacement_notice", null: false
@@ -152,15 +158,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_135212) do
     t.integer "set_post_limit_bypass", default: 40, null: false
     t.integer "show_backtrace", default: 20, null: false
     t.integer "show_tag_scripting", default: 15, null: false
+    t.string "species_tag_placeholder", default: "bear dragon hyena rat newt etc.", null: false
+    t.string "staff_wiki_page", default: "help:staff", null: false
     t.string "system_user_name", default: "System", null: false
     t.boolean "tag_ai_posts", default: true, null: false
     t.jsonb "tag_change_request_update_limit", default: {"15" => 500, "20" => 1000, "30" => 10000, "40" => 100000, "50" => -1}, null: false
+    t.string "tag_genders_howto_wiki_page", default: "howto:tag_genders", null: false
     t.jsonb "tag_query_limit", default: {"0" => 40}, null: false
     t.integer "tag_suggestion_limit", default: 15, null: false
     t.integer "tag_suggestion_limit_bypass", default: 15, null: false
     t.jsonb "tag_type_edit_implicit_limit", default: {"10" => 100, "15" => 1000}, null: false
     t.jsonb "tag_type_edit_limit", default: {"10" => 100, "15" => 1000, "20" => 10000, "40" => -1}, null: false
+    t.string "tag_what_you_see_wiki_page", default: "tag_what_you_see", null: false
     t.string "takedown_email", default: "admin@gayfur.city", null: false
+    t.string "takedown_verification_wiki_page", default: "help:takedown_verification", null: false
+    t.string "takedown_wiki_page", default: "help:takedown", null: false
+    t.string "terms_of_service_wiki_page", default: "help:terms_of_service", null: false
     t.integer "ticket_limit", default: 30, null: false
     t.integer "ticket_limit_bypass", default: 15, null: false
     t.integer "ticket_max_size", default: 5000, null: false

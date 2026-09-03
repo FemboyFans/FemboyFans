@@ -243,6 +243,22 @@ class AdminConfig
       add_text_field(:rules_body_wiki_page)
       add_text_field(:user_approved_wiki_page)
       add_text_field(:user_rejected_wiki_page)
+      add_text_field(:privacy_policy_wiki_page)
+      add_text_field(:terms_of_service_wiki_page)
+      add_text_field(:contact_wiki_page)
+      add_text_field(:takedown_wiki_page)
+      add_text_field(:takedown_verification_wiki_page)
+      add_text_field(:staff_wiki_page)
+      add_text_field(:home_wiki_page)
+      add_text_field(:tag_genders_howto_wiki_page)
+      add_text_field(:tag_what_you_see_wiki_page)
+    end
+
+    category("Uploader") do
+      add_text_field(:artist_tag_placeholder, hint: "Example text shown in the artist tags textarea")
+      add_text_field(:character_tag_placeholder, hint: "Example text shown in the character tags textarea")
+      add_text_field(:species_tag_placeholder, hint: "Example text shown in the species tags textarea")
+      add_text_field(:content_tag_placeholder, hint: "Example text shown in the content/theme tags textarea")
     end
   end
 end

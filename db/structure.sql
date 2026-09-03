@@ -257,7 +257,20 @@ CREATE TABLE public.admin_config (
     audio_track_per_day_limit integer DEFAULT 2 NOT NULL,
     audio_track_per_day_limit_bypass integer DEFAULT 20 NOT NULL,
     audio_track_per_post_limit integer DEFAULT 5 NOT NULL,
-    audio_track_per_post_limit_bypass integer DEFAULT 20 NOT NULL
+    audio_track_per_post_limit_bypass integer DEFAULT 20 NOT NULL,
+    privacy_policy_wiki_page character varying DEFAULT 'help:privacy_policy'::character varying NOT NULL,
+    terms_of_service_wiki_page character varying DEFAULT 'help:terms_of_service'::character varying NOT NULL,
+    contact_wiki_page character varying DEFAULT 'help:contact'::character varying NOT NULL,
+    takedown_wiki_page character varying DEFAULT 'help:takedown'::character varying NOT NULL,
+    takedown_verification_wiki_page character varying DEFAULT 'help:takedown_verification'::character varying NOT NULL,
+    staff_wiki_page character varying DEFAULT 'help:staff'::character varying NOT NULL,
+    home_wiki_page character varying DEFAULT 'help:home'::character varying NOT NULL,
+    tag_genders_howto_wiki_page character varying DEFAULT 'howto:tag_genders'::character varying NOT NULL,
+    tag_what_you_see_wiki_page character varying DEFAULT 'tag_what_you_see'::character varying NOT NULL,
+    artist_tag_placeholder character varying DEFAULT 'artist_name, unknown_artist, anonymous_artist etc.'::character varying NOT NULL,
+    character_tag_placeholder character varying DEFAULT 'character_name solo_focus 1_male 2_females etc.'::character varying NOT NULL,
+    species_tag_placeholder character varying DEFAULT 'bear dragon hyena rat newt etc.'::character varying NOT NULL,
+    content_tag_placeholder character varying DEFAULT 'cub scatplay watersports diaper my_little_pony vore rape hyper etc.'::character varying NOT NULL
 );
 
 
@@ -9251,7 +9264,9 @@ ALTER TABLE ONLY public.help_pages
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260903135858'),
 ('20260903135212'),
+('20260903133923'),
 ('20260903112129'),
 ('20260903085237'),
 ('20260831140200'),

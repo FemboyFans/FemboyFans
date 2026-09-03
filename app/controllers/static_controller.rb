@@ -7,15 +7,15 @@ class StaticController < ApplicationController
   respond_to(:html)
 
   def privacy
-    @page = view_context.safe_wiki("help:privacy_policy")
+    @page = view_context.safe_wiki(AdminConfig.instance.privacy_policy_wiki_page)
   end
 
   def terms_of_service
-    @page = view_context.safe_wiki("help:terms_of_service")
+    @page = view_context.safe_wiki(AdminConfig.instance.terms_of_service_wiki_page)
   end
 
   def contact
-    @page = view_context.safe_wiki("help:contact")
+    @page = view_context.safe_wiki(AdminConfig.instance.contact_wiki_page)
   end
 
   def takedown
@@ -23,11 +23,11 @@ class StaticController < ApplicationController
       raise(FeatureUnavailable) if CurrentUser.user.is_staff?
       return render404
     end
-    @page = view_context.safe_wiki("help:takedown")
+    @page = view_context.safe_wiki(AdminConfig.instance.takedown_wiki_page)
   end
 
   def staff
-    @page = view_context.safe_wiki("help:staff")
+    @page = view_context.safe_wiki(AdminConfig.instance.staff_wiki_page)
   end
 
   def avoid_posting

@@ -4,7 +4,7 @@
             <div class="flex-grid border-bottom">
                 <div class="col">
                     <label class="section-label" for="post_file">File</label>
-                    <div class="hint"><a href="/help/supported_filetypes">Supported Formats</a></div>
+                    <div class="hint"><a href="<%= Routes.help_page_path(id: "supported_filetypes") %>">Supported Formats</a></div>
                 </div>
                 <div class="col2">
                   <file-input @uploadValueChanged="uploadValue = $event"
@@ -29,8 +29,8 @@
                 <div class="flex-grid border-bottom">
                     <div class="col">
                         <label class="section-label" for="names">Artists</label>
-                        <div><a href="/help/tags">How do I tag an artist?</a></div>
-                        <div>Please don't use <a href="/wiki/show_or_new?title=anonymous_artist">anonymous_artist</a> or <a href="/wiki/show_or_new?title=unknown_artist">unknown_artist</a> tags unless they fall under the definitions found on the wiki.</div>
+                        <div><a href="<%= Routes.help_page_path(id: "tags") %>">How do I tag an artist?</a></div>
+                        <div>Please don't use <a href="<%= Routes.show_or_new_wiki_pages_path(title: "anonymous_artist") %>">anonymous_artist</a> or <a href="<%= Routes.show_or_new_wiki_pages_path(title: "unknown_artist") %>">unknown_artist</a> tags unless they fall under the definitions found on the wiki.</div>
                     </div>
                     <div class="col2">
                         <div class="box-section background-red" v-show="showErrors && missingArtistTag">
@@ -38,7 +38,7 @@
                         </div>
                         <div>
             <textarea class="tag-textarea" v-model="tagEntries.artist" id="post_artist" rows="2"
-                      placeholder="Ex: artist_name, unknown_artist, anonymous_artist etc." data-autocomplete="tag-edit"></textarea>
+                      :placeholder="artistTagPlaceholder" data-autocomplete="tag-edit"></textarea>
                         </div>
                     </div>
                 </div>
@@ -46,7 +46,7 @@
                     <div class="col">
                         <label class="section-label" for="post_sex_tags">Characters</label>
                         <div>
-                          Select (and write in) all that apply. See our <a href="/wiki/show_or_new?title=howto:tag_genders">Gender Tagging Guidelines</a> for more information.
+                          Select (and write in) all that apply. See our <a :href="tagGendersHowtoWikiUrl">Gender Tagging Guidelines</a> for more information.
                         </div>
                     </div>
                     <div class="col2">
@@ -79,7 +79,7 @@
                                           :key="check.name" :data-tag-a="check.tagA" :data-tag-b="check.tagB"></image-checkbox>
                       </div>
                       <textarea class="tag-textarea" rows="2" v-model="tagEntries.character" id="post_character"
-                                placeholder="Ex: character_name solo_focus 1_male 2_females etc."
+                                :placeholder="characterTagPlaceholder"
                                 data-autocomplete="tag-edit"></textarea>
                     </div>
                 </div>
@@ -114,7 +114,7 @@
                                           :key="check.name" :data-tag-a="check.tagA" :data-tag-b="check.tagB"></image-checkbox>
                         </div>
                         <textarea class="tag-textarea" rows="2" v-model="tagEntries.species" id="post_species"
-                                  placeholder="Ex: bear dragon hyena rat newt etc."
+                                  :placeholder="speciesTagPlaceholder"
                                   data-autocomplete="tag-edit"></textarea>
                     </div>
                 </div>
@@ -150,7 +150,7 @@
                       <hr>
                       <textarea class="tag-textarea" v-model="tagEntries.content" id="post_content" rows="2"
                         data-autocomplete="tag-edit"
-                        placeholder="Ex: cub scatplay watersports diaper my_little_pony vore rape hyper etc."></textarea>
+                        :placeholder="contentTagPlaceholder"></textarea>
                     </div>
                 </div>
             </template>
@@ -158,7 +158,7 @@
                 <div class="col">
                     <label class="section-label">Rating</label>
                     <div>Explicit tags include sex, pussy, penis, masturbation, fellatio, etc.
-                        (<a href="/help/ratings" target="_blank">help</a>)
+                        (<a href="<%= Routes.help_page_path(id: "ratings") %>" target="_blank">help</a>)
                     </div>
                 </div>
                 <div class="col2">
@@ -183,10 +183,10 @@
                 <div class="col">
                     <label class="section-label" for="post_tags">Other Tags</label>
                     <div>
-                        Separate tags with spaces. (<a href="/help/tags" target="_blank">help</a>)
+                        Separate tags with spaces. (<a href="<%= Routes.help_page_path(id: "tags") %>" target="_blank">help</a>)
                     </div>
                     <div>
-                      Ensure you've reviewed our <a href="/wiki/show_or_new?title=tag_what_you_see">
+                      Ensure you've reviewed our <a :href="tagWhatYouSeeWikiUrl">
                         Tag What You See
                       </a> policy.
                     </div>
@@ -431,6 +431,12 @@
         characterGroups: [],
         normalMode: !Uploader.settings.compact_mode,
         maxFileSizePerRequest: Uploader.settings.max_file_size_per_request,
+        tagGendersHowtoWikiUrl: Uploader.settings.tag_genders_howto_wiki_url,
+        tagWhatYouSeeWikiUrl: Uploader.settings.tag_what_you_see_wiki_url,
+        artistTagPlaceholder: Uploader.settings.artist_tag_placeholder,
+        characterTagPlaceholder: Uploader.settings.character_tag_placeholder,
+        speciesTagPlaceholder: Uploader.settings.species_tag_placeholder,
+        contentTagPlaceholder: Uploader.settings.content_tag_placeholder,
 
         checkboxes: {
           sex: sex_checks,
