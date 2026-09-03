@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_03_135858) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_03_142849) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -717,6 +717,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_135858) do
     t.boolean "is_locked", default: false, null: false
     t.boolean "is_sticky", default: false, null: false
     t.datetime "last_post_created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.text "lock_reason"
     t.bigint "merge_target_id"
     t.datetime "merged_at"
     t.integer "response_count", default: 0, null: false

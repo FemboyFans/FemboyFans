@@ -24,6 +24,10 @@
       <%= f.input(:is_locked, label: "Locked") %>
     <% end %>
 
+    <% if can_use_attribute?(forum_topic, :lock_reason) %>
+      <%= f.input(:lock_reason, label: "Lock reason") %>
+    <% end %>
+
     <%= f.button(:submit, "Submit") %>
   <% end %>
 </div>

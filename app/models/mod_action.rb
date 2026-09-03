@@ -30,7 +30,7 @@ class ModAction < ApplicationRecord
     duration
     expires_at old_expires_at
     forum_category_id old_forum_category_id forum_category_name old_forum_category_name can_view old_can_view can_create old_can_create
-    forum_topic_id forum_topic_title old_topic_id old_topic_title new_topic_id new_topic_title
+    forum_topic_id forum_topic_title old_topic_id old_topic_title new_topic_id new_topic_title lock_reason
     pool_name
     pattern old_pattern note hidden
     type old_type
@@ -297,8 +297,11 @@ class ModAction < ApplicationRecord
       json: %i[forum_topic_title user_id],
     },
     forum_topic_lock:                           {
-      text: ->(mod, user) { "Locked topic ##{mod.subject_id} (with title #{mod.forum_topic_title}) by #{user}" },
-      json: %i[forum_topic_title user_id],
+      text: ->(mod, user) do
+        text = "Locked topic ##{mod.subject_id} (with title #{mod.forum_topic_title}) by #{user}"
+        mod.lock_reason.present? ? "#{text}\n[section=Reason]#{mod.lock_reason}[/section]" : text
+      end,
+      json: %i[forum_topic_title user_id lock_reason],
     },
     forum_topic_merge:                          {
       text: ->(mod, user) { "Merged topic ##{mod.subject_id} (with title #{mod.forum_topic_title}) by #{user} into topic ##{mod.new_topic_id} (with title #{mod.new_topic_title})" },

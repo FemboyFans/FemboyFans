@@ -468,6 +468,13 @@ module Forums
           assert_predicate(@forum_topic, :is_locked?)
         end
 
+        should("save the given lock reason") do
+          put_auth(lock_forum_topic_path(@forum_topic), @mod, params: { lock_reason: "spam", format: :json })
+
+          assert_response(:success)
+          assert_equal("spam", @forum_topic.reload.lock_reason)
+        end
+
         context("access control") do
           asserts do
             access.gte(User::Levels::MODERATOR).put { lock_forum_topic_path(@forum_topic) }.success(:redirect)
@@ -478,7 +485,7 @@ module Forums
 
       context("unlock action") do
         setup do
-          @forum_topic.update_column(:is_locked, true)
+          @forum_topic.update_columns(is_locked: true, lock_reason: "spam")
         end
 
         should("unlock the topic") do
@@ -488,6 +495,12 @@ module Forums
           @forum_topic.reload
 
           assert_not(@forum_topic.is_locked?)
+        end
+
+        should("clear the lock reason") do
+          put_auth(unlock_forum_topic_path(@forum_topic), @mod)
+
+          assert_nil(@forum_topic.reload.lock_reason)
         end
 
         context("access control") do

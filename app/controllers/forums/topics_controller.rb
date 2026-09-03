@@ -91,14 +91,14 @@ module Forums
 
     def lock
       authorize(@forum_topic)
-      @forum_topic.update_with_current(:updater, is_locked: true)
+      @forum_topic.update_with_current(:updater, is_locked: true, lock_reason: params[:lock_reason])
       notice("Topic locked")
       respond_with(@forum_topic)
     end
 
     def unlock
       authorize(@forum_topic)
-      @forum_topic.update_with_current(:updater, is_locked: false)
+      @forum_topic.update_with_current(:updater, is_locked: false, lock_reason: nil)
       notice("Topic unlocked")
       respond_with(@forum_topic)
     end

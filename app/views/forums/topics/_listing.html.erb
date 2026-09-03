@@ -24,7 +24,7 @@
     <% end %>
 
     <% if topic.is_locked? %>
-      <span class="locked-topic">(locked)</span>
+      <span class="locked-topic" title="<%= topic.lock_reason %>">(locked)</span>
     <% end %>
     <% if topic.is_hidden? %>
       <span class="locked-topic">(hidden)</span>

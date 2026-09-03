@@ -47,6 +47,20 @@ module ModActions
           subject:           @topic,
           forum_topic_title: @topic.title,
           user_id:           @user.id,
+          lock_reason:       nil,
+        )
+      end
+
+      should("format forum_topic_lock with a reason correctly") do
+        @topic.update_with!(@admin, is_locked: true, lock_reason: "spam")
+
+        assert_matches(
+          actions:           %w[forum_topic_lock],
+          text:              "Locked topic ##{@topic.id} (with title #{@topic.title}) by #{user(@user)}\n[section=Reason]spam[/section]",
+          subject:           @topic,
+          forum_topic_title: @topic.title,
+          user_id:           @user.id,
+          lock_reason:       "spam",
         )
       end
 

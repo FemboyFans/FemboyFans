@@ -48,7 +48,7 @@
       <% if @forum_topic.is_locked? && ftpolicy.unlock? %>
         <%= subnav_link_to("Unlock", unlock_forum_topic_path(@forum_topic), method: :put, data: { confirm: "Are you sure you want to unlock this forum topic?" }) %>
       <% elsif ftpolicy.lock? %>
-        <%= subnav_link_to("Lock", lock_forum_topic_path(@forum_topic), method: :put, data: { confirm: "Are you sure you want to lock this forum topic?" }) %>
+        <%= subnav_link_to("Lock", "#", data: { tid: @forum_topic.id }) %>
       <% end %>
       <% if @forum_topic.is_sticky? && ftpolicy.unsticky? %>
         <%= subnav_link_to("Unsticky", unsticky_forum_topic_path(@forum_topic), method: :put, data: { confirm: "Are you sure you want to unsticky this forum topic?" }) %>

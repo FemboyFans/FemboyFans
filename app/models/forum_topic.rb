@@ -71,7 +71,7 @@ class ForumTopic < ApplicationRecord
   modactions(:forum_topic)
     .add(:hide, :updater, on: :update, unless: :is_merging, if: -> { creator_id != updater_id && saved_change_to_is_hidden? && is_hidden? }) { { forum_topic_title: title, user_id: creator_id } }
     .add(:unhide, :updater, on: :save, unless: :is_merging, if: -> { saved_change_to_is_hidden? && !is_hidden? }) { { forum_topic_title: title, user_id: creator_id } }
-    .add(:lock, :updater, on: :save, unless: :is_merging, if: -> { saved_change_to_is_locked? && is_locked? }) { { forum_topic_title: title, user_id: creator_id } }
+    .add(:lock, :updater, on: :save, unless: :is_merging, if: -> { saved_change_to_is_locked? && is_locked? }) { { forum_topic_title: title, user_id: creator_id, lock_reason: lock_reason } }
     .add(:unlock, :updater, on: :save, unless: :is_merging, if: -> { saved_change_to_is_locked? && !is_locked? }) { { forum_topic_title: title, user_id: creator_id } }
     .add(:stick, :updater, on: :save, unless: :is_merging, if: -> { saved_change_to_is_sticky? && is_sticky? }) { { forum_topic_title: title, user_id: creator_id } }
     .add(:unstick, :updater, on: :save, unless: :is_merging, if: -> { saved_change_to_is_sticky? && !is_sticky? }) { { forum_topic_title: title, user_id: creator_id } }
@@ -116,6 +116,7 @@ class ForumTopic < ApplicationRecord
         .field(:category_id)
         .field(:is_sticky)
         .field(:is_locked)
+        .field(:lock_reason, like: true)
         .field(:is_hidden)
         .field(:creator_ip_addr)
         .field(:updater_ip_addr)

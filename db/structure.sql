@@ -1494,7 +1494,8 @@ CREATE TABLE public.forum_topics (
     last_post_created_at timestamp(6) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     merge_target_id bigint,
     merged_at timestamp(6) without time zone,
-    updater_ip_addr inet NOT NULL
+    updater_ip_addr inet NOT NULL,
+    lock_reason text
 );
 
 
@@ -9264,6 +9265,7 @@ ALTER TABLE ONLY public.help_pages
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260903142849'),
 ('20260903135858'),
 ('20260903135212'),
 ('20260903133923'),

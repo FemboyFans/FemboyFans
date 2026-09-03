@@ -10,7 +10,7 @@
 
 <% if @forum_topic.is_locked? %>
   <div class="notice">
-    <p>This topic has been locked.</p>
+    <p>This topic has been locked.<% if @forum_topic.lock_reason.present? %> Reason: <%= @forum_topic.lock_reason %><% end %></p>
   </div>
 <% end %>
 

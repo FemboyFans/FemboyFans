@@ -22,6 +22,7 @@ ForumPost.initialize_all = function () {
     $(".forum-post-reply-link").on("click", ForumPost.quote);
     $(".forum-post-hide-link").on("click", ForumPost.hide);
     $(".forum-post-unhide-link").on("click", ForumPost.unhide);
+    $("#subnav-lock-link").on("click", ForumPost.lock);
     $(".forum-vote-up").on("click", evt => ForumPost.vote(evt, 1));
     $(".forum-vote-meh").on("click", evt => ForumPost.vote(evt, 0));
     $(".forum-vote-down").on("click", evt => ForumPost.vote(evt, -1));
@@ -36,6 +37,7 @@ ForumPost.reinitialize_all = function () {
     $(".forum-post-reply-link").off("click");
     $(".forum-post-hide-link").off("click");
     $(".forum-post-unhide-link").off("click");
+    $("#subnav-lock-link").off("click");
     $(".forum-vote-up").off("click");
     $(".forum-vote-meh").off("click");
     $(".forum-vote-down").off("click");
@@ -166,6 +168,23 @@ ForumPost.unhide = function (e) {
     $(`.forum-post[data-forum-post-id="${fpid}"]`).attr("data-is-hidden", "false");
   }).fail(function () {
     Utility.error("Failed to unhide post.");
+  });
+};
+
+ForumPost.lock = function (e) {
+  e.preventDefault();
+  const reason = prompt("Reason for locking this topic (optional):");
+  if (reason === null) return;
+  const ftid = $(e.target).data("tid");
+  $.ajax({
+    url: `/forums/topics/${ftid}/lock.json`,
+    type: "PUT",
+    data: { lock_reason: reason },
+    dataType: "json",
+  }).done(function () {
+    location.reload();
+  }).fail(function () {
+    Utility.error("Failed to lock topic.");
   });
 };
 
