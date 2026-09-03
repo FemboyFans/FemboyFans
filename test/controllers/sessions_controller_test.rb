@@ -52,6 +52,19 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
         assert_predicate(@user.user_events.mfa_login_pending_verification, :exists?)
       end
 
+      should("not log the user in yet if they only have a passkey registered") do
+        @user = create(:user)
+        register_fake_passkey_for(@user)
+
+        post(session_path, params: { session: { name: @user.name, password: "password" } })
+
+        assert_response(:success)
+        assert_select("#passkey-login-button")
+        assert_select("#new_mfa", false)
+        assert_nil(session[:user_id])
+        assert_predicate(@user.user_events.mfa_login_pending_verification, :exists?)
+      end
+
       should("not reauthenticate the user yet if they have 2FA enabled") do
         @user = create(:user_with_mfa)
 
@@ -257,6 +270,47 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
             assert_predicate(@user.user_events.mfa_failed_reauthenticate, :exists?)
           end
         end
+      end
+    end
+
+    context("verify_passkey action") do
+      should("log the user in if they authenticate with a registered passkey") do
+        @user = create(:user)
+        passkey = register_fake_passkey_for(@user)
+        options, signed_challenge = Passkey.options_for_authentication(@user)
+        credential = fake_webauthn_client.get(challenge: options.challenge, allow_credentials: [passkey.external_id])
+
+        post(verify_passkey_session_path, params: { passkey: { user_id: @user.signed_id(purpose: :verify_mfa), credential: credential.to_json, signed_challenge: signed_challenge } })
+
+        assert_redirected_to(posts_path)
+        assert_equal(@user.id, session[:user_id])
+        assert_not_nil(@user.reload.last_ip_addr)
+        assert_predicate(@user.user_events.passkey_login, :exists?)
+      end
+
+      should("not log the user in with a tampered signed challenge") do
+        @user = create(:user)
+        passkey = register_fake_passkey_for(@user)
+        options, = Passkey.options_for_authentication(@user)
+        credential = fake_webauthn_client.get(challenge: options.challenge, allow_credentials: [passkey.external_id])
+
+        post(verify_passkey_session_path, params: { passkey: { user_id: @user.signed_id(purpose: :verify_mfa), credential: credential.to_json, signed_challenge: "not-a-real-token" } })
+
+        assert_response(:success)
+        assert_nil(session[:user_id])
+        assert_predicate(@user.user_events.passkey_failed_login, :exists?)
+      end
+
+      should("reauthenticate the user with a registered passkey") do
+        @user = create(:user)
+        passkey = register_fake_passkey_for(@user)
+        options, signed_challenge = Passkey.options_for_authentication(@user)
+        credential = fake_webauthn_client.get(challenge: options.challenge, allow_credentials: [passkey.external_id])
+
+        post(verify_passkey_session_path, params: { passkey: { user_id: @user.signed_id(purpose: :verify_mfa), credential: credential.to_json, signed_challenge: signed_challenge, type: "reauthenticate" } })
+
+        assert_redirected_to(posts_path)
+        assert_predicate(@user.user_events.passkey_reauthenticate, :exists?)
       end
     end
   end

@@ -1,14 +1,40 @@
 <div id="p-confirm-mfa">
   <div class="mfa-info">
     <h1 class="mfa-title">Verify Login</h1>
-    <p class="full">Enter the 6-digit code from your authenticator app to continue.</p>
-    <%= custom_form_for(@user.mfa, url: verify_mfa_session_path) do |f| %>
-      <%= f.input(:user_id, as: :hidden, input_html: { value: @user.signed_id(purpose: :verify_mfa, expires_in: 10.minutes) }) %>
-      <%= f.input(:url, as: :hidden, input_html: { value: @url }) %>
-      <%= f.input(:type, as: :hidden, input_html: { value: @type.presence || "login" }) %>
-      <%= f.input(:remember, as: :hidden, input_html: { value: @remember }) %>
-      <%= f.input(:code, placeholder: "123456", required: true, minlength: 6, hint: "Lost your phone? You can enter a backup code instead.", input_html: { value: nil }) %>
-      <%= f.submit("Continue") %>
+
+    <% if @user.mfa.present? %>
+      <p class="full">Enter the 6-digit code from your authenticator app to continue.</p>
+      <%= custom_form_for(@user.mfa, url: verify_mfa_session_path) do |f| %>
+        <%= f.input(:user_id, as: :hidden, input_html: { value: @user.signed_id(purpose: :verify_mfa, expires_in: 10.minutes) }) %>
+        <%= f.input(:url, as: :hidden, input_html: { value: @url }) %>
+        <%= f.input(:type, as: :hidden, input_html: { value: @type.presence || "login" }) %>
+        <%= f.input(:remember, as: :hidden, input_html: { value: @remember }) %>
+        <%= f.input(:code, placeholder: "123456", required: true, minlength: 6, hint: "Lost your phone? You can enter a backup code instead.", input_html: { value: nil }) %>
+        <%= f.submit("Continue") %>
+      <% end %>
+    <% end %>
+
+    <% if @passkey_options.present? %>
+      <% if @user.mfa.present? %>
+        <div class="divider"><hr></div>
+        <p class="full">Or, use a passkey instead:</p>
+      <% else %>
+        <p class="full">Use one of your registered passkeys to continue.</p>
+      <% end %>
+      <%= custom_form_for(:passkey, url: verify_passkey_session_path, html: { id: "passkey-login-form" }) do |f| %>
+        <%= f.input(:user_id, as: :hidden, input_html: { value: @user.signed_id(purpose: :verify_mfa, expires_in: 10.minutes) }) %>
+        <%= f.input(:url, as: :hidden, input_html: { value: @url }) %>
+        <%= f.input(:type, as: :hidden, input_html: { value: @type.presence || "login" }) %>
+        <%= f.input(:remember, as: :hidden, input_html: { value: @remember }) %>
+        <%= f.input(:signed_challenge, as: :hidden, input_html: { value: @passkey_signed_challenge }) %>
+        <%= f.input(:credential, as: :hidden, input_html: { value: nil }) %>
+        <button type="button" id="passkey-login-button" data-options="<%= @passkey_options.as_json.to_json %>">Use a passkey</button>
+        <span class="passkey-error" hidden></span>
+      <% end %>
+    <% end %>
+
+    <% if @user.errors[:base].present? %>
+      <p class="full error"><%= @user.errors[:base].to_sentence %></p>
     <% end %>
   </div>
 </div>

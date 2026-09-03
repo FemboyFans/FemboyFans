@@ -1,4 +1,4 @@
-#c-users-mfa, #c-users-mfa-backup-codes, #c-sessions #a-create #p-confirm-mfa {
+#c-users-mfa, #c-users-mfa-backup-codes, #c-users-passkeys, #c-sessions #a-create #p-confirm-mfa {
   #mfa-qr-code {
     width: 200px;
     padding: .5rem;
@@ -24,24 +24,24 @@
     display: flex;
   }
 
-  #new_mfa {
+  #new_mfa, #passkey-register-form {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
   }
 
-  #new_mfa div.input {
+  #new_mfa div.input, #passkey-register-form div.input {
     width: 100%;
     margin-bottom: 1em;
   }
 
-  #new_mfa div.input input[type] {
+  #new_mfa div.input input[type], #passkey-register-form div.input input[type] {
     max-width: unset;
     width: 100%;
   }
 
-  #new_mfa div.input label {
+  #new_mfa div.input label, #passkey-register-form div.input label {
     display: block;
     line-height: 1.5em;
   }
@@ -78,5 +78,16 @@
     justify-content: center;
     gap: 1rem;
     display: flex;
+  }
+
+  .passkey-error {
+    display: block;
+    font-weight: bold;
+    color: red;
+    margin-top: .5rem;
+
+    &[hidden] {
+      display: none;
+    }
   }
 }

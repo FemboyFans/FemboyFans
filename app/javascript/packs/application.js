@@ -45,6 +45,7 @@ export { default as MFA } from "../src/javascripts/mfa.js";
 export { default as Note } from "../src/javascripts/notes.js";
 export { default as Notification } from "../src/javascripts/notifications.js";
 export { default as Page } from "../src/javascripts/utility/page.js";
+export { default as Passkeys } from "../src/javascripts/passkeys.js";
 export { default as Post } from "../src/javascripts/posts.js";
 export { default as PostDeletion } from "../src/javascripts/post_delete.js";
 export { default as PostDeletionReasons } from "../src/javascripts/post_deletion_reasons.js";

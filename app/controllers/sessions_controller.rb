@@ -16,8 +16,9 @@ class SessionsController < ApplicationController
     @type = sparams[:type].presence || "login"
     if (@user = session_creator.authenticate(@type))
       @url = (sparams[:url] if sparams[:url]&.start_with?("/") && !sparams[:url].start_with?("//")) || posts_path
-      if @user&.mfa.present?
+      if @user&.two_factor_enabled?
         @remember = sparams[:remember]
+        prepare_confirm_mfa(@user)
         render(:confirm_mfa)
       else
         GayFurCity::Logger.add_attributes("user.login" => "success")
@@ -52,8 +53,31 @@ class SessionsController < ApplicationController
       @url = posts_path unless @url.start_with?("/") && !@url.start_with?("//")
       redirect_to(@url)
     else
-      @user.mfa.errors.add(:code, "is incorrect")
+      (@user.mfa || @user).errors.add(:code, "is incorrect")
+      prepare_confirm_mfa(@user)
       render(:confirm_mfa)
     end
+  end
+
+  def verify_passkey
+    @user = User.find_signed!(params.dig(:passkey, :user_id), purpose: :verify_mfa)
+    @url = params.dig(:passkey, :url).presence || posts_path
+    @type = params.dig(:passkey, :type).presence || "login"
+
+    session_creator = SessionCreator.new(session, cookies, nil, nil, request.remote_ip, request, remember: params.dig(:passkey, :remember), secure: request.ssl?)
+    credential = JSON.parse(params.dig(:passkey, :credential).presence || "null")
+
+    if credential && session_creator.verify_passkey(@user, credential, params.dig(:passkey, :signed_challenge), @type)
+      @url = posts_path unless @url.start_with?("/") && !@url.start_with?("//")
+      redirect_to(@url)
+    else
+      @user.errors.add(:base, "Passkey verification failed")
+      prepare_confirm_mfa(@user)
+      render(:confirm_mfa)
+    end
+  rescue JSON::ParserError
+    @user.errors.add(:base, "Passkey verification failed")
+    prepare_confirm_mfa(@user)
+    render(:confirm_mfa)
   end
 end

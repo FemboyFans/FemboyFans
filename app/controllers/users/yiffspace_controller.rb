@@ -49,12 +49,13 @@ module Users
       session_creator = SessionCreator.new(session, cookies, nil, nil, request.remote_ip, request, remember: true, secure: request.ssl?)
       session_creator.process_login(user, :login)
 
-      if user.mfa.present?
+      if user.two_factor_enabled?
         UserEvent.create_from_request!(user, :mfa_linked_account_login_pending_verification, request, metadata: { "provider" => PROVIDER })
         @user = user
         @url = posts_path
         @type = "login"
         @remember = true
+        prepare_confirm_mfa(user)
         render(template: "sessions/confirm_mfa")
       else
         UserEvent.create_from_request!(user, :linked_account_login, request, metadata: { "provider" => PROVIDER })

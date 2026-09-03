@@ -75,5 +75,18 @@ module TestHelpers
     def random
       SecureRandom.hex(6)
     end
+
+    # Memoized per test - the FakeAuthenticator behind a WebAuthn::FakeClient remembers
+    # credentials it creates, so registering and then authenticating in the same test need to
+    # share one instance.
+    def fake_webauthn_client
+      @fake_webauthn_client ||= WebAuthn::FakeClient.new(GayFurCity.config.hostname)
+    end
+
+    def register_fake_passkey_for(user, label: "Test device")
+      options, signed_challenge = Passkey.options_for_registration(user)
+      response = fake_webauthn_client.create(challenge: options.challenge)
+      Passkey.register!(user, response, signed_challenge, label: label)
+    end
   end
 end

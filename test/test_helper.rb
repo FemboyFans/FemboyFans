@@ -12,6 +12,7 @@ require("mocha/minitest")
 require("shoulda-context")
 require("shoulda-matchers")
 require("webmock/minitest")
+require("webauthn/fake_client")
 require("simplecov")
 SimpleCov.start
 

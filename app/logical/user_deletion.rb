@@ -38,6 +38,7 @@ class UserDeletion
   end
 
   def clear_user_settings
+    user.passkeys.destroy_all
     user.update_columns(
       recent_tags:      "",
       favorite_tags:    "",
@@ -51,6 +52,7 @@ class UserDeletion
       level:            User::Levels::MEMBER,
       mfa_secret:       nil,
       backup_codes:     [],
+      webauthn_id:      nil,
     )
   end
 

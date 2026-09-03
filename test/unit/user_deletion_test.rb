@@ -38,6 +38,7 @@ class UserDeletionTest < ActiveSupport::TestCase
   context("a valid user deletion") do
     setup do
       @user = create(:trusted_user, created_at: 2.weeks.ago, mfa_secret: MFA.generate_secret)
+      @passkey = register_fake_passkey_for(@user)
 
       @post = create(:post)
       FavoriteManager.add!(user: @user, post: @post)
@@ -62,6 +63,11 @@ class UserDeletionTest < ActiveSupport::TestCase
 
     should("remove the MFA secret") do
       assert_nil(@user.mfa_secret)
+    end
+
+    should("remove any passkeys") do
+      assert_raises(ActiveRecord::RecordNotFound) { @passkey.reload }
+      assert_nil(@user.webauthn_id)
     end
 
     should("rename the user") do

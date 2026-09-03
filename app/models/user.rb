@@ -213,6 +213,7 @@ class User < ApplicationRecord
   resolvable(:updater)
 
   has_many(:api_keys, dependent: :destroy)
+  has_many(:passkeys, -> { order(id: :asc) }, dependent: :destroy)
   has_many(:linked_accounts, dependent: :destroy)
   has_one(:dmail_filter)
   has_many(:sent_dmails, ->(user) { owned_by(user) }, class_name: "Dmail", foreign_key: "from_id")
@@ -691,21 +692,53 @@ class User < ApplicationRecord
       @mfa ||= MFA.new(mfa_secret, username: name, last_used_at: mfa_last_used_at) if mfa_secret.present?
     end
 
+    # True once any second factor - TOTP or a passkey - is set up. Codes and passkeys are
+    # independent and interchangeable: a user can have either, both, or (transiently, while
+    # switching) neither.
+    def two_factor_enabled?
+      mfa.present? || passkeys.any?
+    end
+
     def update_mfa_secret!(secret, request)
       with_lock do
+        was_enabled = two_factor_enabled?
         update!(mfa_secret: secret)
         remove_instance_variable(:@mfa) if instance_variable_defined?(:@mfa)
 
         if mfa_secret_before_last_save.nil?
           UserEvent.create_from_request!(self, :mfa_enable, request)
-          regenerate_backup_codes!(request)
+          regenerate_backup_codes!(request) unless was_enabled
         elsif secret.nil?
           UserEvent.create_from_request!(self, :mfa_disable, request)
-          update!(backup_codes: nil)
+          update!(backup_codes: nil) unless two_factor_enabled?
         else
           UserEvent.create_from_request!(self, :mfa_update, request)
         end
       end
+    end
+
+    def create_passkey!(credential_response, signed_challenge, request, label: nil)
+      with_lock do
+        was_enabled = two_factor_enabled?
+        passkey = Passkey.register!(self, credential_response, signed_challenge, label: label)
+        next nil unless passkey
+
+        UserEvent.create_from_request!(self, :passkey_add, request)
+        regenerate_backup_codes!(request) unless was_enabled
+        passkey
+      end
+    end
+
+    def destroy_passkey!(passkey, request)
+      with_lock do
+        passkey.destroy!
+        UserEvent.create_from_request!(self, :passkey_remove, request)
+        update!(backup_codes: nil) unless two_factor_enabled?
+      end
+    end
+
+    def verify_passkey(credential_response, signed_challenge)
+      Passkey.authenticate(self, credential_response, signed_challenge)
     end
 
     def verify_backup_code(code)

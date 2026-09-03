@@ -249,6 +249,14 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  # Shared by every "confirm 2FA" render (password login, linked-account sign-in) that offers a
+  # passkey as an alternative to a code - sets @passkey_options/@passkey_signed_challenge for the
+  # sessions/confirm_mfa template, or leaves them nil if the user has no passkeys to offer.
+  def prepare_confirm_mfa(user)
+    return if user.passkeys.blank?
+    @passkey_options, @passkey_signed_challenge = Passkey.options_for_authentication(user)
+  end
+
   def user_access_check(method)
     if !CurrentUser.user.send(method) || CurrentUser.user.is_banned? || IpBan.is_banned?(CurrentUser.ip_addr)
       access_denied

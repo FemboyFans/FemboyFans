@@ -1,0 +1,18 @@
+<div class="mfa-info">
+  <h1 class="mfa-title">Register a Passkey</h1>
+  <p class="full">Give it a name so you can tell it apart from your other passkeys, then click register and follow your device's prompt.</p>
+
+  <%= custom_form_for(:passkey, url: user_passkeys_path, html: { id: "passkey-register-form" }) do |f| %>
+    <%= f.input(:signed_challenge, as: :hidden, input_html: { value: @registration_signed_challenge }) %>
+    <%= f.input(:credential, as: :hidden, input_html: { value: nil }) %>
+    <%= f.input(:label, placeholder: "e.g. My Phone", hint: "A name to help you tell your passkeys apart", input_html: { value: nil }) %>
+    <button type="button" id="passkey-register-button" data-options="<%= @registration_options.as_json.to_json %>">Register a new passkey</button>
+    <span class="passkey-error" hidden></span>
+  <% end %>
+</div>
+
+<%= render(partial: "users/mfa/secondary_links") %>
+
+<% content_for(:page_title) do %>
+  Register a Passkey
+<% end %>

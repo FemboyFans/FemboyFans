@@ -1,0 +1,30 @@
+<div class="mfa-info">
+  <h1 class="mfa-title">Passkeys</h1>
+  <p class="full">Passkeys let you use your device's fingerprint, face, or screen lock as a second factor instead of a code, alongside or instead of an authenticator app. You can register more than one, for different devices.</p>
+
+  <% if @passkeys.any? %>
+    <%= table_for(@passkeys, class: "striped autofit") do |t| %>
+      <% t.column(:label) %>
+      <% t.column("Last Used") do |passkey| %>
+        <%= time_ago_in_words_tagged(passkey.last_used_at) %>
+      <% end %>
+      <% t.column("Created") do |passkey| %>
+        <%= time_ago_in_words_tagged(passkey.created_at) %>
+      <% end %>
+      <% t.column(column: "control") do |passkey| %>
+        <%= link_to("Remove", user_passkey_path(passkey), method: :delete, data: { confirm: "Remove this passkey?" }) %>
+      <% end %>
+    <% end %>
+    <div class="divider">
+      <hr>
+    </div>
+  <% end %>
+
+  <p class="full"><%= link_to("Register a new passkey", new_user_passkey_path) %></p>
+</div>
+
+<%= render(partial: "users/mfa/secondary_links") %>
+
+<% content_for(:page_title) do %>
+  Passkeys
+<% end %>

@@ -30,7 +30,7 @@ class SessionCreator
 
   def verify_mfa(user, code, type = :login)
     raise(AuthTypeError, "Invalid authentication type: #{type}") unless AUTH_TYPES.include?(type.to_s)
-    if user.mfa.verify(code)
+    if user.mfa&.verify(code)
       process_login(user, type, mfa: true)
       user
     elsif user.verify_backup_code(code)
@@ -42,7 +42,18 @@ class SessionCreator
     end
   end
 
-  def process_login(user, type = :login, mfa: false, backup: false)
+  def verify_passkey(user, credential_response, signed_challenge, type = :login)
+    raise(AuthTypeError, "Invalid authentication type: #{type}") unless AUTH_TYPES.include?(type.to_s)
+    if user.verify_passkey(credential_response, signed_challenge)
+      process_login(user, type, mfa: true, passkey: true)
+      user
+    else
+      UserEvent.create_from_request!(user, :"passkey_failed_#{type}", request)
+      nil
+    end
+  end
+
+  def process_login(user, type = :login, mfa: false, backup: false, passkey: false)
     raise(AuthTypeError, "Invalid authentication type: #{type}") unless AUTH_TYPES.include?(type.to_s)
     update = { last_ip_addr: ip_addr, last_logged_in_at: Time.now }
     if user.is_banned?
@@ -50,8 +61,16 @@ class SessionCreator
     else
       if mfa
         update[:mfa_last_used_at] = Time.now
-        UserEvent.create_from_request!(user, :"#{backup ? 'backup_code' : 'mfa'}_#{type}", request)
-      elsif user.mfa.present?
+        method =
+          if backup
+            "backup_code"
+          elsif passkey
+            "passkey"
+          else
+            "mfa"
+          end
+        UserEvent.create_from_request!(user, :"#{method}_#{type}", request)
+      elsif user.two_factor_enabled?
         UserEvent.create_from_request!(user, :"mfa_#{type}_pending_verification", request)
         return
       else

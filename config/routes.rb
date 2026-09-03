@@ -431,6 +431,7 @@ Rails.application.routes.draw do
     collection do
       get(:confirm_password)
       post(:verify_mfa)
+      post(:verify_passkey)
     end
   end
   resources(:stats, only: %i[index])
@@ -500,6 +501,7 @@ Rails.application.routes.draw do
       resource(:mfa, controller: "users/mfa", as: "user_mfa", only: %i[edit update destroy]) do
         resource(:backup_codes, controller: "users/mfa/backup_codes", only: %i[show create])
       end
+      resources(:passkeys, controller: "users/passkeys", as: "user_passkeys", only: %i[index new create destroy])
       resources(:linked_accounts, controller: "users/linked_accounts", as: "user_linked_accounts", only: %i[destroy]) do
         get(:edit, on: :collection)
       end

@@ -2022,6 +2022,42 @@ ALTER SEQUENCE public.notifications_id_seq OWNED BY public.notifications.id;
 
 
 --
+-- Name: passkeys; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.passkeys (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    external_id character varying NOT NULL,
+    public_key text NOT NULL,
+    sign_count bigint DEFAULT 0 NOT NULL,
+    label character varying DEFAULT ''::character varying NOT NULL,
+    last_used_at timestamp without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: passkeys_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.passkeys_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: passkeys_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.passkeys_id_seq OWNED BY public.passkeys.id;
+
+
+--
 -- Name: pool_versions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3759,7 +3795,8 @@ CREATE TABLE public.users (
     comment_vote_count integer DEFAULT 0 NOT NULL,
     forum_post_vote_count integer DEFAULT 0 NOT NULL,
     character_update_count integer DEFAULT 0 NOT NULL,
-    set_update_count integer DEFAULT 0 NOT NULL
+    set_update_count integer DEFAULT 0 NOT NULL,
+    webauthn_id character varying
 );
 
 
@@ -4159,6 +4196,13 @@ ALTER TABLE ONLY public.notes ALTER COLUMN id SET DEFAULT nextval('public.notes_
 --
 
 ALTER TABLE ONLY public.notifications ALTER COLUMN id SET DEFAULT nextval('public.notifications_id_seq'::regclass);
+
+
+--
+-- Name: passkeys id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.passkeys ALTER COLUMN id SET DEFAULT nextval('public.passkeys_id_seq'::regclass);
 
 
 --
@@ -4874,6 +4918,14 @@ ALTER TABLE ONLY public.notes
 
 ALTER TABLE ONLY public.notifications
     ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: passkeys passkeys_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.passkeys
+    ADD CONSTRAINT passkeys_pkey PRIMARY KEY (id);
 
 
 --
@@ -6447,6 +6499,20 @@ CREATE INDEX index_notes_on_to_tsvector_english_body ON public.notes USING gin (
 --
 
 CREATE INDEX index_notifications_on_user_id ON public.notifications USING btree (user_id);
+
+
+--
+-- Name: index_passkeys_on_external_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_passkeys_on_external_id ON public.passkeys USING btree (external_id);
+
+
+--
+-- Name: index_passkeys_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_passkeys_on_user_id ON public.passkeys USING btree (user_id);
 
 
 --
@@ -8515,6 +8581,14 @@ ALTER TABLE ONLY public.bulk_update_requests
 
 
 --
+-- Name: passkeys fk_rails_902db11bce; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.passkeys
+    ADD CONSTRAINT fk_rails_902db11bce FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
 -- Name: tag_aliases fk_rails_90fd158a45; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -9177,6 +9251,7 @@ ALTER TABLE ONLY public.help_pages
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260903135212'),
 ('20260903112129'),
 ('20260903085237'),
 ('20260831140200'),

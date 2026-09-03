@@ -155,12 +155,12 @@
       <label>Two-Factor Authentication</label>
       <span class="hint">Protect your account by requiring both your password and a security code to login.</span>
       <p>
-        <% if @user.mfa.present? %>
+        <% if @user.two_factor_enabled? %>
           <span class="text-green">Enabled</span>
         <% else %>
           <span class="text-red">Disabled</span>
         <% end %>
-        (<%= link_to("Manage", edit_user_mfa_path) %>)
+        (<%= link_to("Manage", edit_user_mfa_path) %> | <%= link_to("Passkeys", user_passkeys_path) %>)
       </p>
     </div>
 
