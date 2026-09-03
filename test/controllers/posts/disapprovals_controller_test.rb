@@ -25,6 +25,14 @@ module Posts
             access.levels([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER]).json.post(post_disapprovals_path).params { { post_disapproval: { post_id: @post.id, reason: "borderline_quality" } } }
           end
         end
+
+        should("render a validation error instead of crashing when reason is missing") do
+          assert_no_difference("PostDisapproval.count") do
+            post_auth(post_disapprovals_path, @admin, params: { post_disapproval: { post_id: @post.id }, format: :json })
+
+            assert_response(:unprocessable_content)
+          end
+        end
       end
 
       context("index action") do

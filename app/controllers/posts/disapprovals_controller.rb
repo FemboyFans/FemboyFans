@@ -24,6 +24,8 @@ module Posts
         format.html { redirect_to(post_path(id: pd_params[:post_id])) }
         format.json { render(json: @post_disapproval) }
       end
+    rescue ActiveRecord::RecordInvalid => e
+      render_expected_error(422, e.message)
     end
   end
 end
