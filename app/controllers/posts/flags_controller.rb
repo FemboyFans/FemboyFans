@@ -44,7 +44,7 @@ module Posts
       @post = Post.find(params[:post_id])
       authorize(PostFlag)
       @post.unflag!(CurrentUser.user)
-      if params[:approval] == "approve" && @post.is_approvable?
+      if params[:approval] == "approve" && @post.is_approvable?(CurrentUser.user)
         @post.approve!(CurrentUser.user)
       end
       respond_with(nil)

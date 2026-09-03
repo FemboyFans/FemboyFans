@@ -66,7 +66,7 @@ class PostPolicy < ApplicationPolicy
   end
 
   def approve?
-    user.is_approver?
+    user.is_approver? && (!record.is_a?(Post) || record.uploader_id != user.id || user.is_admin?)
   end
 
   def unapprove?

@@ -435,8 +435,8 @@ class Post < ApplicationRecord
   end
 
   module ApprovalMethods
-    def is_approvable?
-      !is_status_locked? && (is_pending? || is_appealed?) && approver.nil?
+    def is_approvable?(user)
+      !is_status_locked? && (is_pending? || is_appealed?) && approver.nil? && (uploader_id != user.id || user.is_admin?)
     end
 
     def is_appealable?
@@ -493,12 +493,13 @@ class Post < ApplicationRecord
       return unless approver.nil?
 
       if uploader_id == user.id
+        return unless user.is_admin?
         update(is_pending: false)
       else
         PostEvent.add!(id, user, :approved)
         approvals.create(user: user)
         update(approver: user, is_pending: false, updater: user)
-        uploader.notify_for_upload(self, :post_approve) if uploader_id != user.id
+        uploader.notify_for_upload(self, :post_approve)
         appeals.pending.each { |a| a.accept!(user) }
         flags.pending.each { |f| f.resolve!(user) }
       end

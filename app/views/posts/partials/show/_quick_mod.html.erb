@@ -1,5 +1,5 @@
 <div class="quick-mod">
-  <% if post.is_approvable? %>
+  <% if post.is_approvable?(CurrentUser.user) %>
   <div class="quick-mod-group">
     <%= tag.a("Approve",
       id: "approve-post",

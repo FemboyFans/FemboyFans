@@ -210,7 +210,7 @@ class PostsController < ApplicationController
 
   def approve
     @post = authorize(Post.find(params[:id]))
-    if @post.is_approvable?
+    if @post.is_approvable?(CurrentUser.user)
       @post.approve!(CurrentUser.user)
       respond_to do |format|
         format.json

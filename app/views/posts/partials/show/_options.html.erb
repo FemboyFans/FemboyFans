@@ -40,7 +40,7 @@
       <li><%= link_to("Delete", delete_post_path(post)) %></li>
     <% end %>
 
-    <% if post.is_approvable? && policy(post).approve? %>
+    <% if post.is_approvable?(CurrentUser.user) && policy(post).approve? %>
       <li><%= tag.a("Approve", "href": "#", "class": "approve-post-link", "data-pid": post.id) %></li>
     <% end %>
     <% if post.is_unapprovable?(CurrentUser.user) && policy(post).unapprove? %>

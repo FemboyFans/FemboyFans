@@ -64,6 +64,25 @@ module Posts
             access.levels([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER]).json.post(post_approvals_path).params { { post_id: @post.id } }
           end
         end
+
+        should("not allow a non-admin approving their own post") do
+          janitor = create(:janitor_user)
+          own_post = create(:post, is_pending: true, uploader: janitor)
+          post_auth(post_approvals_path, janitor, params: { post_id: own_post.id, format: :json })
+
+          assert_response(:forbidden)
+          assert_predicate(own_post.reload, :is_pending?)
+          assert_nil(own_post.approver)
+        end
+
+        should("allow an admin to approve their own post") do
+          own_post = create(:post, is_pending: true, uploader: @admin)
+          post_auth(post_approvals_path, @admin, params: { post_id: own_post.id, format: :json })
+
+          assert_response(:success)
+          assert_not(own_post.reload.is_pending?)
+          assert_nil(own_post.approver)
+        end
       end
 
       context("destroy action") do

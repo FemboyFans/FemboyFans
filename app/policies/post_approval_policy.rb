@@ -3,7 +3,7 @@
 # record: Post
 class PostApprovalPolicy < ApplicationPolicy
   def create?
-    approver?
+    approver? && (!record.is_a?(Post) || record.uploader_id != user.id || user.is_admin?)
   end
 
   def destroy?

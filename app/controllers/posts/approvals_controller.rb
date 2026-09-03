@@ -14,7 +14,7 @@ module Posts
 
     def create
       @post = authorize(Post.find(params[:post_id]), policy_class: PostApprovalPolicy)
-      if @post.is_approvable?
+      if @post.is_approvable?(CurrentUser.user)
         @post.approve!(CurrentUser.user)
         respond_to do |format|
           format.json
