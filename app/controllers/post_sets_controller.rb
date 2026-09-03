@@ -108,6 +108,14 @@ class PostSetsController < ApplicationController
     end
   end
 
+  def revert
+    @post_set = authorize(PostSet.find(params[:id]))
+    @version = @post_set.versions.find(params[:version_id])
+    @post_set.revert_to!(@version, CurrentUser.user)
+    notice(@post_set.errors.any? ? @post_set.errors.full_messages.join("; ") : "Set reverted")
+    respond_with(@post_set, status: 200)
+  end
+
   private
 
   def update_posts_params

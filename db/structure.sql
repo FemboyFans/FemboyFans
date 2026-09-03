@@ -79,6 +79,8 @@ BEGIN
     OR NEW.is_unlisted IS DISTINCT FROM OLD.is_unlisted
     OR NEW.is_in_progress IS DISTINCT FROM OLD.is_in_progress
     OR NEW.character_groups IS DISTINCT FROM OLD.character_groups
+    OR NEW.pool_ids IS DISTINCT FROM OLD.pool_ids
+    OR NEW.public_set_ids IS DISTINCT FROM OLD.public_set_ids
     OR old_md5 IS DISTINCT FROM new_md5
   THEN
     NEW.change_seq = nextval('public.posts_change_seq_seq');
@@ -2484,6 +2486,56 @@ ALTER SEQUENCE public.post_set_maintainers_id_seq OWNED BY public.post_set_maint
 
 
 --
+-- Name: post_set_versions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.post_set_versions (
+    id bigint NOT NULL,
+    post_set_id bigint,
+    updater_id bigint,
+    updater_ip_addr inet NOT NULL,
+    post_ids integer[] DEFAULT '{}'::integer[] NOT NULL,
+    added_post_ids integer[] DEFAULT '{}'::integer[] NOT NULL,
+    removed_post_ids integer[] DEFAULT '{}'::integer[] NOT NULL,
+    name character varying NOT NULL,
+    name_changed boolean NOT NULL,
+    shortname character varying NOT NULL,
+    shortname_changed boolean NOT NULL,
+    description text NOT NULL,
+    description_changed boolean NOT NULL,
+    is_public boolean NOT NULL,
+    is_public_changed boolean NOT NULL,
+    transfer_on_delete boolean NOT NULL,
+    transfer_on_delete_changed boolean NOT NULL,
+    maintainer_ids integer[] DEFAULT '{}'::integer[] NOT NULL,
+    added_maintainer_ids integer[] DEFAULT '{}'::integer[] NOT NULL,
+    removed_maintainer_ids integer[] DEFAULT '{}'::integer[] NOT NULL,
+    version integer NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: post_set_versions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.post_set_versions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: post_set_versions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.post_set_versions_id_seq OWNED BY public.post_set_versions.id;
+
+
+--
 -- Name: post_sets; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2633,7 +2685,6 @@ CREATE TABLE public.posts (
     uploader_ip_addr inet NOT NULL,
     approver_id bigint,
     fav_string text DEFAULT ''::text NOT NULL,
-    pool_string text DEFAULT ''::text NOT NULL,
     last_noted_at timestamp without time zone,
     last_comment_bumped_at timestamp without time zone,
     fav_count integer DEFAULT 0 NOT NULL,
@@ -2675,7 +2726,10 @@ CREATE TABLE public.posts (
     is_appealed boolean DEFAULT false NOT NULL,
     is_unlisted boolean DEFAULT false NOT NULL,
     is_in_progress boolean DEFAULT false NOT NULL,
-    character_groups jsonb DEFAULT '[]'::jsonb NOT NULL
+    character_groups jsonb DEFAULT '[]'::jsonb NOT NULL,
+    pool_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
+    public_set_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
+    private_set_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 );
 
 
@@ -3704,7 +3758,8 @@ CREATE TABLE public.users (
     post_vote_count integer DEFAULT 0 NOT NULL,
     comment_vote_count integer DEFAULT 0 NOT NULL,
     forum_post_vote_count integer DEFAULT 0 NOT NULL,
-    character_update_count integer DEFAULT 0 NOT NULL
+    character_update_count integer DEFAULT 0 NOT NULL,
+    set_update_count integer DEFAULT 0 NOT NULL
 );
 
 
@@ -4188,6 +4243,13 @@ ALTER TABLE ONLY public.post_replacements ALTER COLUMN id SET DEFAULT nextval('p
 --
 
 ALTER TABLE ONLY public.post_set_maintainers ALTER COLUMN id SET DEFAULT nextval('public.post_set_maintainers_id_seq'::regclass);
+
+
+--
+-- Name: post_set_versions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.post_set_versions ALTER COLUMN id SET DEFAULT nextval('public.post_set_versions_id_seq'::regclass);
 
 
 --
@@ -4908,6 +4970,14 @@ ALTER TABLE ONLY public.post_replacements
 
 ALTER TABLE ONLY public.post_set_maintainers
     ADD CONSTRAINT post_set_maintainers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: post_set_versions post_set_versions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.post_set_versions
+    ADD CONSTRAINT post_set_versions_pkey PRIMARY KEY (id);
 
 
 --
@@ -6716,6 +6786,20 @@ CREATE INDEX index_post_replacements_on_rejector_id ON public.post_replacements 
 
 
 --
+-- Name: index_post_set_versions_on_post_set_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_post_set_versions_on_post_set_id ON public.post_set_versions USING btree (post_set_id);
+
+
+--
+-- Name: index_post_set_versions_on_updater_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_post_set_versions_on_updater_id ON public.post_set_versions USING btree (updater_id);
+
+
+--
 -- Name: index_post_sets_on_post_ids; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6825,6 +6909,27 @@ CREATE INDEX index_posts_on_is_pending ON public.posts USING btree (is_pending) 
 --
 
 CREATE INDEX index_posts_on_parent_id ON public.posts USING btree (parent_id);
+
+
+--
+-- Name: index_posts_on_pool_ids; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_posts_on_pool_ids ON public.posts USING gin (pool_ids);
+
+
+--
+-- Name: index_posts_on_private_set_ids; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_posts_on_private_set_ids ON public.posts USING gin (private_set_ids);
+
+
+--
+-- Name: index_posts_on_public_set_ids; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_posts_on_public_set_ids ON public.posts USING gin (public_set_ids);
 
 
 --
@@ -7695,6 +7800,14 @@ ALTER TABLE ONLY public.tag_followers
 
 ALTER TABLE ONLY public.artists
     ADD CONSTRAINT fk_rails_0bf7d416ae FOREIGN KEY (updater_id) REFERENCES public.users(id);
+
+
+--
+-- Name: post_set_versions fk_rails_0d59279570; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.post_set_versions
+    ADD CONSTRAINT fk_rails_0d59279570 FOREIGN KEY (updater_id) REFERENCES public.users(id);
 
 
 --
@@ -8658,6 +8771,14 @@ ALTER TABLE ONLY public.post_votes
 
 
 --
+-- Name: post_set_versions fk_rails_b6151840b1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.post_set_versions
+    ADD CONSTRAINT fk_rails_b6151840b1 FOREIGN KEY (post_set_id) REFERENCES public.post_sets(id);
+
+
+--
 -- Name: staff_notes fk_rails_bab7e2d92a; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -9056,6 +9177,8 @@ ALTER TABLE ONLY public.help_pages
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260903112129'),
+('20260903085237'),
 ('20260831140200'),
 ('20260831140100'),
 ('20260831140000'),

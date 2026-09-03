@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_31_140200) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_03_112129) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -1199,6 +1199,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_140200) do
     t.bigint "user_id", null: false
   end
 
+  create_table "post_set_versions", force: :cascade do |t|
+    t.integer "added_maintainer_ids", default: [], null: false, array: true
+    t.integer "added_post_ids", default: [], null: false, array: true
+    t.datetime "created_at", null: false
+    t.text "description", null: false
+    t.boolean "description_changed", null: false
+    t.boolean "is_public", null: false
+    t.boolean "is_public_changed", null: false
+    t.integer "maintainer_ids", default: [], null: false, array: true
+    t.string "name", null: false
+    t.boolean "name_changed", null: false
+    t.integer "post_ids", default: [], null: false, array: true
+    t.bigint "post_set_id"
+    t.integer "removed_maintainer_ids", default: [], null: false, array: true
+    t.integer "removed_post_ids", default: [], null: false, array: true
+    t.string "shortname", null: false
+    t.boolean "shortname_changed", null: false
+    t.boolean "transfer_on_delete", null: false
+    t.boolean "transfer_on_delete_changed", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "updater_id"
+    t.inet "updater_ip_addr", null: false
+    t.integer "version", null: false
+    t.index ["post_set_id"], name: "index_post_set_versions_on_post_set_id"
+    t.index ["updater_id"], name: "index_post_set_versions_on_updater_id"
+  end
+
   create_table "post_sets", force: :cascade do |t|
     t.datetime "created_at", precision: nil, null: false
     t.bigint "creator_id", null: false
@@ -1293,7 +1320,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_140200) do
     t.integer "min_edit_level", default: 10, null: false
     t.text "original_tag_string", default: "", null: false
     t.bigint "parent_id"
-    t.text "pool_string", default: "", null: false
+    t.bigint "pool_ids", default: [], null: false, array: true
+    t.bigint "private_set_ids", default: [], null: false, array: true
+    t.bigint "public_set_ids", default: [], null: false, array: true
     t.string "qtags", default: [], null: false, array: true
     t.string "rating", limit: 1, default: "q", null: false
     t.integer "score", default: 0, null: false
@@ -1329,6 +1358,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_140200) do
     t.index ["is_flagged"], name: "index_posts_on_is_flagged", where: "(is_flagged = true)"
     t.index ["is_pending"], name: "index_posts_on_is_pending", where: "(is_pending = true)"
     t.index ["parent_id"], name: "index_posts_on_parent_id"
+    t.index ["pool_ids"], name: "index_posts_on_pool_ids", using: :gin
+    t.index ["private_set_ids"], name: "index_posts_on_private_set_ids", using: :gin
+    t.index ["public_set_ids"], name: "index_posts_on_public_set_ids", using: :gin
     t.index ["updater_id"], name: "index_posts_on_updater_id"
     t.index ["upload_media_asset_id"], name: "index_posts_on_upload_media_asset_id"
     t.index ["uploader_id"], name: "index_posts_on_uploader_id"
@@ -1776,6 +1808,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_140200) do
     t.text "profile_artinfo", default: "", null: false
     t.text "recent_tags"
     t.integer "set_count", default: 0, null: false
+    t.integer "set_update_count", default: 0, null: false
     t.integer "ticket_count", default: 0, null: false
     t.string "time_zone", default: "Central Time (US & Canada)", null: false
     t.string "title"
@@ -1953,6 +1986,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_140200) do
   add_foreign_key "post_replacements", "users", column: "uploader_id_on_approve"
   add_foreign_key "post_set_maintainers", "post_sets"
   add_foreign_key "post_set_maintainers", "users"
+  add_foreign_key "post_set_versions", "post_sets"
+  add_foreign_key "post_set_versions", "users", column: "updater_id"
   add_foreign_key "post_sets", "users", column: "creator_id"
   add_foreign_key "post_sets", "users", column: "updater_id"
   add_foreign_key "post_versions", "posts"

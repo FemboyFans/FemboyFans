@@ -1,0 +1,40 @@
+<h1>PostSet History</h1>
+
+<%= table_for(@post_set_versions, class: "striped autofit") do |t| %>
+  <% t.column("PostSet") do |post_set_version| %>
+    <%= link_to(post_set_version.pretty_name, post_set_path(post_set_version.post_set_id)) %>
+  <% end %>
+  <% t.column("Post Count") do |post_set_version| %>
+    <%= link_to(post_set_version.post_ids.size, post_set_versions_path(search: { post_set_id: post_set_version.post_set_id })) %>
+  <% end %>
+  <% t.column("Changes") do |post_set_version| %>
+    <%= link_to_if(post_set_version.changes_text.any?, post_set_version.changes_text.join(", "), diff_post_set_version_path(post_set_version.id)) %>
+  <% end %>
+  <% t.column("Updater") do |post_set_version| %>
+    <%= link_to_user(post_set_version.updater) if post_set_version.updater %>
+    <% if policy(post_set_version).can_see_ip_addr? %>
+      (<%= link_to_ip(post_set_version.updater_ip_addr) %>)
+    <% end %>
+    <p><%= compact_time(post_set_version.updated_at) %></p>
+  <% end %>
+  <% t.column do |post_set_version| %>
+    <% revert = params.dig(:search, :post_set_id).present? && policy(post_set_version.post_set).revert? %>
+    <% undo = post_set_version.undo? && policy(post_set_version).undo? %>
+    <% if revert %>
+      <%= link_to("Revert to", revert_post_set_path(post_set_version.post_set_id, version_id: post_set_version.id, format: :json), "class": "revert-item-link", "data-noun": "post_set") %>
+    <% end %>
+    <% if revert && undo %>|<% end %>
+    <% if undo %>
+      <%= link_to("Undo", undo_post_set_version_path(post_set_version), method: :put) %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= numbered_paginator(@post_set_versions) %>
+
+<%= render("post_sets/secondary_links") %>
+<%= latest_link(@post_set_versions) %>
+
+<% content_for(:page_title) do %>
+  Post Set Versions
+<% end %>

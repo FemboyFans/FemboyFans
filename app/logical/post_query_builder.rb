@@ -127,9 +127,9 @@ class PostQueryBuilder
     end
 
     if q[:pool] == "none"
-      relation = relation.where("posts.pool_string": "")
+      relation = relation.where("cardinality(posts.pool_ids) = 0")
     elsif q[:pool] == "any"
-      relation = relation.where.not("posts.pool_string": "")
+      relation = relation.where("cardinality(posts.pool_ids) > 0")
     end
 
     q[:uploader_ids]&.each do |uploader_id|

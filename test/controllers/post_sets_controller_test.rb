@@ -45,6 +45,7 @@ class PostSetsControllerTest < ActionDispatch::IntegrationTest
         subject { post_sets_path }
         setup do
           PostSetMaintainer.delete_all
+          PostSetVersion.delete_all
           PostSet.delete_all
           @creator = create(:user, created_at: 1.month.ago)
           @admin = create(:admin_user)
@@ -411,6 +412,47 @@ class PostSetsControllerTest < ActionDispatch::IntegrationTest
         asserts do
           access.gte(User::Levels::ADMIN).put { clear_indexing_post_set_path(@set) }.success(:redirect)
           access.gte(User::Levels::ADMIN).json.put { clear_indexing_post_set_path(@set) }
+        end
+      end
+    end
+
+    context("revert action") do
+      setup do
+        @post2 = create(:post)
+        @set = create(:post_set, creator: @user, post_ids: [@post.id])
+        @set.update_with!(@user, post_ids: [@post.id, @post2.id])
+      end
+
+      should("revert to a previous version") do
+        @set.reload
+        version = @set.versions.first
+
+        assert_equal([@post.id], version.post_ids)
+        put_auth(revert_post_set_path(@set), @user, params: { version_id: version.id })
+        @set.reload
+
+        assert_equal([@post.id], @set.post_ids)
+      end
+
+      should("not allow reverting to a previous version of another set") do
+        other_set = create(:post_set, creator: @user)
+        put_auth(revert_post_set_path(@set), @user, params: { version_id: other_set.versions.first.id })
+        @set.reload
+
+        assert_not_equal(@set.name, other_set.name)
+        assert_response(:missing)
+      end
+
+      should("not allow other users to revert it") do
+        put_auth(revert_post_set_path(@set), create(:user), params: { version_id: @set.versions.first.id, format: :json })
+
+        assert_response(:forbidden)
+      end
+
+      context("access control (not owner)") do
+        asserts do
+          access.gte(User::Levels::ADMIN).put { revert_post_set_path(@set) }.params { { version_id: @set.versions.last.id } }.success(:redirect)
+          access.gte(User::Levels::ADMIN).json.put { revert_post_set_path(@set) }.params { { version_id: @set.versions.last.id } }
         end
       end
     end

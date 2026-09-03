@@ -135,7 +135,7 @@ class PostPolicy < ApplicationPolicy
   end
 
   def api_attributes
-    attr = super + %i[has_large apionly_has_visible_children children_ids pool_ids apionly_is_favorited? apionly_is_voted_up? apionly_is_voted_down?] - %i[pool_string fav_string vote_string]
+    attr = super + %i[has_large apionly_has_visible_children children_ids apionly_is_favorited? apionly_is_voted_up? apionly_is_voted_down?] - %i[fav_string vote_string private_set_ids]
     if record.visible?(user)
       attr += %i[apionly_file_url]
       attr += %i[apionly_large_file_url] if record.has_large?

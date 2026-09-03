@@ -1,0 +1,81 @@
+<h1>Set Version Comparison: <%= @post_set_version.pretty_name %></h1>
+
+<ul>
+  <% if @post_set_version.name_changed? %>
+  <li>
+    <dl>
+      <dt><b>Name</b></dt>
+      <dd>
+        <% if @post_set_version.previous %><%= @post_set_version.previous.name %> -><% end %>
+        <%= @post_set_version.name %>
+      </dd>
+    </dl>
+  </li>
+  <% end %>
+  <% if @post_set_version.shortname_changed? %>
+  <li>
+    <dl>
+      <dt><b>Shortname</b></dt>
+      <dd>
+        <% if @post_set_version.previous %><%= @post_set_version.previous.shortname %> -><% end %>
+        <%= @post_set_version.shortname %>
+      </dd>
+    </dl>
+  </li>
+  <% end %>
+  <% if @post_set_version.description_changed? %>
+  <li>
+    <dl>
+      <dt><b>Description</b></dt>
+      <dd>
+        <% if @post_set_version.previous %><%= @post_set_version.previous.description %> -><% end %>
+        <%= @post_set_version.description %>
+      </dd>
+    </dl>
+  </li>
+  <% end %>
+  <% if @post_set_version.is_public_changed? %>
+  <li>
+    <dl>
+      <dt><b>Public</b></dt>
+      <dd>
+        <% if @post_set_version.previous %><%= @post_set_version.previous.is_public? ? "Yes" : "No" %> -><% end %>
+        <%= @post_set_version.is_public? ? "Yes" : "No" %>
+      </dd>
+    </dl>
+  </li>
+  <% end %>
+  <% if @post_set_version.transfer_on_delete_changed? %>
+  <li>
+    <dl>
+      <dt><b>Transfer On Delete</b></dt>
+      <dd>
+        <% if @post_set_version.previous %><%= @post_set_version.previous.transfer_on_delete? ? "Yes" : "No" %> -><% end %>
+        <%= @post_set_version.transfer_on_delete? ? "Yes" : "No" %>
+      </dd>
+    </dl>
+  </li>
+  <% end %>
+  <% if @post_set_version.added_post_ids.any? || @post_set_version.removed_post_ids.any? %>
+  <li>
+    <dl>
+      <dt><b>Posts</b></dt>
+      <dd><%= post_set_version_posts_diff(@post_set_version) %></dd>
+    </dl>
+  </li>
+  <% end %>
+  <% if @post_set_version.added_maintainer_ids.any? || @post_set_version.removed_maintainer_ids.any? %>
+  <li>
+    <dl>
+      <dt><b>Maintainers</b></dt>
+      <dd><%= post_set_version_maintainers_diff(@post_set_version) %></dd>
+    </dl>
+  </li>
+  <% end %>
+</ul>
+
+<%= render("post_sets/secondary_links") %>
+
+<% content_for(:page_title) do %>
+  Set Version Comparison
+<% end %>

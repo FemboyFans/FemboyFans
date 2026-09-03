@@ -55,7 +55,7 @@ class PoolTest < ActiveSupport::TestCase
 
         @posts.each(&:reload)
 
-        assert_equal(["pool:#{@pool.id}"] * @posts.size, @posts.map(&:pool_string))
+        assert_equal([[@pool.id]] * @posts.size, @posts.map(&:pool_ids))
       end
 
       should("remove invalid post ids") do
@@ -107,13 +107,13 @@ class PoolTest < ActiveSupport::TestCase
       should("update any old posts that were removed") do
         @p2.reload
 
-        assert_equal("", @p2.pool_string)
+        assert_equal([], @p2.pool_ids)
       end
 
       should("update any new posts that were added") do
         @p1.reload
 
-        assert_equal("pool:#{@pool.id}", @p1.pool_string)
+        assert_equal([@pool.id], @p1.pool_ids)
       end
     end
 
@@ -147,7 +147,7 @@ class PoolTest < ActiveSupport::TestCase
         end
 
         should("add the pool to the post") do
-          assert_equal("pool:#{@pool.id}", @p1.pool_string)
+          assert_equal([@pool.id], @p1.pool_ids)
         end
 
         should("increment the post count") do
@@ -178,7 +178,7 @@ class PoolTest < ActiveSupport::TestCase
           end
 
           should("not double add the pool to the post") do
-            assert_equal("pool:#{@pool.id}", @p1.pool_string)
+            assert_equal([@pool.id], @p1.pool_ids)
           end
 
           should("not double increment the post count") do
@@ -202,7 +202,7 @@ class PoolTest < ActiveSupport::TestCase
           end
 
           should("remove the pool from the post") do
-            assert_equal("", @p1.pool_string)
+            assert_equal([], @p1.pool_ids)
           end
 
           should("update the post count") do
@@ -220,7 +220,7 @@ class PoolTest < ActiveSupport::TestCase
           end
 
           should("not affect the post") do
-            assert_equal("pool:#{@pool.id}", @p1.pool_string)
+            assert_equal([@pool.id], @p1.pool_ids)
           end
 
           should("not affect the post count") do
@@ -356,9 +356,9 @@ class PoolTest < ActiveSupport::TestCase
           @p2.reload
           @p3.reload
 
-          assert_equal("", @p1.pool_string)
-          assert_equal("pool:#{@pool.id}", @p2.pool_string)
-          assert_equal("", @p3.pool_string)
+          assert_equal([], @p1.pool_ids)
+          assert_equal([@pool.id], @p2.pool_ids)
+          assert_equal([], @p3.pool_ids)
         end
 
         should("mark the pool as indexing") do

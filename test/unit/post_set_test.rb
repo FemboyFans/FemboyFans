@@ -45,7 +45,7 @@ class PostSetTest < ActiveSupport::TestCase
 
         @posts.each(&:reload)
 
-        assert_equal(["set:#{@set.id}"] * 3, @posts.map(&:pool_string))
+        assert_equal([[@set.id]] * 3, @posts.map(&:private_set_ids))
       end
     end
 
@@ -197,7 +197,7 @@ class PostSetTest < ActiveSupport::TestCase
         setup { @set.add!(@p1, @user) }
 
         should("add the post to the set") { assert_equal([@p1.id], @set.post_ids) }
-        should("add the set to the post") { assert_equal("set:#{@set.id}", @p1.pool_string) }
+        should("add the set to the post") { assert_equal([@set.id], @p1.private_set_ids) }
         should("increment the post count") { assert_equal(1, @set.post_count) }
 
         should("not mark the set as indexing (single-post adds via #add! sync inline)") do
@@ -218,7 +218,7 @@ class PostSetTest < ActiveSupport::TestCase
         end
 
         should("remove the post from the set") { assert_equal([], @set.post_ids) }
-        should("remove the set from the post") { assert_equal("", @p1.pool_string) }
+        should("remove the set from the post") { assert_equal([], @p1.private_set_ids) }
         should("update the post count") { assert_equal(0, @set.post_count) }
       end
 
@@ -234,8 +234,8 @@ class PostSetTest < ActiveSupport::TestCase
         should("synchronize the posts") do
           perform_enqueued_jobs(only: PostSetSyncJob)
 
-          assert_equal("set:#{@set.id}", @p1.reload.pool_string)
-          assert_equal("set:#{@set.id}", @p2.reload.pool_string)
+          assert_equal([@set.id], @p1.reload.private_set_ids)
+          assert_equal([@set.id], @p2.reload.private_set_ids)
         end
 
         should("mark the set as indexing") do
@@ -270,7 +270,7 @@ class PostSetTest < ActiveSupport::TestCase
         should("synchronize the post") do
           perform_enqueued_jobs(only: PostSetSyncJob)
 
-          assert_equal("", @p1.reload.pool_string)
+          assert_equal([], @p1.reload.private_set_ids)
         end
 
         should("mark the set as indexing") do
@@ -322,6 +322,46 @@ class PostSetTest < ActiveSupport::TestCase
       end
     end
 
+    context("Set visibility") do
+      setup do
+        @post = create(:post)
+        @set = create(:post_set, creator: @user)
+        @set.add!(@post, @user)
+      end
+
+      should("store membership in a private set under private_set_ids") do
+        assert_equal([@set.id], @post.private_set_ids)
+        assert_equal([], @post.public_set_ids)
+      end
+
+      should("store membership in a public set under public_set_ids") do
+        @public_set = create(:post_set, creator: @user)
+        @public_set.update_with!(@user, is_public: true)
+        @public_set.add!(@post, @user)
+
+        assert_equal([@public_set.id], @post.public_set_ids)
+        assert_equal([], @post.private_set_ids - [@set.id])
+      end
+
+      should("move member posts from private_set_ids to public_set_ids when made public") do
+        @set.update_with!(@user, is_public: true)
+        perform_enqueued_jobs(only: PostSetSyncJob)
+
+        assert_equal([@set.id], @post.reload.public_set_ids)
+        assert_equal([], @post.private_set_ids)
+      end
+
+      should("move member posts back to private_set_ids when made private again") do
+        @set.update_with!(@user, is_public: true)
+        perform_enqueued_jobs(only: PostSetSyncJob)
+        @set.update_with!(@user, is_public: false)
+        perform_enqueued_jobs(only: PostSetSyncJob)
+
+        assert_equal([@set.id], @post.reload.private_set_ids)
+        assert_equal([], @post.public_set_ids)
+      end
+    end
+
     context("Search") do
       setup do
         @set = create(:post_set, creator: @user, name: "findable_set")
@@ -359,6 +399,67 @@ class PostSetTest < ActiveSupport::TestCase
         PostSetMaintainer.create!(post_set: @set, user: maintainer, status: "approved")
 
         assert_equal([@set], PostSet.active_maintainer(maintainer).to_a)
+      end
+    end
+
+    context("Versioning") do
+      setup { @set = create(:post_set, creator: @user) }
+
+      should("create a version on creation") do
+        assert_equal(1, @set.versions.size)
+      end
+
+      should("create a new version when a watched attribute changes") do
+        assert_difference("@set.versions.size", 1) do
+          @set.update_with!(@user, name: "renamed_set")
+        end
+      end
+
+      should("create a new version when post_ids change") do
+        post = create(:post)
+
+        assert_difference("@set.versions.size", 1) do
+          @set.add!(post, @user)
+        end
+      end
+
+      should("create a new version when visibility changes") do
+        assert_difference("@set.versions.size", 1) do
+          @set.update_with!(@user, is_public: true)
+        end
+      end
+    end
+
+    context("Reverting a post set") do
+      setup do
+        @p1 = create(:post)
+        @p2 = create(:post)
+        @set = create(:post_set, creator: @user, post_ids: [@p1.id])
+        @set.update_with!(@user, post_ids: [@p1.id, @p2.id], name: "renamed_set")
+      end
+
+      should("restore the set's own fields") do
+        version = @set.versions.first
+        @set.revert_to!(version, @user)
+
+        assert_equal([@p1.id], @set.post_ids)
+        assert_not_equal("renamed_set", @set.name)
+      end
+
+      should("not restore maintainer membership") do
+        @set.update_with!(@user, is_public: true)
+        maintainer = create(:user)
+        PostSetMaintainer.create!(post_set: @set, user: maintainer, status: "approved")
+        version = @set.versions.first
+        @set.revert_to!(version, @user)
+
+        assert(@set.is_maintainer?(maintainer))
+      end
+
+      should("not allow reverting to a version of another set") do
+        other_set = create(:post_set, creator: @user)
+
+        assert_raises(Revertible::RevertError) { @set.revert_to(other_set.versions.first) }
       end
     end
   end

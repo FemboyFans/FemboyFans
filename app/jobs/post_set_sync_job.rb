@@ -8,7 +8,7 @@ class PostSetSyncJob < ApplicationJob
 
     GoodJob::Batch.enqueue(on_finish: PostSetIndexingFinishedJob, post_set_id: post_set_id) do
       Post.where(id: added_ids).find_each do |post|
-        post.add_set!(post_set, updater, force: true)
+        post.add_set!(post_set, updater)
         post.save
       end
 

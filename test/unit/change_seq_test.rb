@@ -29,6 +29,8 @@ class ChangeSeqTest < ActiveSupport::TestCase
       [*current.split, "0|#{SecureRandom.hex(4)}"].sort.join(" ")
     when :character_groups
       [*current, { "tags" => [SecureRandom.hex(4)] }]
+    when :pool_ids, :public_set_ids
+      current + [rand(1..2_147_483_647)]
     else
       case type
       when :integer

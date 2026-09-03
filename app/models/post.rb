@@ -13,7 +13,7 @@ class Post < ApplicationRecord
   IMAGE_EXTENSIONS = ::FileMethods::IMAGE_EXTENSIONS
   GIF_EXTENSIONS = ::FileMethods::GIF_EXTENSIONS
   EXTENSIONS = ::FileMethods::EXTENSIONS
-  CHANGE_SEQ_IGNORED = %i[id created_at updated_at up_score down_score score uploader_id uploader_ip_addr fav_string pool_string last_comment_bumped_at fav_count tag_count change_seq original_tag_string upload_url vote_string upload_media_asset_id updater_id updater_ip_addr].freeze
+  CHANGE_SEQ_IGNORED = %i[id created_at updated_at up_score down_score score uploader_id uploader_ip_addr fav_string private_set_ids last_comment_bumped_at fav_count tag_count change_seq original_tag_string upload_url vote_string upload_media_asset_id updater_id updater_ip_addr].freeze
 
   def self.get_change_seq_tracked
     Post.connection.select_one("SELECT prosrc FROM pg_proc WHERE proname = $1", nil, ["posts_trigger_change_seq"])["prosrc"].scan(/NEW\.([a-z_]+) IS DISTINCT FROM OLD\.([a-z_]+)/).flatten.uniq.map(&:to_sym)
@@ -1399,11 +1399,11 @@ class Post < ApplicationRecord
 
   module SetMethods
     def set_ids
-      pool_string.scan(/set:(\d+)/).map { |set| set[0].to_i }
+      public_set_ids + private_set_ids
     end
 
     def post_sets
-      @post_sets ||= if pool_string.blank?
+      @post_sets ||= if set_ids.blank?
                        PostSet.none
                      else
                        PostSet.where(id: set_ids)
@@ -1411,20 +1411,33 @@ class Post < ApplicationRecord
     end
 
     def belongs_to_post_set(set)
-      pool_string =~ /(?:\A| )set:#{set.id}(?:\z| )/
+      set_ids.include?(set.id)
     end
 
-    def add_set!(set, user, force: false)
-      return if belongs_to_post_set(set) && !force
+    # Stores each set id in the array matching the set's current visibility, moving it over
+    # (rather than just adding) so this also serves as the resync when a set's is_public flips -
+    # see PostSet#resync_set_visibility.
+    def add_set!(set, user)
+      return if (set.is_public? ? public_set_ids : private_set_ids).include?(set.id)
+
       with_lock do
-        self.pool_string = "#{pool_string} set:#{set.id}".strip
+        if set.is_public?
+          self.private_set_ids -= [set.id]
+          self.public_set_ids |= [set.id]
+        else
+          self.public_set_ids -= [set.id]
+          self.private_set_ids |= [set.id]
+        end
         self.updater = user
       end
     end
 
     def remove_set!(set, user)
+      return unless belongs_to_post_set(set)
+
       with_lock do
-        self.pool_string = (pool_string.split - ["set:#{set.id}"]).join(" ").strip
+        self.public_set_ids -= [set.id]
+        self.private_set_ids -= [set.id]
         self.updater = user
       end
     end
@@ -1450,12 +1463,8 @@ class Post < ApplicationRecord
   end
 
   module PoolMethods
-    def pool_ids
-      pool_string.scan(/pool:(\d+)/).map { |pool| pool[0].to_i }
-    end
-
     def pools
-      @pools ||= if pool_string.blank?
+      @pools ||= if pool_ids.blank?
                    Pool.none
                  else
                    Pool.where(id: pool_ids).series_first
@@ -1467,14 +1476,14 @@ class Post < ApplicationRecord
     end
 
     def belongs_to_pool?(pool)
-      pool_string =~ /(?:\A| )pool:#{pool.id}(?:\Z| )/
+      pool_ids.include?(pool.id)
     end
 
     def add_pool!(pool, user)
       return if belongs_to_pool?(pool)
 
       with_lock do
-        self.pool_string = "#{pool_string} pool:#{pool.id}".strip
+        self.pool_ids |= [pool.id]
         self.updater = user
       end
     end
@@ -1484,7 +1493,7 @@ class Post < ApplicationRecord
       return unless user.can_remove_from_pools?
 
       with_lock do
-        self.pool_string = pool_string.gsub(/(?:\A| )pool:#{pool.id}(?:\Z| )/, " ").strip
+        self.pool_ids -= [pool.id]
         self.updater = user
       end
     end

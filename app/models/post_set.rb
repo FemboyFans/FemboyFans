@@ -5,9 +5,23 @@ class PostSet < ApplicationRecord
 
   has_many(:post_set_maintainers, dependent: :destroy)
   has_many(:maintainers, class_name: "User", through: :post_set_maintainers, source: :user)
+  has_many(:approved_maintainers, -> { where("post_set_maintainers.status": "approved") }, class_name: "User", through: :post_set_maintainers, source: :user)
+  has_many(:versions, -> { order(id: :asc) }, class_name: "PostSetVersion", dependent: :destroy)
   belongs_to_user(:creator, ip: true, clones: :updater, counter_cache: "set_count")
   belongs_to_user(:updater, ip: true)
   resolvable(:destroyer)
+
+  # Maintainer membership isn't reverted here - PostSetMaintainer rows carry their own
+  # invite/approve/block lifecycle and notifications, so undoing a set version only restores
+  # the set's own fields, not who maintains it.
+  revertible do |version|
+    self.post_ids = version.post_ids
+    self.name = version.name
+    self.shortname = version.shortname
+    self.description = version.description
+    self.is_public = version.is_public
+    self.transfer_on_delete = version.transfer_on_delete
+  end
 
   before_validation(:normalize_shortname)
   validates(:name, length: { minimum: 3, maximum: 100, message: "must be between three and one hundred characters long" })
@@ -22,9 +36,12 @@ class PostSet < ApplicationRecord
   validate(:can_create_new_set_limit, on: :create)
 
   before_save(:update_post_count)
+  after_create(:synchronize!)
   after_update(:send_maintainer_public_dmails)
   before_destroy(:send_maintainer_destroy_dmails)
   after_save(:synchronize, if: :saved_change_to_post_ids?)
+  after_save(:resync_set_visibility, if: :saved_change_to_is_public?)
+  after_save(:create_version)
 
   attr_accessor(:skip_sync)
 
@@ -59,6 +76,15 @@ class PostSet < ApplicationRecord
 
   def saved_change_to_watched_attributes?
     saved_change_to_name? || saved_change_to_shortname? || saved_change_to_description? || saved_change_to_transfer_on_delete?
+  end
+
+  def saved_change_to_versioned_attributes?
+    saved_change_to_watched_attributes? || saved_change_to_is_public? || saved_change_to_post_ids?
+  end
+
+  def create_version
+    return unless saved_change_to_versioned_attributes?
+    PostSetVersion.queue(self, updater)
   end
 
   module ValidationMethods
@@ -206,7 +232,7 @@ class PostSet < ApplicationRecord
         self.updater = user
         update(post_ids: post_ids + [post.id])
         raise(ActiveRecord::Rollback) unless valid?
-        post.add_set!(self, user, force: true)
+        post.add_set!(self, user)
         post.save
       end
     end
@@ -270,6 +296,13 @@ class PostSet < ApplicationRecord
     def synchronize!
       synchronize
       save if will_save_change_to_post_ids?
+    end
+
+    # A post's set membership is stored on the post split by the set's visibility (Post#add_set!),
+    # so flipping is_public means every current member needs its id moved from one array to the
+    # other - reuse the sync job's add path since Post#add_set! already does that move.
+    def resync_set_visibility
+      PostSetSyncJob.perform_later(id, updater, added_ids: post_ids)
     end
 
     def normalize_post_ids

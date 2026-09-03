@@ -58,6 +58,10 @@ class PostSetPolicy < ApplicationPolicy
     user.is_admin?
   end
 
+  def revert?
+    update?
+  end
+
   def add_maintainer?
     settings_edit_access?(record)
   end

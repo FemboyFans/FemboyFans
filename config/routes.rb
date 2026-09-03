@@ -538,6 +538,12 @@ Rails.application.routes.draw do
           get(:deny)
         end
       end
+      resources(:versions, controller: "post_sets/versions", as: "post_set_versions", only: %i[index]) do
+        member do
+          get(:diff)
+          put(:undo)
+        end
+      end
     end
     member do
       get(:maintainers)
@@ -546,6 +552,7 @@ Rails.application.routes.draw do
       post(:add_posts)
       post(:remove_posts)
       put(:clear_indexing)
+      put(:revert)
     end
   end
   resource(:email, only: %i[]) do

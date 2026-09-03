@@ -54,7 +54,9 @@ module PostSets
       @maintainer = authorize(PostSetMaintainer.find(params[:id] || params[:post_set_maintainer][:id]), :cancel?)
       @set = authorize(@maintainer.post_set, :add_maintainer?)
 
+      was_approved = @maintainer.status == "approved"
       @maintainer.cancel!
+      PostSetVersion.queue(@set, CurrentUser.user.resolvable(CurrentUser.ip_addr)) if was_approved
       respond_with(@set)
     end
 
@@ -62,6 +64,7 @@ module PostSets
       @maintainer = authorize(PostSetMaintainer.find(params[:id]))
 
       @maintainer.approve!
+      PostSetVersion.queue(@maintainer.post_set, CurrentUser.user.resolvable(CurrentUser.ip_addr))
       notice("You are now a maintainer for the set")
       respond_with(@maintainer, location: post_set_maintainers_path) do |format|
         format.html { redirect_to(post_set_maintainers_path) }
@@ -71,7 +74,9 @@ module PostSets
     def deny
       @maintainer = authorize(PostSetMaintainer.find(params[:id]))
 
+      was_approved = @maintainer.status == "approved"
       @maintainer.deny!
+      PostSetVersion.queue(@maintainer.post_set, CurrentUser.user.resolvable(CurrentUser.ip_addr)) if was_approved
       notice("You have declined the set maintainer invite")
       respond_with(@maintainer, location: post_set_maintainers_path) do |format|
         format.html { redirect_to(post_set_maintainers_path) }
@@ -81,7 +86,9 @@ module PostSets
     def block
       @maintainer = authorize(PostSetMaintainer.find(params[:id]))
 
+      was_approved = @maintainer.status == "approved"
       @maintainer.block!
+      PostSetVersion.queue(@maintainer.post_set, CurrentUser.user.resolvable(CurrentUser.ip_addr)) if was_approved
       notice("You will not receive further invites for this set")
       respond_with(@maintainer, location: post_set_maintainers_path) do |format|
         format.html { redirect_to(post_set_maintainers_path) }

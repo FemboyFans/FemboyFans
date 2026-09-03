@@ -15,7 +15,7 @@ class ApplicationJob < ActiveJob::Base
   retry_on(ActiveRecord::Deadlocked)
 
   # Most jobs are safe to ignore if the underlying records are no longer available
-  # discard_on ActiveJob::DeserializationError
+  discard_on(ActiveJob::DeserializationError)
 
   # GoodJob orders jobs by `priority ASC NULLS LAST` (lower number = runs first), unlike Sidekiq's
   # weighted-queue random selection. This approximates the old queue weights

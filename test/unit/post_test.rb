@@ -845,7 +845,7 @@ class PostTest < ActiveSupport::TestCase
               @pool.reload
 
               assert_equal([@post.id], @pool.post_ids)
-              assert_equal("pool:#{@pool.id}", @post.pool_string)
+              assert_equal([@pool.id], @post.pool_ids)
             end
           end
 
@@ -863,7 +863,7 @@ class PostTest < ActiveSupport::TestCase
               @pool.reload
 
               assert_equal([], @pool.post_ids)
-              assert_equal("", @post.pool_string)
+              assert_equal([], @post.pool_ids)
             end
           end
 
@@ -878,7 +878,7 @@ class PostTest < ActiveSupport::TestCase
               @pool.reload
 
               assert_equal([@post.id], @pool.post_ids)
-              assert_equal("pool:#{@pool.id}", @post.pool_string)
+              assert_equal([@pool.id], @post.pool_ids)
             end
           end
 
@@ -894,7 +894,7 @@ class PostTest < ActiveSupport::TestCase
                 @pool.reload
 
                 assert_equal([@post.id], @pool.post_ids)
-                assert_equal("pool:#{@pool.id}", @post.pool_string)
+                assert_equal([@pool.id], @post.pool_ids)
               end
             end
 
@@ -906,7 +906,7 @@ class PostTest < ActiveSupport::TestCase
 
                 assert_not_nil(@pool)
                 assert_equal([@post.id], @pool.post_ids)
-                assert_equal("pool:#{@pool.id}", @post.pool_string)
+                assert_equal([@pool.id], @post.pool_ids)
               end
             end
 
@@ -1829,37 +1829,37 @@ class PostTest < ActiveSupport::TestCase
 
   context("Pools:") do
     context("Removing a post from a pool") do
-      should("update the post's pool string") do
+      should("update the post's pool ids") do
         post = create(:post)
         pool = create(:pool)
         pool.add!(post, @user)
         pool.remove!(post, @user)
         post.reload
 
-        assert_equal("", post.pool_string)
+        assert_equal([], post.pool_ids)
         pool.remove!(post, @user)
         post.reload
 
-        assert_equal("", post.pool_string)
+        assert_equal([], post.pool_ids)
       end
     end
 
     context("Adding a post to a pool") do
-      should("update the post's pool string") do
+      should("update the post's pool ids") do
         post = create(:post)
         pool = create(:pool)
         pool.add!(post, @user)
         post.reload
 
-        assert_equal("pool:#{pool.id}", post.pool_string)
+        assert_equal([pool.id], post.pool_ids)
         pool.add!(post, @user)
         post.reload
 
-        assert_equal("pool:#{pool.id}", post.pool_string)
+        assert_equal([pool.id], post.pool_ids)
         pool.remove!(post, @user)
         post.reload
 
-        assert_equal("", post.pool_string)
+        assert_equal([], post.pool_ids)
       end
     end
   end
@@ -2022,6 +2022,23 @@ class PostTest < ActiveSupport::TestCase
 
       assert_tag_match([post2, post1], "pool:any")
       assert_tag_match([], "pool:none")
+    end
+
+    should("scope the SQL fallback's pool:any/none to pools, not sets") do
+      pool = create(:pool)
+      set = create(:post_set, creator: @user)
+      pool_post = create(:post, tag_string: "pool:#{pool.id}")
+      set_post = create(:post)
+      set.add!(set_post, @user)
+      bare_post = create(:post)
+
+      pool_only = Post.tag_match_sql("pool:any", User.anonymous).pluck(:id)
+      none = Post.tag_match_sql("pool:none", User.anonymous).pluck(:id)
+
+      assert_equal([pool_post.id], pool_only)
+      assert_includes(none, set_post.id)
+      assert_includes(none, bare_post.id)
+      assert_not_includes(none, pool_post.id)
     end
 
     should("return posts for the parent:<N> metatag") do
@@ -2864,7 +2881,7 @@ class PostTest < ActiveSupport::TestCase
           @post.update_with(@user, tag_string_diff: "set:#{@set.id}")
 
           assert_equal([@post.id], @set.reload.post_ids)
-          assert_equal("set:#{@set.id}", @post.pool_string)
+          assert_equal([@set.id], @post.private_set_ids)
         end
 
         should("gracefully fail if the set is full") do
@@ -2873,7 +2890,7 @@ class PostTest < ActiveSupport::TestCase
 
           assert_equal(["Sets can only have up to 0 posts each"], @post.errors.full_messages)
           assert_equal([], @set.reload.post_ids)
-          assert_equal("", @post.pool_string)
+          assert_equal([], @post.private_set_ids)
         end
       end
 
@@ -2882,7 +2899,7 @@ class PostTest < ActiveSupport::TestCase
           @post.update_with(@user, tag_string_diff: "set:#{@set.shortname}")
 
           assert_equal([@post.id], @set.reload.post_ids)
-          assert_equal("set:#{@set.id}", @post.pool_string)
+          assert_equal([@set.id], @post.private_set_ids)
         end
 
         should("gracefully fail if the set is full") do
@@ -2891,7 +2908,7 @@ class PostTest < ActiveSupport::TestCase
 
           assert_equal(["Sets can only have up to 0 posts each"], @post.errors.full_messages)
           assert_equal([], @set.reload.post_ids)
-          assert_equal("", @post.pool_string)
+          assert_equal([], @post.private_set_ids)
         end
       end
     end
@@ -2908,7 +2925,7 @@ class PostTest < ActiveSupport::TestCase
           @post.update_with(@user, tag_string_diff: "pool:#{@pool.id}")
 
           assert_equal([@post.id], @pool.reload.post_ids)
-          assert_equal("pool:#{@pool.id}", @post.pool_string)
+          assert_equal([@pool.id], @post.pool_ids)
         end
 
         should("gracefully fail if the pool is full") do
@@ -2917,7 +2934,7 @@ class PostTest < ActiveSupport::TestCase
 
           assert_equal(["Pools can only have up to 0 posts each"], @post.errors.full_messages)
           assert_equal([], @pool.reload.post_ids)
-          assert_equal("", @post.pool_string)
+          assert_equal([], @post.pool_ids)
         end
       end
 
@@ -2926,14 +2943,14 @@ class PostTest < ActiveSupport::TestCase
           @post.update_with(@user, tag_string_diff: "pool:#{@pool.name}")
 
           assert_equal([@post.id], @pool.reload.post_ids)
-          assert_equal("pool:#{@pool.id}", @post.pool_string)
+          assert_equal([@pool.id], @post.pool_ids)
         end
 
         should("work with capital letters") do
           @post.update_with(@user, tag_string_diff: "pool:#{@pool2.name}")
 
           assert_equal([@post.id], @pool2.reload.post_ids)
-          assert_equal("pool:#{@pool2.id}", @post.pool_string)
+          assert_equal([@pool2.id], @post.pool_ids)
         end
 
         should("gracefully fail if the pool is full") do
@@ -2942,7 +2959,7 @@ class PostTest < ActiveSupport::TestCase
 
           assert_equal(["Pools can only have up to 0 posts each"], @post.errors.full_messages)
           assert_equal([], @pool.reload.post_ids)
-          assert_equal("", @post.pool_string)
+          assert_equal([], @post.pool_ids)
         end
       end
     end
@@ -2959,7 +2976,7 @@ class PostTest < ActiveSupport::TestCase
         @pool = Pool.last
 
         assert_equal([@post.id], @pool.reload.post_ids)
-        assert_equal("pool:#{@pool.id}", @post.pool_string)
+        assert_equal([@pool.id], @post.pool_ids)
         assert_equal("test", @pool.name)
       end
 
@@ -2970,7 +2987,7 @@ class PostTest < ActiveSupport::TestCase
         @pool = Pool.last
 
         assert_equal([@post.id], @pool.reload.post_ids)
-        assert_equal("pool:#{@pool.id}", @post.pool_string)
+        assert_equal([@pool.id], @post.pool_ids)
         assert_equal("Test2_Pool", @pool.name)
       end
     end
