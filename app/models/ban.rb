@@ -11,7 +11,8 @@ class Ban < ApplicationRecord
   belongs_to_user(:updater, ip: true)
   resolvable(:destroyer)
   validate(:user_is_inferior)
-  validates(:reason, :duration, presence: true)
+  validates(:reason, presence: true)
+  validates(:duration, presence: true, on: :create)
   validates(:reason, length: { minimum: 1, maximum: -> { AdminConfig.instance.user_feedback_max_size } })
 
   scope(:unexpired, -> { where(expires_at: nil).or(where.gt(expires_at: Time.now)) })
@@ -95,14 +96,17 @@ class Ban < ApplicationRecord
     self.user_id = User.name_to_id(username)
   end
 
+  # A blank duration leaves expires_at untouched, so editing other fields (e.g. reason) on an
+  # existing ban doesn't silently shift its expiration.
   def duration=(dur)
+    return if dur.blank?
     dur = dur.to_i
     if dur < 0
       self.expires_at = nil
     else
       self.expires_at = dur.days.from_now
     end
-    @duration = dur if dur != 0
+    @duration = dur
   end
 
   attr_reader(:duration)

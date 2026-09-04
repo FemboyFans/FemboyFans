@@ -3,7 +3,7 @@
   <% if ban.new_record? %>
     <%= f.input(:user_name, as: :string, autocomplete: "user") %>
   <% end %>
-  <%= f.input(:duration, hint: "in days") %>
+  <%= f.input(:duration, required: ban.new_record?, hint: ban.new_record? ? "in days" : "in days — leave blank to keep the current expiration") %>
   <%= f.input(:is_permaban, as: :boolean, hint: "ignores days") %>
   <%= f.input(:reason, as: :dtext, limit: AdminConfig.instance.user_feedback_max_size, allow_color: false) %>
   <%= f.button(:submit, value: "Ban") %>

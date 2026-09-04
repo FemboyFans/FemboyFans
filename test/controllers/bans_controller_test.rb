@@ -126,6 +126,16 @@ class BansControllerTest < ActionDispatch::IntegrationTest
         assert_redirected_to(ban_path(@ban))
       end
 
+      should("not change expires_at when duration is left blank") do
+        expires_at = @ban.expires_at
+
+        put_auth(ban_path(@ban), @mod, params: { ban: { reason: "xxx" } })
+        @ban.reload
+
+        assert_equal("xxx", @ban.reason)
+        assert_equal(expires_at.to_i, @ban.expires_at.to_i)
+      end
+
       context("access control") do
         asserts do
           access.gte(User::Levels::MODERATOR).put { ban_path(@ban) }.params { { ban: { reason: "xxx", duration: 60 } } }.success(:redirect)

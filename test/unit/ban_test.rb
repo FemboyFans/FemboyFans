@@ -94,6 +94,33 @@ class BanTest < ActiveSupport::TestCase
       assert_not(user.feedback.empty?)
       assert_equal("negative", user.feedback.last.category)
     end
+
+    should("require a duration on create") do
+      ban = build(:ban, duration: nil)
+
+      assert_not(ban.valid?)
+      assert_includes(ban.errors[:duration], "can't be blank")
+    end
+
+    should("not change expires_at when updated with a blank duration") do
+      admin = create(:admin_user)
+      ban = create(:ban, creator: admin, duration: 60)
+      expires_at = ban.expires_at
+
+      ban.update(duration: nil, reason: "updated reason")
+
+      assert_equal("updated reason", ban.reason)
+      assert_equal(expires_at.to_i, ban.reload.expires_at.to_i)
+    end
+
+    should("still change expires_at when updated with a real duration") do
+      admin = create(:admin_user)
+      ban = create(:ban, creator: admin, duration: 60)
+
+      ban.update(duration: 30)
+
+      assert_in_delta(30.days.from_now, ban.expires_at, 1.minute)
+    end
   end
 
   context("Searching for a ban") do
