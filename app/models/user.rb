@@ -218,7 +218,7 @@ class User < ApplicationRecord
   has_one(:dmail_filter)
   has_many(:sent_dmails, ->(user) { owned_by(user) }, class_name: "Dmail", foreign_key: "from_id")
   has_many(:received_dmails, ->(user) { owned_by(user) }, class_name: "Dmail", foreign_key: "to_id")
-  has_one(:recent_ban, -> { order("bans.id desc") }, class_name: "Ban")
+  has_one(:recent_ban, -> { active.order("bans.id desc") }, class_name: "Ban")
   has_many(:bans, -> { order("bans.id desc") })
   has_many(:dmails, -> { order("dmails.id desc") }, foreign_key: "owner_id")
   has_many(:favorites, -> { order(id: :desc) })

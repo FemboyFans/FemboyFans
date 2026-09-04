@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_03_142849) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_04_033820) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -342,6 +342,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_142849) do
     t.bigint "creator_id", null: false
     t.inet "creator_ip_addr", null: false
     t.datetime "expires_at", precision: nil
+    t.boolean "is_deleted", default: false, null: false
     t.text "reason", null: false
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "updater_id", null: false

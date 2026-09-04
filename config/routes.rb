@@ -140,6 +140,8 @@ Rails.application.routes.draw do
   end
   resources(:bans) do
     get(:acknowledge, on: :collection)
+    put(:delete, on: :member)
+    put(:undelete, on: :member)
   end
   resources(:bulk_update_requests) do
     member do

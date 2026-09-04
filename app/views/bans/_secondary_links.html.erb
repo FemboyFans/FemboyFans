@@ -15,10 +15,15 @@
   <% if user_id %>
     <%= subnav_link_to("User", user_path(user_id)) %>
   <% end %>
-  <% if @ban.present? && @ban.persisted? && (policy(@ban).any?(:update?, :destroy?) || policy(@ban.user).unban?) %>
+  <% if @ban.present? && @ban.persisted? && (policy(@ban).any?(:update?, :delete?, :undelete?, :destroy?) || policy(@ban.user).unban?) %>
     |
     <%= subnav_link_to_if(policy(@ban).update?, "Edit", edit_ban_path(@ban)) %>
-    <%= subnav_link_to_if(policy(@ban).destroy?, "Delete", ban_path(@ban), method: :delete, data: { confirm: "Are you sure you want to delete this ban?" }) %>
+    <% if @ban.is_deleted? %>
+      <%= subnav_link_to_if(policy(@ban).undelete?, "Undelete", undelete_ban_path(@ban), method: :put, data: { confirm: "Are you sure you want to undelete this ban?" }) %>
+    <% else %>
+      <%= subnav_link_to_if(policy(@ban).delete?, "Delete", delete_ban_path(@ban), method: :put, data: { confirm: "Are you sure you want to delete this ban?" }) %>
+    <% end %>
+    <%= subnav_link_to_if(policy(@ban).destroy?, "Destroy", ban_path(@ban), method: :delete, data: { confirm: "This will PERMANENTLY destroy this ban record. This cannot be undone. Are you sure?" }) %>
     <%= subnav_link_to_if(@ban.user.is_banned? && policy(@ban.user).unban?, "Unban", unban_user_path(@ban.user), method: :put, data: { confirm: "Are you sure you want to unban the user? This will not delete any bans or records." }) %>
   <% end %>
 <% end %>

@@ -40,6 +40,22 @@ class BansController < ApplicationController
     respond_with(@ban)
   end
 
+  def delete
+    @ban = authorize(Ban.find(params[:id]))
+    @ban.soft_delete_with_current(:updater)
+
+    notice("Ban deleted")
+    respond_with(@ban)
+  end
+
+  def undelete
+    @ban = authorize(Ban.find(params[:id]))
+    @ban.soft_undelete_with_current(:updater)
+
+    notice("Ban undeleted")
+    respond_with(@ban)
+  end
+
   def destroy
     @ban = authorize(Ban.find(params[:id]))
     @ban.destroy_with_current(:destroyer)

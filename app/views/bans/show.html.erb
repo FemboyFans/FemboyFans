@@ -1,4 +1,9 @@
 <h1>Show Ban</h1>
+<% if @ban.is_deleted? %>
+  <div class="notice">
+    <p>This ban has been deleted.</p>
+  </div>
+<% end %>
 <ul style="margin-bottom: 1em;">
   <li><strong>User</strong>: <%= link_to_user(@ban.user) %></li>
   <li><strong>Expires</strong>: <%= @ban.humanized_expiration %></li>

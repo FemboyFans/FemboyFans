@@ -62,12 +62,36 @@ module ModActions
       end
 
       should("format ban_delete correctly") do
-        @ban.destroy_with(@admin)
+        @ban.soft_delete_with!(@admin)
 
         assert_matches(
           actions: %w[ban_delete],
           subject: @ban,
           text:    "Deleted ban for #{user(@user)}",
+          user_id: @user.id,
+        )
+      end
+
+      should("format ban_undelete correctly") do
+        @ban.update_column(:is_deleted, true)
+        set_count!
+        @ban.soft_undelete_with!(@admin)
+
+        assert_matches(
+          actions: %w[ban_undelete],
+          subject: @ban,
+          text:    "Undeleted ban for #{user(@user)}",
+          user_id: @user.id,
+        )
+      end
+
+      should("format ban_destroy correctly") do
+        @ban.destroy_with(@admin)
+
+        assert_matches(
+          actions: %w[ban_destroy],
+          subject: @ban,
+          text:    "Destroyed ban for #{user(@user)}",
           user_id: @user.id,
         )
       end

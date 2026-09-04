@@ -612,7 +612,8 @@ CREATE TABLE public.bans (
     updated_at timestamp without time zone NOT NULL,
     creator_ip_addr inet NOT NULL,
     updater_id bigint NOT NULL,
-    updater_ip_addr inet NOT NULL
+    updater_ip_addr inet NOT NULL,
+    is_deleted boolean DEFAULT false NOT NULL
 );
 
 
@@ -9265,6 +9266,7 @@ ALTER TABLE ONLY public.help_pages
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260904033820'),
 ('20260903142849'),
 ('20260903135858'),
 ('20260903135212'),

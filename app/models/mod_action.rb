@@ -130,6 +130,14 @@ class ModAction < ApplicationRecord
       text: ->(_mod, user) { "Deleted ban for #{user}" },
       json: %i[user_id],
     },
+    ban_undelete:                               {
+      text: ->(_mod, user) { "Undeleted ban for #{user}" },
+      json: %i[user_id],
+    },
+    ban_destroy:                                {
+      text: ->(_mod, user) { "Destroyed ban for #{user}" },
+      json: %i[user_id],
+    },
     ban_update:                                 {
       text: ->(mod, user) do
         text = "Updated ban for #{user}"

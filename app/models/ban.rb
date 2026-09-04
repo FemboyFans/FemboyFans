@@ -10,6 +10,7 @@ class Ban < ApplicationRecord
   belongs_to_user(:creator, ip: true, clone: :updater)
   belongs_to_user(:updater, ip: true)
   resolvable(:destroyer)
+  soft_deletable
   validate(:user_is_inferior)
   validates(:reason, presence: true)
   validates(:duration, presence: true, on: :create)
@@ -20,25 +21,30 @@ class Ban < ApplicationRecord
 
   modactions(:ban)
     .add(:create, :creator, on: :create) { { duration: duration, reason: reason, user_id: user_id } }
-    .add(:update, :updater, on: :update) do
+    .add(:update, :updater, on: :update, unless: -> { saved_change_to_is_deleted? }) do
       { user_id: user_id }
         .tap { |h| h.merge!({ expires_at: expires_at&.iso8601, old_expires_at: expires_at_before_last_save&.iso8601 }) if saved_change_to_expires_at? }
         .tap { |h| h.merge!({ reason: reason, old_reason: reason_before_last_save }) if saved_change_to_reason? }
     end
-    .add(:delete, :destroyer, on: :destroy) { { user_id: user_id } }
+    .add(:delete, :updater, on: :update, if: -> { saved_change_to_is_deleted? && is_deleted? }) { { user_id: user_id } }
+    .add(:undelete, :updater, on: :update, if: -> { saved_change_to_is_deleted? && !is_deleted? }) { { user_id: user_id } }
+    .add(:destroy, :destroyer, on: :destroy) { { user_id: user_id } }
 
   def self.is_banned?(user)
-    unexpired.for_user(user).exists?
+    active.unexpired.for_user(user).exists?
   end
 
   module SearchMethods
     def search(params, user, visible: true)
-      super.if(params[:expired], -> { expired }).else(-> { unexpired })
+      q = super.if(params[:expired], -> { expired }).else(-> { unexpired })
+      q = q.if(!params[:include_deleted]&.truthy? && %i[id is_deleted].none? { |key| params.key?(key) }, -> { active })
+      q
     end
 
     def query_dsl
       super
         .field(:reason_matches, :reason)
+        .field(:is_deleted)
         .field(:ip_addr, :creator_ip_addr)
         .association(:creator)
         .association(:user)
@@ -59,6 +65,10 @@ class Ban < ApplicationRecord
     if is_permaban.to_s.truthy?
       self.duration = -1
     end
+  end
+
+  def destroyable_by?(destroyer)
+    destroyer.is_admin? || destroyer == creator
   end
 
   def user_is_inferior

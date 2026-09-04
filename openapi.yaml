@@ -22,6 +22,7 @@ x-constants:
     - artist_user_unlink
     - ban_create
     - ban_delete
+    - ban_undelete
     - ban_update
     - comment_delete
     - comment_hide
@@ -588,6 +589,7 @@ components:
         - reason
         - creator_id
         - expires_at
+        - is_deleted
         - created_at
         - updated_at
       properties:
@@ -602,6 +604,8 @@ components:
         expires_at:
           type: ["string", "null"]
           format: date-time
+        is_deleted:
+          type: boolean
         created_at:
           type: string
           format: date-time
@@ -1551,7 +1555,7 @@ components:
         user_id:
           type: number
           description: |
-            Valid for: `artist_user_link`, `artist_user_unlink`, `ban_create`, `ban_delete`, `ban_update`, `comment_delete`, `comment_hide`, `comment_unhide`, `comment_update`, `post_deletion_reason_delete`, `post_replacement_rejection_reason_delete`, `forum_post_delete`, `forum_post_hide`, `forum_post_unhide`, `forum_post_update`, `forum_topic_delete`, `forum_topic_hide`, `forum_topic_lock`, `forum_topic_move`, `forum_topic_stick`, `forum_topic_update`, `forum_topic_unhide`, `forum_topic_unlock`, `forum_topic_unstick`, `pool_delete`, `set_change_visibility`, `set_delete`, `set_update`, `user_feedback_create`, `user_feedback_delete`, `user_feedback_update`
+            Valid for: `artist_user_link`, `artist_user_unlink`, `ban_create`, `ban_delete`, `ban_undelete`, `ban_update`, `comment_delete`, `comment_hide`, `comment_unhide`, `comment_update`, `post_deletion_reason_delete`, `post_replacement_rejection_reason_delete`, `forum_post_delete`, `forum_post_hide`, `forum_post_unhide`, `forum_post_update`, `forum_topic_delete`, `forum_topic_hide`, `forum_topic_lock`, `forum_topic_move`, `forum_topic_stick`, `forum_topic_update`, `forum_topic_unhide`, `forum_topic_unlock`, `forum_topic_unstick`, `pool_delete`, `set_change_visibility`, `set_delete`, `set_update`, `user_feedback_create`, `user_feedback_delete`, `user_feedback_update`
         name:
           type: string
           description: |

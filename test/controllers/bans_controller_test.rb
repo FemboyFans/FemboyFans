@@ -144,18 +144,70 @@ class BansControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    context("destroy action") do
-      should("work") do
-        assert_difference({ "Ban.count" => -1, "ModAction.count" => 1 }) do
-          delete_auth(ban_path(@ban), @mod)
+    context("delete action") do
+      should("soft delete the ban") do
+        assert_difference("ModAction.count", 1) do
+          assert_no_difference("Ban.count") do
+            put_auth(delete_ban_path(@ban), @mod)
+          end
         end
-        assert_redirected_to(bans_path)
+        assert_redirected_to(ban_path(@ban))
+        assert_predicate(@ban.reload, :is_deleted?)
       end
 
       context("access control") do
         asserts do
-          access.gte(User::Levels::MODERATOR).delete { ban_path(create(:ban, user: @user, creator: @mod)) }.success(:redirect)
-          # access.gte([]).json.delete { ban_path(create(:ban, user: @user, creator: @mod)) }.success(:no_content)
+          access.gte(User::Levels::MODERATOR).put { delete_ban_path(create(:ban, user: @user, creator: @mod)) }.success(:redirect)
+        end
+      end
+    end
+
+    context("destroy action") do
+      should("permanently destroy the ban") do
+        admin = create(:admin_user)
+        assert_difference({ "Ban.count" => -1, "ModAction.count" => 1 }) do
+          delete_auth(ban_path(@ban), admin)
+        end
+        assert_redirected_to(bans_path)
+      end
+
+      should("be usable by the moderator who created the ban") do
+        assert_difference("Ban.count", -1) do
+          delete_auth(ban_path(@ban), @mod)
+        end
+      end
+
+      should("not be usable by a moderator who didn't create the ban") do
+        other_mod = create(:moderator_user)
+
+        assert_no_difference("Ban.count") do
+          delete_auth(ban_path(@ban), other_mod)
+        end
+      end
+
+      context("access control") do
+        asserts do
+          access.gte(User::Levels::ADMIN).delete { ban_path(create(:ban, user: @user, creator: create(:moderator_user))) }.success(:redirect)
+        end
+      end
+    end
+
+    context("undelete action") do
+      setup do
+        @ban.update_column(:is_deleted, true)
+      end
+
+      should("work") do
+        assert_difference("ModAction.count", 1) do
+          put_auth(undelete_ban_path(@ban), @mod)
+        end
+        assert_redirected_to(ban_path(@ban))
+        assert_not(@ban.reload.is_deleted?)
+      end
+
+      context("access control") do
+        asserts do
+          access.gte(User::Levels::MODERATOR).put { undelete_ban_path(@ban) }.success(:redirect)
         end
       end
     end
