@@ -74,6 +74,7 @@ ForumPost.vote = function (evt, score) {
   }).done(function (data) {
     create_post(data);
     $(`#forum-post-votes-for-${id} .forum-post-vote-block`).hide();
+    $(`#forum-post-vote-overview-for-${id}`).replaceWith(data.overview_html);
   }).fail(function (data) {
     if (data?.responseJSON?.reason) {
       Utility.error(data.responseJSON.reason);
@@ -91,9 +92,10 @@ ForumPost.vote_remove = function (evt) {
     type: "DELETE",
     dataType: "json",
     accept: "text/javascript",
-  }).done(function () {
+  }).done(function (data) {
     $(evt.target).parents(".own-forum-vote").remove();
     $(`#forum-post-votes-for-${id} .forum-post-vote-block`).show();
+    $(`#forum-post-vote-overview-for-${id}`).replaceWith(data.overview_html);
     Utility.notice("Vote removed.");
   }).fail(function () {
     Utility.error("Failed to unvote on forum post.");

@@ -23,7 +23,7 @@ module Forums
         raise(User::PrivilegeError, "You cannot vote on completed tag change requests.") if @forum_post.is_aibur? && !@forum_post.tag_change_request.is_pending?
         @forum_post_vote = VoteManager::ForumPosts.vote!(user: CurrentUser.user, ip_addr: CurrentUser.ip_addr, forum_post: @forum_post, score: params[:score])
         respond_with(@forum_post_vote) do |fmt|
-          fmt.json { render(json: @forum_post_vote, code: 201) }
+          fmt.json { render(json: @forum_post_vote.as_json.merge(overview_html: render_vote_overview), code: 201) }
         end
       end
 
@@ -31,6 +31,7 @@ module Forums
         authorize(@forum_post, policy_class: ForumPostVotePolicy)
         raise(User::PrivilegeError, "You cannot unvote on completed tag change requests.") if @forum_post.is_aibur? && !@forum_post.tag_change_request.is_pending?
         VoteManager::ForumPosts.unvote!(forum_post: @forum_post, user: CurrentUser.user)
+        render(json: { overview_html: render_vote_overview })
       rescue UserVote::Error => e
         render_expected_error(422, e)
       end
@@ -45,6 +46,13 @@ module Forums
       end
 
       private
+
+      # The vote overview (up/meh/down counts and percentage) is a cached column, updated via an
+      # after_commit callback on ForumPostVote - reload to pick that up before re-rendering it.
+      def render_vote_overview
+        @forum_post.reload
+        render_to_string(partial: "forums/posts/votes/overview", locals: { votes: @forum_post.votes, forum_post: @forum_post }, formats: [:html])
+      end
 
       def load_forum_post
         @forum_post = ForumPost.find(params[:forum_post_id])

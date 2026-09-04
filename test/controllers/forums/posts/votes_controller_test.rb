@@ -149,9 +149,50 @@ module Forums
             assert_equal("66.67%", pct.call(@forum_post.percentage_score))
           end
 
+          should("return an up-to-date vote overview for the voter's own page") do
+            create(:forum_post_vote, forum_post: @forum_post, score: 1)
+
+            post_auth(forum_post_votes_path(@forum_post), @user2, params: { score: 1, format: :json })
+
+            assert_response(:success)
+            overview_html = response.parsed_body["overview_html"]
+
+            assert_includes(overview_html, "forum-post-vote-overview-for-#{@forum_post.id}")
+            assert_includes(overview_html, "100%")
+          end
+
           context("access control") do
             asserts do
               access.gte(User::Levels::MEMBER).json.post { forum_post_votes_path(@forum_post) }.params({ score: 1 })
+            end
+          end
+        end
+
+        context("destroy action") do
+          should("update the forum post's scores and return an up-to-date vote overview") do
+            create(:forum_post_vote, forum_post: @forum_post, user: @user2, score: 1)
+            create(:forum_post_vote, forum_post: @forum_post, score: -1)
+            @forum_post.reload
+
+            assert_equal(0, @forum_post.total_score)
+
+            delete_auth(forum_post_votes_path(@forum_post), @user2, params: { format: :json })
+
+            assert_response(:success)
+            @forum_post.reload
+
+            assert_equal(-1, @forum_post.total_score)
+            assert_nil(@forum_post.votes.find_by(user: @user2))
+
+            overview_html = response.parsed_body["overview_html"]
+
+            assert_includes(overview_html, "forum-post-vote-overview-for-#{@forum_post.id}")
+            assert_includes(overview_html, "0%")
+          end
+
+          context("access control") do
+            asserts do
+              access.gte(User::Levels::MEMBER).json.delete { forum_post_votes_path(@forum_post) }
             end
           end
         end
