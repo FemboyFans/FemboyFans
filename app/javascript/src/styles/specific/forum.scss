@@ -18,6 +18,22 @@
   &.forum-post-votes-overview {
     margin-top: 0.3rem;
   }
+
+  // button_to renders a real <form>/<button> for voting (works inside the votes turbo-frame
+  // without needing custom JS) - reset them to look like the plain icon links they replaced.
+  form.button_to {
+    display: inline;
+  }
+
+  .forum-vote-up, .forum-vote-meh, .forum-vote-down, .forum-vote-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
 }
 
 div.list-of-forum-posts {

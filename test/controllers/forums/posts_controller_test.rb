@@ -26,14 +26,14 @@ module Forums
           get_auth(forum_topic_path(@forum_topic), @user)
 
           assert_response(:success)
-          assert_select("a[title='Vote up']", false)
+          assert_select("button[title='Vote up']", false)
         end
 
         should("render the vote links") do
           get_auth(forum_topic_path(@forum_topic), @mod)
 
           assert_response(:success)
-          assert_select("a[title='Vote up']")
+          assert_select("button[title='Vote up']")
         end
 
         should("render existing votes") do
@@ -50,7 +50,7 @@ module Forums
           end
 
           should("hide the vote links") do
-            assert_select("a[title='Vote up']", false)
+            assert_select("button[title='Vote up']", false)
           end
 
           should("still render existing votes") do

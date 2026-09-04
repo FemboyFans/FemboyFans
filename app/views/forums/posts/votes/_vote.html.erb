@@ -2,7 +2,7 @@
 
 <li class="vote-score-<%= vote.vote_type %> <%= "own-forum-vote" if vote.user_id == CurrentUser.user.id %>">
   <% if votable && forum_post.voting_active? && vote.user_id == CurrentUser.user.id %>
-    <%= link_to(tag.i(class: "fa-regular #{vote.fa_class}"), "#", "class": "forum-vote-remove", 'data-forum-id': forum_post.id) %>
+    <%= button_to(tag.i(class: "fa-regular #{vote.fa_class}"), forum_post_votes_path(forum_post), method: :delete, class: "forum-vote-remove", title: "Remove vote") %>
     <%= link_to_user(vote.user) %>
   <% else %>
     <%= tag.i(class: "fa-regular #{vote.fa_class}") %>

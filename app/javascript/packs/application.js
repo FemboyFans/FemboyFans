@@ -11,6 +11,12 @@ import Rails from "@rails/ujs";
 Rails.start();
 var iMadeAMistakeAndNeedToFixIt = 0;
 
+// Turbo Drive (page-level navigation interception) is left disabled since the rest of the site
+// still relies on rails-ujs for links/forms - only <turbo-frame> elements are opted into, scoped
+// to the specific features that use them.
+import { Turbo } from "@hotwired/turbo-rails";
+Turbo.session.drive = false;
+
 require("jquery-hotkeys");
 
 require("jquery-ui/ui/widgets/autocomplete");

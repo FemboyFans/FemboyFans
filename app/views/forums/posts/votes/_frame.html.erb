@@ -1,0 +1,6 @@
+<%# locals: (forum_post:, votable: true) -%>
+
+<%= turbo_frame_tag("forum_post_votes_#{forum_post.id}") do %>
+  <%= render(partial: "forums/posts/votes/overview", locals: { votes: forum_post.votes, forum_post: forum_post }) %>
+  <%= render(partial: "forums/posts/votes/list", locals: { votes: forum_post.votes, forum_post: forum_post, votable: votable }) %>
+<% end %>

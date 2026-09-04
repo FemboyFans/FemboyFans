@@ -5,6 +5,7 @@ source("https://rubygems.org/")
 gem("dotenv", require: "dotenv/load")
 
 gem("rails", "~> 8.1.3.1")
+gem("turbo-rails")
 gem("pg")
 gem("dalli", platforms: :ruby)
 gem("simple_form")

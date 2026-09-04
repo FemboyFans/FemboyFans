@@ -111,8 +111,7 @@
             <% end %>
           <% end %>
           <% if forum_post.has_voting? %>
-            <%= render(partial: "forums/posts/votes/overview", locals: { votes: forum_post.votes, forum_post: forum_post }) %>
-            <%= render(partial: "forums/posts/votes/list", locals: { votes: forum_post.votes, forum_post: forum_post }) %>
+            <%= render(partial: "forums/posts/votes/frame", locals: { forum_post: forum_post }) %>
             <% if ForumPostVotePolicy.new(CurrentUser.user, forum_post).index? %>
               <li><%= link_to("(List)", { controller: "forums/posts/votes", search: { forum_post_id: forum_post.id } }) %></li>
             <% end %>

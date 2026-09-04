@@ -149,16 +149,14 @@ module Forums
             assert_equal("66.67%", pct.call(@forum_post.percentage_score))
           end
 
-          should("return an up-to-date vote overview for the voter's own page") do
+          should("return an up-to-date vote frame for html requests (turbo)") do
             create(:forum_post_vote, forum_post: @forum_post, score: 1)
 
-            post_auth(forum_post_votes_path(@forum_post), @user2, params: { score: 1, format: :json })
+            post_auth(forum_post_votes_path(@forum_post), @user2, params: { score: 1 })
 
             assert_response(:success)
-            overview_html = response.parsed_body["overview_html"]
-
-            assert_includes(overview_html, "forum-post-vote-overview-for-#{@forum_post.id}")
-            assert_includes(overview_html, "100%")
+            assert_select("turbo-frame#forum_post_votes_#{@forum_post.id}")
+            assert_includes(response.body, "100%")
           end
 
           context("access control") do
@@ -169,7 +167,7 @@ module Forums
         end
 
         context("destroy action") do
-          should("update the forum post's scores and return an up-to-date vote overview") do
+          should("update the forum post's scores") do
             create(:forum_post_vote, forum_post: @forum_post, user: @user2, score: 1)
             create(:forum_post_vote, forum_post: @forum_post, score: -1)
             @forum_post.reload
@@ -178,16 +176,22 @@ module Forums
 
             delete_auth(forum_post_votes_path(@forum_post), @user2, params: { format: :json })
 
-            assert_response(:success)
+            assert_response(:no_content)
             @forum_post.reload
 
             assert_equal(-1, @forum_post.total_score)
             assert_nil(@forum_post.votes.find_by(user: @user2))
+          end
 
-            overview_html = response.parsed_body["overview_html"]
+          should("return an up-to-date vote frame for html requests (turbo)") do
+            create(:forum_post_vote, forum_post: @forum_post, user: @user2, score: 1)
+            create(:forum_post_vote, forum_post: @forum_post, score: -1)
 
-            assert_includes(overview_html, "forum-post-vote-overview-for-#{@forum_post.id}")
-            assert_includes(overview_html, "0%")
+            delete_auth(forum_post_votes_path(@forum_post), @user2)
+
+            assert_response(:success)
+            assert_select("turbo-frame#forum_post_votes_#{@forum_post.id}")
+            assert_includes(response.body, "0%")
           end
 
           context("access control") do
