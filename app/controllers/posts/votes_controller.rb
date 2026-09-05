@@ -2,8 +2,7 @@
 
 module Posts
   class VotesController < ApplicationController
-    respond_to(:html, only: %i[index])
-    respond_to(:json)
+    respond_to(:html, :json)
     before_action(:ensure_lockdown_disabled)
     skip_before_action(:api_check)
 
@@ -21,7 +20,10 @@ module Posts
       if @status == :need_unvote && !params[:no_unvote].to_s.truthy?
         VoteManager::Posts.unvote!(post: @post, user: CurrentUser.user)
       end
-      render(json: { score: @post.score, up: @post.up_score, down: @post.down_score, our_score: @status == :need_unvote ? 0 : @post_vote.score, is_locked: @post_vote.is_locked? })
+      respond_to do |format|
+        format.html { render_vote_response }
+        format.json { render(json: { score: @post.score, up: @post.up_score, down: @post.down_score, our_score: @status == :need_unvote ? 0 : @post_vote.score, is_locked: @post_vote.is_locked? }) }
+      end
     rescue UserVote::Error, ActiveRecord::RecordInvalid => e
       render_expected_error(422, e)
     end
@@ -53,6 +55,16 @@ module Posts
     end
 
     private
+
+    # The show page has a single static vote frame; the index thumbnail grid re-renders the whole
+    # thumbnail per post so its score/fav-count/vote-highlighting all stay in sync after voting.
+    def render_vote_response
+      if turbo_frame_request_id == "post-preview-#{@post.id}"
+        render(html: PostsDecorator.new(@post).preview_html(tags: params[:tags], show_cropped: true, stats: true), layout: false)
+      else
+        render(partial: "posts/partials/show/vote", locals: { post: @post }, layout: false)
+      end
+    end
 
     def ensure_lockdown_disabled
       access_denied if Security::Lockdown.votes_disabled? && !CurrentUser.user.is_staff?

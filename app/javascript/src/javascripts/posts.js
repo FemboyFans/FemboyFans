@@ -6,7 +6,6 @@ import Shortcuts from "./shortcuts";
 import LStorage from "./utility/storage";
 import PostSet from "./post_sets";
 import Blacklist from "./blacklists";
-import Favorite from "./favorites";
 import Uploader from "./uploader";
 import CurrentUser from "./models/CurrentUser";
 
@@ -26,7 +25,6 @@ Post.initialize_all = async function () {
 
   if ($("#c-posts #a-index").length) {
     this.initialize_gestures();
-    this.initialize_vote_buttons();
   }
 
   if ($("#c-posts #a-show").length) {
@@ -35,15 +33,11 @@ Post.initialize_all = async function () {
     this.initialize_post_sections();
     this.initialize_resize();
     this.initialize_gestures();
-    this.initialize_voting();
     this.initialize_moderation();
     this.initialize_hide_notes();
     this.initialize_thumbnail_frame_preview();
     if (CurrentUser.isMember) await this.initialize_upload_settings();
   }
-
-  if ($("#p-index-by-post").length)
-    this.initialize_voting();
 
   if ($("#c-posts #a-show, #c-uploads #a-new").length) {
     this.initialize_edit_dialog();
@@ -175,11 +169,6 @@ Post.initialize_collapse = function () {
     $(this).toggleClass("hidden-category");
     e.preventDefault();
   });
-};
-
-Post.initialize_voting = function () {
-  $(document).on("click.danbooru.post", ".post-vote-up-link", Post.vote_up);
-  $(document).on("click.danbooru.post", ".post-vote-down-link", Post.vote_down);
 };
 
 Post.initialize_edit_dialog = function () {
@@ -1271,44 +1260,8 @@ Post.toggle_hide_notes = function (save = true, init = false) {
   }
 };
 
-Post.initialize_vote_buttons = function () {
-  const containers = $(".post-preview div#vote-buttons");
-  for (const set of containers) {
-    for (const button of $(set).find("button.vote-button")) {
-      $(button).on("click.gayfurcity.vote", (event) => {
-        event.preventDefault();
-        const id = $(event.target).parent().parent().attr("data-id");
-        switch ($(event.target).attr("data-action")) {
-          case "up": {
-            Post.vote(id, 1);
-            break;
-          }
-
-          case "down": {
-            Post.vote(id, -1);
-            break;
-          }
-
-          case "fav": {
-            const span = $(event.target).find("span");
-            const isFavorited = span.hasClass("is-favorited");
-            if (isFavorited) {
-              Favorite.destroy(id);
-              span.removeClass("is-favorited");
-            } else {
-              Favorite.create(id);
-              span.addClass("is-favorited");
-            }
-
-            const favSelector = $(`.post-score-faves-faves-${id}`);
-            favSelector.text(Number(favSelector.text()) + (isFavorited ? -1 : 1));
-            break;
-          }
-        }
-      });
-    }
-  }
-};
+// The thumbnail vote/favorite buttons (#vote-buttons, see PostsHelper#post_vote_buttons) are
+// real forms submitted through Turbo - no click handler needed here anymore.
 
 Post.initialize_thumbnail_frame_preview = function () {
   const $input = $("#preview-thumbnail-frame-button");

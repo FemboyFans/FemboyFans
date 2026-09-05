@@ -309,7 +309,43 @@ class PostsController < ApplicationController
     redirect_back_or_to(post_path(@post))
   end
 
+  def favorite
+    @post = authorize(Post.find(params[:id]))
+    fav = FavoriteManager.add!(user: CurrentUser.user, post: @post)
+    if params[:upvote].to_s.truthy?
+      VoteManager::Posts.vote!(user: CurrentUser.user, ip_addr: CurrentUser.ip_addr, post: @post, score: 1)
+      fav.reload
+    end
+
+    respond_with(fav) do |format|
+      format.html { render_favorite_response }
+    end
+  rescue Favorite::Error, ActiveRecord::RecordInvalid => e
+    render_expected_error(422, e.message, format: :json)
+  end
+
+  def unfavorite
+    @post = authorize(Post.find(params[:id]))
+    FavoriteManager.remove!(user: CurrentUser.user, post: @post)
+
+    respond_with(@post) do |format|
+      format.html { render_favorite_response }
+    end
+  rescue Favorite::Error => e
+    render_expected_error(422, e.message, format: :json)
+  end
+
   private
+
+  # The show page has a single static favorite frame; the index thumbnail grid re-renders the whole
+  # thumbnail per post so its score/fav-count/vote-highlighting all stay in sync after favoriting.
+  def render_favorite_response
+    if turbo_frame_request_id == "post-preview-#{@post.id}"
+      render(html: PostsDecorator.new(@post).preview_html(tags: params[:tags], show_cropped: true, stats: true), layout: false)
+    else
+      render(partial: "posts/partials/show/favorite", locals: { post: @post })
+    end
+  end
 
   def tag_query
     params[:tags] || (params[:post] && params[:post][:tags])

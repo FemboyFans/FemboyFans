@@ -1,0 +1,5 @@
+<%# locals: (post:) %>
+
+<%= turbo_frame("image-vote-buttons", class: "div") do %>
+  <%= post_vote_block(post, post.own_vote(CurrentUser.user), buttons: true) %>
+<% end %>

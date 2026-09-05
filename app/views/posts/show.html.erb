@@ -89,21 +89,10 @@
 
   <section id="image-extra-controls">
     <% if CurrentUser.user.can_post_vote? %>
-      <div id="image-vote-buttons">
-        <%= post_vote_block(@post, @post.own_vote(CurrentUser.user), buttons: true) %>
-      </div>
+      <%= render(partial: "posts/partials/show/vote", locals: { post: @post }) %>
     <% end %>
     <% if CurrentUser.user.can_favorite? %>
-      <%= tag.div(class: "fav-buttons fav-buttons-#{@post.is_favorited?(CurrentUser.user)}") do %>
-        <%= button_tag("id": "add-fav-button", "class": "button btn-success", "data-pid": @post.id) do %>
-          <%= tag.i(class: "fa-regular fa-star") %>
-          <span>Favorite</span>
-        <% end %>
-        <%= button_tag("id": "remove-fav-button", "class": "button btn-danger", "data-pid": @post.id) do %>
-          <%= tag.i(class: "fa-solid fa-star") %>
-          <span>Unfavorite</span>
-        <% end %>
-      <% end %>
+      <%= render(partial: "posts/partials/show/favorite", locals: { post: @post }) %>
     <% end %>
     <% if @post.visible?(CurrentUser.user) %>
       <div id="image-full-screen-button">

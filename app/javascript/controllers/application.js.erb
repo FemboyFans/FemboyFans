@@ -1,0 +1,8 @@
+import { Application } from "@hotwired/stimulus";
+
+const application = Application.start();
+
+application.debug = <%= Rails.env.development? %>;
+window.Stimulus = application;
+
+export { application };

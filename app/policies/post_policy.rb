@@ -97,6 +97,14 @@ class PostPolicy < ApplicationPolicy
     user.is_admin?
   end
 
+  def favorite?
+    policy(record, policy_class: FavoritePolicy).create?
+  end
+
+  def unfavorite?
+    policy(record, policy_class: FavoritePolicy).destroy?
+  end
+
   def min_level?
     !record.is_a?(Post) || record.can_edit?(user)
   end

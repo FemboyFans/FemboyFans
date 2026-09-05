@@ -11,7 +11,7 @@
     </li>
   <% end %>
   <li>Rating: <%= pretty_html_rating(post) %></li>
-  <li>Score: <%= post_vote_block(post, post.own_vote(CurrentUser.user)) %>
+  <li>Score: <%= post_vote_block(post, post.own_vote(CurrentUser.user), buttons: false) %>
     <% if PostVotePolicy.new(CurrentUser.user, post).index? %>
       <span><%= link_to("(votes)", controller: "posts/votes", search: { post_id: post.id }) %></span>
     <% end %>

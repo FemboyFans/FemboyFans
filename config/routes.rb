@@ -406,6 +406,9 @@ Rails.application.routes.draw do
       post(:remove_from_pool)
       get("/frame/:frame", to: "posts#frame", as: "frame")
       resource(:move_favorites, controller: "posts/move_favorites", as: "move_favorites_post", only: %i[show create])
+
+      post(:favorite)
+      post(:unfavorite)
     end
   end
   resources(:qtags, path: "q", only: %i[show])

@@ -700,6 +700,77 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
+    context("favorite action") do
+      should("favorite the post") do
+        assert_difference("Favorite.count", 1) do
+          post_auth(favorite_post_path(@post), @user, params: { format: :json })
+        end
+
+        assert_response(:success)
+        assert(@post.reload.is_favorited?(@user))
+      end
+
+      should("also upvote when upvote=true") do
+        post_auth(favorite_post_path(@post), @user, params: { upvote: true, format: :json })
+
+        assert_response(:success)
+        assert_equal(1, @post.votes.find_by(user: @user)&.score)
+      end
+
+      should("render the favorite partial for html requests") do
+        post_auth(favorite_post_path(@post), @user)
+
+        assert_response(:success)
+        assert_select("form[action='#{unfavorite_post_path(@post)}']")
+      end
+
+      should("fail with a 422 when already favorited") do
+        create(:favorite, post: @post, user: @user)
+
+        assert_no_difference("Favorite.count") do
+          post_auth(favorite_post_path(@post), @user, params: { format: :json })
+        end
+
+        assert_response(:unprocessable_content)
+      end
+
+      context("access control") do
+        asserts do
+          access.gte(User::Levels::REJECTED).post { favorite_post_path(create(:post)) }.success(:ok)
+          access.gte(User::Levels::REJECTED).json.post { favorite_post_path(create(:post)) }
+        end
+      end
+    end
+
+    context("unfavorite action") do
+      setup do
+        create(:favorite, post: @post, user: @user)
+      end
+
+      should("unfavorite the post") do
+        assert_difference("Favorite.count", -1) do
+          post_auth(unfavorite_post_path(@post), @user, params: { format: :json })
+        end
+
+        assert_response(:success)
+        assert_not(@post.reload.is_favorited?(@user))
+      end
+
+      should("render the favorite partial for html requests") do
+        post_auth(unfavorite_post_path(@post), @user)
+
+        assert_response(:success)
+        assert_select("form[action='#{favorite_post_path(@post)}']")
+      end
+
+      context("access control") do
+        asserts do
+          access.gte(User::Levels::REJECTED).post { unfavorite_post_path(create(:post)) }.success(:ok)
+          access.gte(User::Levels::REJECTED).json.post { unfavorite_post_path(create(:post)) }
+        end
+      end
+    end
+
     context("uploaders action") do
       should("render") do
         get_auth(uploaders_posts_path, @admin)

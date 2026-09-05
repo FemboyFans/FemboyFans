@@ -52,11 +52,12 @@ article.post-preview {
     border-radius: $border-radius-half $border-radius-half 0 0;
   }
 
-  &[data-tags~=animated] > a:before {
+  // Not a direct-child (>) selector - the picture link sits inside the post-preview turbo frame now.
+  &[data-tags~=animated] a:before {
     @include  preview-type-badge('ANIM');
   }
 
-  &[data-file-ext=webm] > a:before {
+  &[data-file-ext=webm] a:before {
     @include preview-type-badge('WEBM');
   }
 }
@@ -158,7 +159,7 @@ article.post-preview {
           font-weight: 500;
           position: relative;
         }
-        &[data-action=up] {
+        &.vote-up {
           border-right: 1px solid #666;
           border-top-left-radius: 0.75rem;
           margin-right: -0.5px;
@@ -170,7 +171,7 @@ article.post-preview {
             bottom: -1px;
           }
         }
-        &[data-action=down] {
+        &.vote-down {
           border-left: 1px solid #666;
           border-top-right-radius: 0.75rem;
           margin-left: -0.5px;
@@ -264,7 +265,7 @@ div#c-posts {
     font-size: 85%;
   }
 
-  .fav-buttons {
+  #fav-buttons {
     font-size: 14pt;
 
     button.ui-button {
@@ -272,15 +273,7 @@ div#c-posts {
     }
   }
 
-  .fav-buttons-true #add-fav-button {
-    display: none;
-  }
-
-  .fav-buttons-false #remove-fav-button {
-    display: none;
-  }
-
-  .fav-buttons,
+  #fav-buttons,
   #image-download-link {
     .button > i {
       display: none;
@@ -292,7 +285,7 @@ div#c-posts {
       justify-content: center;
     }
 
-    .fav-buttons,
+    #fav-buttons,
     #image-download-link {
       .button > i {
         display: inline-block;
@@ -829,7 +822,7 @@ section#image-extra-controls {
   flex-wrap: wrap;
   margin: 0.25rem 0;
 
-  & > div {
+  & > div, & > .div {
     margin: 0.25rem 0.5rem 0.25rem 0;
 
     &:last-child {
@@ -842,7 +835,7 @@ section#image-extra-controls {
     }
   }
 
-  div#image-vote-buttons {
+  #image-vote-buttons {
     & > a > span {
       font-size: 1rem;
     }

@@ -84,7 +84,8 @@ class ApplicationPolicy
     methods.any? { |name| respond_to?(name) ? send(name) : false }
   end
 
-  def policy(object)
+  def policy(object, policy_class: nil)
+    return policy_class.new(user, object) if policy_class
     Pundit.policy!(user, object)
   end
 

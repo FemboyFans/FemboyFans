@@ -78,6 +78,7 @@ export { default as Uploader } from "../src/javascripts/uploader.js";
 export { default as VideoPlayerLoader } from "../src/javascripts/video_player.js";
 export { default as VoteManager } from "../src/javascripts/vote_manager.js";
 export { default as HoverZoom } from "../src/javascripts/hover_zoom.js";
+import "../controllers";
 
 function inError (msg) {
   $(window).trigger("danbooru:error", msg);

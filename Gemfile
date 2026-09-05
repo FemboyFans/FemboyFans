@@ -112,8 +112,7 @@ gem("builder", "~> 3.3")
 
 gem("image_processing", "~> 1.14")
 
-gem("yiffspace", "~> 0.1.3")
-gem("yiffspace-auth", "~> 0.0.3")
+gem("yiffspace", "~> 0.2.0")
 
 # XXX: Added to silence "loaded from standard library" warnings
 gem("benchmark", "~> 0.5.0")
@@ -121,3 +120,4 @@ gem("fiddle", "~> 1.1")
 
 gem("webrick", "~> 1.9")
 gem("rackup", "~> 2.3")
+gem("stimulus-rails", "~> 1.3")

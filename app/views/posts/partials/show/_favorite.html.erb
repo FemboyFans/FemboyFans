@@ -1,0 +1,14 @@
+<%# locals: (post:) %>
+
+<% fav = post.is_favorited?(CurrentUser.user) %>
+<%= turbo_frame("fav-buttons", class: "div") do %>
+  <%= button_to(fav ? unfavorite_post_path(post) : favorite_post_path(post), class: "button #{fav ? 'btn-danger' : 'btn-success'}", data: { turbo_method: "post" }) do %>
+    <% if fav %>
+      <%= tag.i(class: "fa-solid fa-star") %>
+      <span>Unfavorite</span>
+    <% else %>
+      <%= tag.i(class: "fa-regular fa-star") %>
+      <span>Favorite</span>
+    <% end %>
+  <% end %>
+<% end %>

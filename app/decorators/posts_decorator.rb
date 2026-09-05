@@ -127,9 +127,11 @@ class PostsDecorator < ApplicationDecorator
                     end
 
     ribbons = self.ribbons
-    vote_buttons = self.vote_buttons
+    vote_buttons = self.vote_buttons(tags: options[:tags])
     tag.article(**article_attrs) do
-      img_contents + desc_contents + ribbons + vote_buttons
+      h.turbo_frame("post-preview-#{post.id}") do
+        img_contents + desc_contents + ribbons + vote_buttons
+      end
     end
   end
 
@@ -137,7 +139,7 @@ class PostsDecorator < ApplicationDecorator
     h.post_ribbons(post)
   end
 
-  def vote_buttons
-    h.post_vote_buttons(post)
+  def vote_buttons(tags: nil)
+    h.post_vote_buttons(post, CurrentUser.user, tags)
   end
 end

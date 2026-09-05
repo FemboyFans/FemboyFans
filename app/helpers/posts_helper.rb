@@ -141,26 +141,16 @@ module PostsHelper
   end
 
   def post_vote_block(post, vote, buttons: false)
-    vote_score = vote || 0
     post_score = post.score
 
-    up_tag = tag.a(
-      tag.span("▲", class: "post-vote-up-#{post.id} " + confirm_score_class(vote_score, 1, buttons)),
-      class: "post-vote-up-link",
-      data:  { id: post.id },
-    )
-    down_tag = tag.a(
-      tag.span("▼", class: "post-vote-down-#{post.id} " + confirm_score_class(vote_score, -1, buttons)),
-      class: "post-vote-down-link",
-      data:  { id: post.id },
-    )
     if buttons
+      vote_score = vote || 0
+      up_tag = link_to(tag.span("▲", class: "post-vote-up-#{post.id} " + confirm_score_class(vote_score, 1, buttons)), post_votes_path(post_id: post.id, score: 1, no_unvote: false), class: "post-vote-up-link", data: { turbo_method: "post" })
+      down_tag = link_to(tag.span("▼", class: "post-vote-down-#{post.id} " + confirm_score_class(vote_score, -1, buttons)), post_votes_path(post_id: post.id, score: -1, no_unvote: false), class: "post-vote-down-link", data: { turbo_method: "post" })
       score_tag = tag.span(post.score, class: "post-score-#{post.id} post-score #{score_class(post_score)}", title: "#{post.up_score} up/#{post.down_score} down")
       CurrentUser.user.can_post_vote? ? up_tag + score_tag + down_tag : ""
     else
-      vote_block = tag.span(safe_join([" (", up_tag, " vote ", down_tag, ")"]))
-      score_tag = tag.span(post.score, class: "post-score-#{post.id} post-score #{score_class(post_score)}", title: "#{post.up_score} up/#{post.down_score} down")
-      score_tag + (CurrentUser.user.can_post_vote? ? vote_block : "")
+      tag.span(post.score, class: "post-score-#{post.id} post-score #{score_class(post_score)}", title: "#{post.up_score} up/#{post.down_score} down")
     end
   end
 
@@ -238,16 +228,25 @@ module PostsHelper
     end
   end
 
-  def post_vote_buttons(post, user = CurrentUser.user)
+  # Rendered through decorators via `h`, which resolves to ApplicationController.helpers -
+  # a controller-less helper proxy, so route helpers and the CSRF-token controller lookup
+  # button_to normally relies on aren't available. Route through Routes (plain url_helpers,
+  # no controller needed) and skip the authenticity token; Turbo adds it from the page's
+  # csrf-token meta tag when it submits the form, same as the show page's vote links do.
+  #
+  # tags is a plain positional arg (not `tags:`) because `h` forwards calls through
+  # YiffSpace::Utils::Helpers#method_missing, whose bare `*` splat isn't ruby2_keywords-aware -
+  # a trailing keyword hash arrives here as a positional Hash and lands in the `user` slot.
+  def post_vote_buttons(post, user = CurrentUser.user, tags = nil)
     tag.div(id: "vote-buttons") do
       safe_join([
-        tag.button("", class: "button vote-button vote score-neutral", disabled: post.is_vote_locked?(user), data: { action: "up" }) do
+        button_to(Routes.post_votes_path(post_id: post.id), method: :post, params: { score: 1, tags: tags }, disabled: post.is_vote_locked?(user), authenticity_token: false, class: "button vote-button vote vote-up score-#{post.is_voted_up?(user) ? 'positive' : 'neutral'}") do
           tag.span(class: "post-vote-up-#{post.id} score-#{post.is_voted_up?(user) ? 'positive' : 'neutral'}")
         end,
-        tag.button("", class: "button vote-button vote score-neutral", disabled: post.is_vote_locked?(user), data: { action: "down" }) do
+        button_to(Routes.post_votes_path(post_id: post.id), method: :post, params: { score: -1, tags: tags }, disabled: post.is_vote_locked?(user), authenticity_token: false, class: "button vote-button vote vote-down score-#{post.is_voted_down?(user) ? 'negative' : 'neutral'}") do
           tag.span(class: "post-vote-down-#{post.id} score-#{post.is_voted_down?(user) ? 'negative' : 'neutral'}")
         end,
-        tag.button("", class: "button vote-button fav score-neutral", data: { action: "fav", state: post.is_favorited?(user) }) do
+        button_to(post.is_favorited?(user) ? Routes.unfavorite_post_path(post) : Routes.favorite_post_path(post), method: :post, params: { tags: tags }, authenticity_token: false, class: "button vote-button fav score-neutral") do
           tag.span(class: "post-favorite-#{post.id} score-neutral#{' is-favorited' if post.is_favorited?(user)}")
         end,
       ])
