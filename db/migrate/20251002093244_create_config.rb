@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateConfig < ExtendedMigration[7.1]
+class CreateConfig < ActiveRecord::Migration[7.1]
   with_config_override!
 
   def change

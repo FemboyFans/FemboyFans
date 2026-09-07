@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class ApplyRebandChanges < ExtendedMigration[7.1]
+class ApplyRebandChanges < ActiveRecord::Migration[7.1]
   def change
     change_column_default(:config, :app_name, from: "Femboy Fans", to: "GayFur City")
     change_column_default(:config, :canonical_app_name, from: "Femboy Fans", to: "GayFur City")

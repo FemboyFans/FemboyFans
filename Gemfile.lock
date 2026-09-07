@@ -692,7 +692,6 @@ DEPENDENCIES
   yabeda-puma-plugin
   yabeda-rails
   yiffspace (~> 0.2.0)
-  yiffspace-auth (~> 0.0.6)
 
 BUNDLED WITH
    2.5.22

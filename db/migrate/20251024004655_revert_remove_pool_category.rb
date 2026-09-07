@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class RevertRemovePoolCategory < ExtendedMigration[7.1]
+class RevertRemovePoolCategory < ActiveRecord::Migration[7.1]
   with_config_override!
 
   def change

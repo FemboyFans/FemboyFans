@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateBulkUpdateRequestImports < ExtendedMigration[8.1]
+class CreateBulkUpdateRequestImports < ActiveRecord::Migration[8.1]
   def change
     create_table(:bulk_update_request_imports) do |t|
       t.references(:creator, foreign_key: { to_table: :users }, null: false)

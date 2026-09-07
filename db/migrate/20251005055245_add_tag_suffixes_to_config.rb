@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddTagSuffixesToConfig < ExtendedMigration[7.1]
+class AddTagSuffixesToConfig < ActiveRecord::Migration[7.1]
   with_config_override!
 
   def change

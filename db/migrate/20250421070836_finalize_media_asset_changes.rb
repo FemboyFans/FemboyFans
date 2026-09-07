@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class FinalizeMediaAssetChanges < ExtendedMigration[7.1]
+class FinalizeMediaAssetChanges < ActiveRecord::Migration[7.1]
   def change
     remove_column_with_index(:posts, :md5, :string, null: false, index: { unique: true })
     remove_column(:posts, :file_ext, :string, null: false)

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddImportantTagCategory < ExtendedMigration[7.1]
+class AddImportantTagCategory < ActiveRecord::Migration[7.1]
   def change
     add_column(:posts, :tag_count_important, :integer, default: 0, null: false)
     reversible do |r|

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddUpdaterToVariousModels < ExtendedMigration[8.1]
+class AddUpdaterToVariousModels < ActiveRecord::Migration[8.1]
   def change
     add_updater(:artists)
     add_updater(:bans, :banner)

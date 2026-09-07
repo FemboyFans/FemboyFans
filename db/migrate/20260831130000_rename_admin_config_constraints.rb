@@ -2,7 +2,7 @@
 
 # db/migrate/20260826120000_rename_config_to_admin_config.rb renamed the table, but Postgres
 # doesn't rename constraints along with it - they're still named after "config".
-class RenameAdminConfigConstraints < ExtendedMigration[8.1]
+class RenameAdminConfigConstraints < ActiveRecord::Migration[8.1]
   def up
     rename_admin_config_constraints(from: "config", to: "admin_config")
   end

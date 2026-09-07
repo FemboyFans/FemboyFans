@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class UpdatersCreatorsAndIpAddrs < ExtendedMigration[7.1]
+class UpdatersCreatorsAndIpAddrs < ActiveRecord::Migration[7.1]
   def change
     add_ip_addr(:artists, :creator)
     add_ip_addr(:bans, :banner)

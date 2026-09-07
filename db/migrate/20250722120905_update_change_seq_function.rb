@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class UpdateChangeSeqFunction < ExtendedMigration[7.1]
+class UpdateChangeSeqFunction < ActiveRecord::Migration[7.1]
   def up
     execute(<<~SQL,
       CREATE OR REPLACE FUNCTION public.posts_trigger_change_seq() RETURNS trigger

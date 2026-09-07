@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddPostFlagNoteMaxSizeToConfig < ExtendedMigration[7.1]
+class AddPostFlagNoteMaxSizeToConfig < ActiveRecord::Migration[7.1]
   with_config_override!
 
   def change

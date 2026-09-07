@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddTextIndices < ExtendedMigration[7.0]
+class AddTextIndices < ActiveRecord::Migration[7.0]
   disable_ddl_transaction!
 
   def change

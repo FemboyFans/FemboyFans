@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddUploaderTagPlaceholdersToAdminConfig < ExtendedMigration[8.1]
+class AddUploaderTagPlaceholdersToAdminConfig < ActiveRecord::Migration[8.1]
   def change
     add_column(:admin_config, :artist_tag_placeholder, :string, null: false, default: "artist_name, unknown_artist, anonymous_artist etc.")
     add_column(:admin_config, :character_tag_placeholder, :string, null: false, default: "character_name solo_focus 1_male 2_females etc.")

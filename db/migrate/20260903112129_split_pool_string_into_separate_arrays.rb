@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class SplitPoolStringIntoSeparateArrays < ExtendedMigration[8.1]
+class SplitPoolStringIntoSeparateArrays < ActiveRecord::Migration[8.1]
   def change
     add_column(:posts, :pool_ids, :bigint, array: true, null: false, default: [])
     add_column(:posts, :public_set_ids, :bigint, array: true, null: false, default: [])

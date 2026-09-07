@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class RemoveDeadTablesAndColumns < ExtendedMigration[6.1]
+class RemoveDeadTablesAndColumns < ActiveRecord::Migration[6.1]
   disable_ddl_transaction!
 
   def change

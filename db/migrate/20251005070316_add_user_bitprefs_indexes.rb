@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddUserBitprefsIndexes < ExtendedMigration[7.1]
+class AddUserBitprefsIndexes < ActiveRecord::Migration[7.1]
   def change
     %i[can_approve_posts enable_privacy_mode unrestricted_uploads can_manage_aibur].each do |pref|
       bit = User::Preferences.const_get(pref.upcase)

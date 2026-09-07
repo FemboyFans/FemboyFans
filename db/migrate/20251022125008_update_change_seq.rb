@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class UpdateChangeSeq < ExtendedMigration[7.1]
+class UpdateChangeSeq < ActiveRecord::Migration[7.1]
   def up
     update_change_seq(%w[
       source rating is_note_locked is_rating_locked is_status_locked is_pending is_flagged is_deleted is_appealed approver_id last_noted_at tag_string typed_tag_string parent_id

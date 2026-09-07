@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateDbExports < ExtendedMigration[7.1]
+class CreateDbExports < ActiveRecord::Migration[7.1]
   def change
     create_table(:db_exports) do |t|
       t.string(:name, null: false)

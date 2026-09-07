@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddCharacterGroupsToPostsAndPostVersions < ExtendedMigration[8.1]
+class AddCharacterGroupsToPostsAndPostVersions < ActiveRecord::Migration[8.1]
   def change
     add_column(:posts, :character_groups, :jsonb, null: false, default: [])
     add_column(:post_versions, :character_groups, :jsonb, null: false, default: [])

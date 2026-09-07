@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class ColumnTypeConsistency < ExtendedMigration[7.1]
+class ColumnTypeConsistency < ActiveRecord::Migration[7.1]
   def change
     bulk_change_column_types({
       api_keys:                   %i[id user_id],

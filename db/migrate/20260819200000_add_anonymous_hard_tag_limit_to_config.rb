@@ -3,7 +3,7 @@
 # A cheap, admin-tunable ceiling on whitespace-separated tokens in an anonymous search, checked
 # in TagQuery#initialize before any real parsing happens - independent of tag_query_limit (which
 # is only enforced after parsing, and could otherwise be set to -1/unlimited for anonymous).
-class AddAnonymousHardTagLimitToConfig < ExtendedMigration[8.1]
+class AddAnonymousHardTagLimitToConfig < ActiveRecord::Migration[8.1]
   with_config_override!
 
   def change

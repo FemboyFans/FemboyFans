@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddMinImageWidthAndHeightToConfig < ExtendedMigration[7.1]
+class AddMinImageWidthAndHeightToConfig < ActiveRecord::Migration[7.1]
   with_config_override!
 
   DEFAULT_IMAGE_MAX = 40_000

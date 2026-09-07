@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddMoreDynamicConfigOptions < ExtendedMigration[7.1]
+class AddMoreDynamicConfigOptions < ActiveRecord::Migration[7.1]
   with_config_override!
 
   def change

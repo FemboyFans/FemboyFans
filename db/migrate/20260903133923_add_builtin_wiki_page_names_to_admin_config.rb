@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddBuiltinWikiPageNamesToAdminConfig < ExtendedMigration[8.1]
+class AddBuiltinWikiPageNamesToAdminConfig < ActiveRecord::Migration[8.1]
   def change
     add_column(:admin_config, :privacy_policy_wiki_page, :string, null: false, default: "help:privacy_policy")
     add_column(:admin_config, :terms_of_service_wiki_page, :string, null: false, default: "help:terms_of_service")

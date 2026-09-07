@@ -3,7 +3,7 @@
 # db_exports_path used to be an admin-editable URL/path pointing at wherever exports were served
 # from externally (e.g. an nginx-served directory). Now that exports are served through our own
 # DbExportsController, only an on/off toggle is needed - the destination is fixed.
-class ReplaceDbExportsPathWithEnabledInConfig < ExtendedMigration[7.1]
+class ReplaceDbExportsPathWithEnabledInConfig < ActiveRecord::Migration[7.1]
   with_config_override!
 
   def change

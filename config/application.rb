@@ -22,8 +22,9 @@ Bundler.require(*Rails.groups)
 
 require_relative("config")
 require_relative("local_config")
-Dir["#{__dir__}/../lib/middleware/**/*.rb"].each { |f| require(f) }
-Dir["#{__dir__}/../lib/logging/**/*.rb"].each { |f| require(f) }
+%w[middleware logging migrations].each do |name|
+  Dir["#{__dir__}/../lib/#{name}/**/*.rb"].each { |f| require(f) }
+end
 
 module GayFurCity
   # AdminConfig.ensure_required_set!

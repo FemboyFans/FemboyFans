@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddFlagAiPostsToConfig < ExtendedMigration[7.1]
+class AddFlagAiPostsToConfig < ActiveRecord::Migration[7.1]
   with_config_override!
 
   def change

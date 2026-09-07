@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddBlacklistedTagsToConfig < ExtendedMigration[7.1]
+class AddBlacklistedTagsToConfig < ActiveRecord::Migration[7.1]
   with_config_override!
 
   def change

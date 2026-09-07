@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddPostSetLimitsToConfig < ExtendedMigration[8.1]
+class AddPostSetLimitsToConfig < ActiveRecord::Migration[8.1]
   with_config_override!
 
   def change
